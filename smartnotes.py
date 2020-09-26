@@ -10,18 +10,18 @@ class Note(object):
         self.animation = Animation()
         self.center = center
         self.radius = pygame.math.Vector2(radius, radius)
-        self.box = pygame.Surface((30, 30))
-        self.box.fill((123, 214, 55))
+        self.image = pygame.Surface((30, 30))
+        self.image.fill((123, 214, 55))
 
     def tick(self, screen, elapsed_ms):
         if not self.animation.active():
             self.animation.start(2000)
-        self.rect = self.box.get_rect().move(
+        self.rect = self.image.get_rect().move(
             self.radius.rotate(
                 self.animation.advance(elapsed_ms)*360
             ) + self.center
         )
-        screen.blit(self.box, self.rect.topleft)
+        screen.blit(self.image, self.rect)
 
 class DebugBar(object):
 
@@ -43,27 +43,28 @@ class DebugBar(object):
     def tick(self, screen, elapsed_ms):
         if not self.visible and not self.animation.active():
             return
-        bar = pygame.Surface((screen.get_width(), self.HEIGHT))
-        bar.fill((100, 100, 100))
+        self.image = pygame.Surface((screen.get_width(), self.HEIGHT))
+        self.image.fill((100, 100, 100))
         text, text_rect = self.font.render(
             f"elapsed_ms = {elapsed_ms} | fps = {int(round(self.clock.get_fps()))}"
         )
         percent = self.animation.advance(elapsed_ms)
         if self.visible:
             alpha = int(255 * percent)
-            offset = bar.get_height()-int(bar.get_height()*percent)
+            offset = self.image.get_height()-int(self.image.get_height()*percent)
         else:
             alpha = 255 - int(255 * percent)
-            offset = int(bar.get_height()*percent)
-        bar.set_alpha(alpha)
-        bar.blit(
+            offset = int(self.image.get_height()*percent)
+        self.image.set_alpha(alpha)
+        self.image.blit(
             text,
             (
-                bar.get_width()-text_rect.width-10,
-                bar.get_height()/2-text_rect.height/2
+                self.image.get_width()-text_rect.width-10,
+                self.image.get_height()/2-text_rect.height/2
             )
         )
-        screen.blit(bar, (0, screen.get_height()-bar.get_height()+offset))
+        self.rect = self.image.get_rect().move((0, screen.get_height()-self.image.get_height()+offset))
+        screen.blit(self.image, self.rect)
 
 class Animation(object):
 

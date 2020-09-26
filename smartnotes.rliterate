@@ -122,7 +122,7 @@
 ],
 "fragments":[
 {
-"text":"class Note(object):\n\n    def __init__(self, center, radius):\n        self.animation = Animation()\n        self.center = center\n        self.radius = pygame.math.Vector2(radius, radius)\n        self.box = pygame.Surface((30, 30))\n        self.box.fill((123, 214, 55))\n\n    def ",
+"text":"class Note(object):\n\n    def __init__(self, center, radius):\n        self.animation = Animation()\n        self.center = center\n        self.radius = pygame.math.Vector2(radius, radius)\n        self.image = pygame.Surface((30, 30))\n        self.image.fill((123, 214, 55))\n\n    def ",
 "type":"code"
 },
 {
@@ -138,7 +138,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        if not self.animation.active():\n            self.animation.start(2000)\n        self.rect = self.box.get_rect().move(\n            self.radius.rotate(\n                self.animation.advance(",
+"text":"):\n        if not self.animation.active():\n            self.animation.start(2000)\n        self.rect = self.image.get_rect().move(\n            self.radius.rotate(\n                self.animation.advance(",
 "type":"code"
 },
 {
@@ -146,7 +146,7 @@
 "type":"variable"
 },
 {
-"text":")*360\n            ) + self.center\n        )\n        screen.blit(self.box, self.rect.topleft)\n",
+"text":")*360\n            ) + self.center\n        )\n        screen.blit(self.image, self.rect)\n",
 "type":"code"
 }
 ],
@@ -178,7 +178,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        if not self.visible and not self.animation.active():\n            return\n        bar = pygame.Surface((screen.get_width(), self.HEIGHT))\n        bar.fill((100, 100, 100))\n        text, text_rect = self.font.render(\n            f\"",
+"text":"):\n        if not self.visible and not self.animation.active():\n            return\n        self.image = pygame.Surface((screen.get_width(), self.HEIGHT))\n        self.image.fill((100, 100, 100))\n        text, text_rect = self.font.render(\n            f\"",
 "type":"code"
 },
 {
@@ -202,7 +202,7 @@
 "type":"variable"
 },
 {
-"text":")\n        if self.visible:\n            alpha = int(255 * percent)\n            offset = bar.get_height()-int(bar.get_height()*percent)\n        else:\n            alpha = 255 - int(255 * percent)\n            offset = int(bar.get_height()*percent)\n        bar.set_alpha(alpha)\n        bar.blit(\n            text,\n            (\n                bar.get_width()-text_rect.width-10,\n                bar.get_height()/2-text_rect.height/2\n            )\n        )\n        screen.blit(bar, (0, screen.get_height()-bar.get_height()+offset))\n",
+"text":")\n        if self.visible:\n            alpha = int(255 * percent)\n            offset = self.image.get_height()-int(self.image.get_height()*percent)\n        else:\n            alpha = 255 - int(255 * percent)\n            offset = int(self.image.get_height()*percent)\n        self.image.set_alpha(alpha)\n        self.image.blit(\n            text,\n            (\n                self.image.get_width()-text_rect.width-10,\n                self.image.get_height()/2-text_rect.height/2\n            )\n        )\n        self.rect = self.image.get_rect().move((0, screen.get_height()-self.image.get_height()+offset))\n        screen.blit(self.image, self.rect)\n",
 "type":"code"
 }
 ],
