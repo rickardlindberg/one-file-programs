@@ -5,6 +5,7 @@ import sys
 
 def main():
     pygame.init()
+    pygame.display.set_caption("Smart Notes")
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
     box = pygame.Surface((20, 20))
