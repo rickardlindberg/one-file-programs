@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import pygame
+import pygame.freetype
 import sys
 
 class Note(object):
@@ -22,14 +23,18 @@ def main():
     clock = pygame.time.Clock()
     n1 = Note(pygame.math.Vector2(100, 100), 40)
     n2 = Note(pygame.math.Vector2(200, 100), 30)
+    font = pygame.freetype.SysFont(pygame.freetype.get_default_font(), 18)
     while True:
-        print(f"frame = {clock.get_time()} (fps = {clock.get_fps()})")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
         screen.fill((100, 200, 50))
-        n1.render(screen, clock.get_time())
-        n2.render(screen, clock.get_time())
+        ms_diff = clock.get_time()
+        text, text_rect = font.render(f"ms_diff = {ms_diff} | fps = {int(round(clock.get_fps()))}")
+        screen.blit(text, (screen.get_width()-text_rect.width-10,
+            screen.get_height()-text_rect.height-10))
+        n1.render(screen, ms_diff)
+        n2.render(screen, ms_diff)
         pygame.display.flip()
         clock.tick(60)
 
