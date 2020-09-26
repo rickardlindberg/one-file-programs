@@ -16,6 +16,18 @@
 {
 "blank_lines_before":0,
 "path":[
+"classes"
+],
+"prefix":"",
+"type":"chunk"
+},
+{
+"text":"\n",
+"type":"code"
+},
+{
+"blank_lines_before":0,
+"path":[
 "functions"
 ],
 "prefix":"",
@@ -38,11 +50,27 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    box = pygame.Surface((20, 20))\n    box.fill((123, 214, 55))\n    box_rect = box.get_rect()\n    while True:\n        print(f\"frame = {clock.get_time()} (fps = {clock.get_fps()})\")\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n        box_rect = box_rect.move((1, 1))\n        screen.fill((100, 200, 50))\n        screen.blit(box, box_rect.topleft)\n        pygame.display.flip()\n        clock.tick(60)\n",
+"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    n1 = Note(pygame.math.Vector2(100, 100), 40)\n    n2 = Note(pygame.math.Vector2(200, 100), 30)\n    while True:\n        print(f\"frame = {clock.get_time()} (fps = {clock.get_fps()})\")\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n        screen.fill((100, 200, 50))\n        n1.render(screen, clock.get_time())\n        n2.render(screen, clock.get_time())\n        pygame.display.flip()\n        clock.tick(60)\n",
 "type":"code"
 }
 ],
 "id":"b8766f8594d4401485c6292c0f2cbeec",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class Note(object):\n\n    def __init__(self, center, radius):\n        self.center = center\n        self.rotation = pygame.math.Vector2(radius, radius)\n        self.box = pygame.Surface((30, 30))\n        self.box.fill((123, 214, 55))\n\n    def render(self, screen, ms_diff):\n        self.rotation = self.rotation.rotate(ms_diff/5.0)\n        screen.blit(self.box, self.center+self.rotation)\n",
+"type":"code"
+}
+],
+"id":"59db46405da04e59a0fcc6395c11b4c7",
 "type":"code"
 }
 ],
