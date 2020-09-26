@@ -7,14 +7,20 @@ import sys
 class Note(object):
 
     def __init__(self, center, radius):
+        self.animation = Animation()
         self.center = center
-        self.rotation = pygame.math.Vector2(radius, radius)
+        self.radius = pygame.math.Vector2(radius, radius)
         self.box = pygame.Surface((30, 30))
         self.box.fill((123, 214, 55))
 
     def tick(self, screen, elapsed_ms):
-        self.rotation = self.rotation.rotate(elapsed_ms/5.0)
-        self.rect = self.box.get_rect().move(self.center+self.rotation)
+        if not self.animation.active():
+            self.animation.start(2000)
+        self.rect = self.box.get_rect().move(
+            self.radius.rotate(
+                self.animation.advance(elapsed_ms)*360
+            ) + self.center
+        )
         screen.blit(self.box, self.rect.topleft)
 
 class DebugBar(object):

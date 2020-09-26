@@ -122,7 +122,7 @@
 ],
 "fragments":[
 {
-"text":"class Note(object):\n\n    def __init__(self, center, radius):\n        self.center = center\n        self.rotation = pygame.math.Vector2(radius, radius)\n        self.box = pygame.Surface((30, 30))\n        self.box.fill((123, 214, 55))\n\n    def ",
+"text":"class Note(object):\n\n    def __init__(self, center, radius):\n        self.animation = Animation()\n        self.center = center\n        self.radius = pygame.math.Vector2(radius, radius)\n        self.box = pygame.Surface((30, 30))\n        self.box.fill((123, 214, 55))\n\n    def ",
 "type":"code"
 },
 {
@@ -138,7 +138,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.rotation = self.rotation.rotate(",
+"text":"):\n        if not self.animation.active():\n            self.animation.start(2000)\n        self.rect = self.box.get_rect().move(\n            self.radius.rotate(\n                self.animation.advance(",
 "type":"code"
 },
 {
@@ -146,7 +146,7 @@
 "type":"variable"
 },
 {
-"text":"/5.0)\n        self.rect = self.box.get_rect().move(self.center+self.rotation)\n        screen.blit(self.box, self.rect.topleft)\n",
+"text":")*360\n            ) + self.center\n        )\n        screen.blit(self.box, self.rect.topleft)\n",
 "type":"code"
 }
 ],
