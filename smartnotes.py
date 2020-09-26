@@ -14,7 +14,8 @@ class Note(object):
 
     def tick(self, screen, elapsed_ms):
         self.rotation = self.rotation.rotate(elapsed_ms/5.0)
-        screen.blit(self.box, self.center+self.rotation)
+        self.rect = self.box.get_rect().move(self.center+self.rotation)
+        screen.blit(self.box, self.rect.topleft)
 
 class DebugBar(object):
 
@@ -99,6 +100,12 @@ def main():
         elapsed_ms = clock.get_time()
         n1.tick(screen, elapsed_ms)
         n2.tick(screen, elapsed_ms)
+        pygame.draw.aaline(
+            screen,
+            (0, 0, 0),
+            n1.rect.midright,
+            n2.rect.midleft,
+        )
         debug_bar.tick(screen, elapsed_ms)
         pygame.display.flip()
         clock.tick(60)

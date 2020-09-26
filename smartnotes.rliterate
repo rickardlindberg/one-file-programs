@@ -90,7 +90,7 @@
 "type":"variable"
 },
 {
-"text":")\n        debug_bar.",
+"text":")\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            n1.rect.midright,\n            n2.rect.midleft,\n        )\n        debug_bar.",
 "type":"code"
 },
 {
@@ -146,7 +146,7 @@
 "type":"variable"
 },
 {
-"text":"/5.0)\n        screen.blit(self.box, self.center+self.rotation)\n",
+"text":"/5.0)\n        self.rect = self.box.get_rect().move(self.center+self.rotation)\n        screen.blit(self.box, self.rect.topleft)\n",
 "type":"code"
 }
 ],
