@@ -50,7 +50,7 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    n1 = Note(pygame.math.Vector2(100, 100), 40)\n    n2 = Note(pygame.math.Vector2(200, 100), 30)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ",
+"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    n1 = Note(pygame.math.Vector2(100, 100), 40)\n    n2 = Note(pygame.math.Vector2(200, 100), 30)\n    debug_bar = DebugBar(clock)\n    font = pygame.freetype.SysFont(\n        pygame.freetype.get_default_font(),\n        10\n    )\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ",
 "type":"code"
 },
 {
@@ -90,7 +90,7 @@
 "type":"variable"
 },
 {
-"text":")\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            n1.rect.midright,\n            n2.rect.midleft,\n        )\n        debug_bar.",
+"text":")\n        start = pygame.math.Vector2(n1.rect.midright)\n        end = pygame.math.Vector2(n2.rect.midleft)\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            start,\n            end,\n        )\n        direction = end - start\n        text, rect = font.render(\n            \"label\",\n            rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))\n        )\n        screen.blit(text, rect.move(start-rect.center+direction/2))\n        debug_bar.",
 "type":"code"
 },
 {

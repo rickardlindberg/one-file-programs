@@ -97,6 +97,10 @@ def main():
     n1 = Note(pygame.math.Vector2(100, 100), 40)
     n2 = Note(pygame.math.Vector2(200, 100), 30)
     debug_bar = DebugBar(clock)
+    font = pygame.freetype.SysFont(
+        pygame.freetype.get_default_font(),
+        10
+    )
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -107,12 +111,20 @@ def main():
         elapsed_ms = clock.get_time()
         n1.tick(screen, elapsed_ms)
         n2.tick(screen, elapsed_ms)
+        start = pygame.math.Vector2(n1.rect.midright)
+        end = pygame.math.Vector2(n2.rect.midleft)
         pygame.draw.aaline(
             screen,
             (0, 0, 0),
-            n1.rect.midright,
-            n2.rect.midleft,
+            start,
+            end,
         )
+        direction = end - start
+        text, rect = font.render(
+            "label",
+            rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))
+        )
+        screen.blit(text, rect.move(start-rect.center+direction/2))
         debug_bar.tick(screen, elapsed_ms)
         pygame.display.flip()
         clock.tick(60)
