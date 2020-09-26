@@ -15,29 +15,6 @@ class Note(object):
     def render(self, screen, ms_diff):
         self.rotation = self.rotation.rotate(ms_diff/5.0)
         screen.blit(self.box, self.center+self.rotation)
-class Animation(object):
-
-    def __init__(self):
-        self.duration_ms = 0
-        self.progress = 0
-        self.is_active = False
-
-    def is_finished(self):
-        return self.progress == self.duration_ms and not self.is_active
-
-    def start(self, duration_ms):
-        self.duration_ms = duration_ms
-        self.progress = 0
-        self.is_active = True
-
-    def advance(self, ms):
-        percent = float(self.progress) / float(self.duration_ms)
-        if self.progress == self.duration_ms:
-            self.is_active = False
-        else:
-            self.progress = min(self.duration_ms, self.progress+ms)
-        return percent
-
 class DebugBar(object):
 
     HEIGHT = 50
@@ -81,6 +58,28 @@ class DebugBar(object):
             )
         )
         screen.blit(bar, (0, screen.get_height()-bar.get_height()+offset))
+class Animation(object):
+
+    def __init__(self):
+        self.duration_ms = 0
+        self.progress = 0
+        self.is_active = False
+
+    def is_finished(self):
+        return self.progress == self.duration_ms and not self.is_active
+
+    def start(self, duration_ms):
+        self.duration_ms = duration_ms
+        self.progress = 0
+        self.is_active = True
+
+    def advance(self, ms):
+        percent = float(self.progress) / float(self.duration_ms)
+        if self.progress == self.duration_ms:
+            self.is_active = False
+        else:
+            self.progress = min(self.duration_ms, self.progress+ms)
+        return percent
 
 def main():
     pygame.init()
