@@ -12,8 +12,8 @@ class Note(object):
         self.box = pygame.Surface((30, 30))
         self.box.fill((123, 214, 55))
 
-    def render(self, screen, ms_diff):
-        self.rotation = self.rotation.rotate(ms_diff/5.0)
+    def tick(self, screen, elapsed_ms):
+        self.rotation = self.rotation.rotate(elapsed_ms/5.0)
         screen.blit(self.box, self.center+self.rotation)
 class DebugBar(object):
 
@@ -32,15 +32,15 @@ class DebugBar(object):
         self.visible = not self.visible
         self.animation.start(200)
 
-    def render(self, screen, ms_diff):
+    def tick(self, screen, elapsed_ms):
         if not self.visible and not self.animation.active():
             return
         bar = pygame.Surface((screen.get_width(), self.HEIGHT))
         bar.fill((100, 100, 100))
         text, text_rect = self.font.render(
-            f"ms_diff = {ms_diff} | fps = {int(round(self.clock.get_fps()))}"
+            f"elapsed_ms = {elapsed_ms} | fps = {int(round(self.clock.get_fps()))}"
         )
-        percent = self.animation.advance(ms_diff)
+        percent = self.animation.advance(elapsed_ms)
         if self.visible:
             alpha = int(255 * percent)
             offset = bar.get_height()-int(bar.get_height()*percent)
@@ -68,12 +68,12 @@ class Animation(object):
         self.progress = 0
         self.last_consumed = False
 
-    def advance(self, ms):
+    def advance(self, elapsed_ms):
         percent = float(self.progress) / float(self.duration_ms)
         if self.progress == self.duration_ms:
             self.last_consumed = True
         else:
-            self.progress = min(self.duration_ms, self.progress+ms)
+            self.progress = min(self.duration_ms, self.progress+elapsed_ms)
         return percent
 
     def active(self):
@@ -94,10 +94,10 @@ def main():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 debug_bar.toggle()
         screen.fill((100, 200, 50))
-        ms_diff = clock.get_time()
-        n1.render(screen, ms_diff)
-        n2.render(screen, ms_diff)
-        debug_bar.render(screen, ms_diff)
+        elapsed_ms = clock.get_time()
+        n1.tick(screen, elapsed_ms)
+        n2.tick(screen, elapsed_ms)
+        debug_bar.tick(screen, elapsed_ms)
         pygame.display.flip()
         clock.tick(60)
 

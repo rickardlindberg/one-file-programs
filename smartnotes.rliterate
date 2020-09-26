@@ -50,7 +50,63 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    n1 = Note(pygame.math.Vector2(100, 100), 40)\n    n2 = Note(pygame.math.Vector2(200, 100), 30)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ms_diff = clock.get_time()\n        n1.render(screen, ms_diff)\n        n2.render(screen, ms_diff)\n        debug_bar.render(screen, ms_diff)\n        pygame.display.flip()\n        clock.tick(60)\n",
+"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    n1 = Note(pygame.math.Vector2(100, 100), 40)\n    n2 = Note(pygame.math.Vector2(200, 100), 30)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":" = clock.get_time()\n        n1.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(screen, ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n        n2.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(screen, ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n        debug_bar.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(screen, ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n        pygame.display.flip()\n        clock.tick(60)\n",
 "type":"code"
 }
 ],
@@ -66,7 +122,31 @@
 ],
 "fragments":[
 {
-"text":"class Note(object):\n\n    def __init__(self, center, radius):\n        self.center = center\n        self.rotation = pygame.math.Vector2(radius, radius)\n        self.box = pygame.Surface((30, 30))\n        self.box.fill((123, 214, 55))\n\n    def render(self, screen, ms_diff):\n        self.rotation = self.rotation.rotate(ms_diff/5.0)\n        screen.blit(self.box, self.center+self.rotation)\n",
+"text":"class Note(object):\n\n    def __init__(self, center, radius):\n        self.center = center\n        self.rotation = pygame.math.Vector2(radius, radius)\n        self.box = pygame.Surface((30, 30))\n        self.box.fill((123, 214, 55))\n\n    def ",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(self, screen, ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":"):\n        self.rotation = self.rotation.rotate(",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":"/5.0)\n        screen.blit(self.box, self.center+self.rotation)\n",
 "type":"code"
 }
 ],
@@ -82,7 +162,47 @@
 ],
 "fragments":[
 {
-"text":"class DebugBar(object):\n\n    HEIGHT = 50\n\n    def __init__(self, clock):\n        self.clock = clock\n        self.visible = True\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n\n    def toggle(self):\n        self.visible = not self.visible\n        self.animation.start(200)\n\n    def render(self, screen, ms_diff):\n        if not self.visible and not self.animation.active():\n            return\n        bar = pygame.Surface((screen.get_width(), self.HEIGHT))\n        bar.fill((100, 100, 100))\n        text, text_rect = self.font.render(\n            f\"ms_diff = {ms_diff} | fps = {int(round(self.clock.get_fps()))}\"\n        )\n        percent = self.animation.advance(ms_diff)\n        if self.visible:\n            alpha = int(255 * percent)\n            offset = bar.get_height()-int(bar.get_height()*percent)\n        else:\n            alpha = 255 - int(255 * percent)\n            offset = int(bar.get_height()*percent)\n        bar.set_alpha(alpha)\n        bar.blit(\n            text,\n            (\n                bar.get_width()-text_rect.width-10,\n                bar.get_height()/2-text_rect.height/2\n            )\n        )\n        screen.blit(bar, (0, screen.get_height()-bar.get_height()+offset))\n",
+"text":"class DebugBar(object):\n\n    HEIGHT = 50\n\n    def __init__(self, clock):\n        self.clock = clock\n        self.visible = True\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n\n    def toggle(self):\n        self.visible = not self.visible\n        self.animation.start(200)\n\n    def ",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(self, screen, ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":"):\n        if not self.visible and not self.animation.active():\n            return\n        bar = pygame.Surface((screen.get_width(), self.HEIGHT))\n        bar.fill((100, 100, 100))\n        text, text_rect = self.font.render(\n            f\"",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":" = {",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":"} | fps = {int(round(self.clock.get_fps()))}\"\n        )\n        percent = self.animation.advance(",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n        if self.visible:\n            alpha = int(255 * percent)\n            offset = bar.get_height()-int(bar.get_height()*percent)\n        else:\n            alpha = 255 - int(255 * percent)\n            offset = int(bar.get_height()*percent)\n        bar.set_alpha(alpha)\n        bar.blit(\n            text,\n            (\n                bar.get_width()-text_rect.width-10,\n                bar.get_height()/2-text_rect.height/2\n            )\n        )\n        screen.blit(bar, (0, screen.get_height()-bar.get_height()+offset))\n",
 "type":"code"
 }
 ],
@@ -98,7 +218,7 @@
 ],
 "fragments":[
 {
-"text":"class Animation(object):\n\n    def __init__(self):\n        self.duration_ms = 1\n        self.progress = 1\n        self.last_consumed = True\n\n    def start(self, duration_ms):\n        self.duration_ms = duration_ms\n        self.progress = 0\n        self.last_consumed = False\n\n    def advance(self, ms):\n        percent = float(self.progress) / float(self.duration_ms)\n        if self.progress == self.duration_ms:\n            self.last_consumed = True\n        else:\n            self.progress = min(self.duration_ms, self.progress+ms)\n        return percent\n\n    def active(self):\n        return self.progress < self.duration_ms or not self.last_consumed\n",
+"text":"class Animation(object):\n\n    def __init__(self):\n        self.duration_ms = 1\n        self.progress = 1\n        self.last_consumed = True\n\n    def start(self, duration_ms):\n        self.duration_ms = duration_ms\n        self.progress = 0\n        self.last_consumed = False\n\n    def advance(self, elapsed_ms):\n        percent = float(self.progress) / float(self.duration_ms)\n        if self.progress == self.duration_ms:\n            self.last_consumed = True\n        else:\n            self.progress = min(self.duration_ms, self.progress+elapsed_ms)\n        return percent\n\n    def active(self):\n        return self.progress < self.duration_ms or not self.last_consumed\n",
 "type":"code"
 }
 ],
@@ -108,5 +228,8 @@
 ],
 "title":"Smart Notes"
 },
-"variables":{}
+"variables":{
+"7583be08dcbd4bcca0e6a043d3791710":"elapsed_ms",
+"8cce3dd9f80645e6a8df699f872f1736":"tick"
+}
 }
