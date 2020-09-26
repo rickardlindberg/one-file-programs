@@ -50,7 +50,7 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    n1 = Note(pygame.math.Vector2(100, 100), 40)\n    n2 = Note(pygame.math.Vector2(200, 100), 30)\n    font = pygame.freetype.SysFont(pygame.freetype.get_default_font(), 18)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n        screen.fill((100, 200, 50))\n        ms_diff = clock.get_time()\n        text, text_rect = font.render(f\"ms_diff = {ms_diff} | fps = {int(round(clock.get_fps()))}\")\n        screen.blit(text, (screen.get_width()-text_rect.width-10,\n            screen.get_height()-text_rect.height-10))\n        n1.render(screen, ms_diff)\n        n2.render(screen, ms_diff)\n        pygame.display.flip()\n        clock.tick(60)\n",
+"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    n1 = Note(pygame.math.Vector2(100, 100), 40)\n    n2 = Note(pygame.math.Vector2(200, 100), 30)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ms_diff = clock.get_time()\n        n1.render(screen, ms_diff)\n        n2.render(screen, ms_diff)\n        debug_bar.render(screen, ms_diff)\n        pygame.display.flip()\n        clock.tick(60)\n",
 "type":"code"
 }
 ],
@@ -71,6 +71,22 @@
 }
 ],
 "id":"59db46405da04e59a0fcc6395c11b4c7",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class Animation(object):\n\n    def __init__(self):\n        self.duration_ms = 0\n        self.progress = 0\n        self.is_active = False\n\n    def is_finished(self):\n        return self.progress == self.duration_ms and not self.is_active\n\n    def start(self, duration_ms):\n        self.duration_ms = duration_ms\n        self.progress = 0\n        self.is_active = True\n\n    def advance(self, ms):\n        percent = float(self.progress) / float(self.duration_ms)\n        if self.progress == self.duration_ms:\n            self.is_active = False\n        else:\n            self.progress = min(self.duration_ms, self.progress+ms)\n        return percent\n\nclass DebugBar(object):\n\n    HEIGHT = 50\n\n    def __init__(self, clock):\n        self.clock = clock\n        self.visible = True\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n\n    def toggle(self):\n        self.visible = not self.visible\n        self.animation.start(200)\n\n    def render(self, screen, ms_diff):\n        if not self.visible and self.animation.is_finished():\n            return\n        bar = pygame.Surface((screen.get_width(), self.HEIGHT))\n        bar.fill((100, 100, 100))\n        text, text_rect = self.font.render(\n            f\"ms_diff = {ms_diff} | fps = {int(round(self.clock.get_fps()))}\"\n        )\n        offset = 0\n        if not self.animation.is_finished():\n            percent = self.animation.advance(ms_diff)\n            if self.visible:\n                alpha = int(255 * percent)\n                offset = bar.get_height()-int(bar.get_height()*percent)\n            else:\n                alpha = 255 - int(255 * percent)\n                offset = int(bar.get_height()*percent)\n            bar.set_alpha(alpha)\n        bar.blit(\n            text,\n            (\n                bar.get_width()-text_rect.width-10,\n                bar.get_height()/2-text_rect.height/2\n            )\n        )\n        screen.blit(bar, (0, screen.get_height()-bar.get_height()+offset))\n",
+"type":"code"
+}
+],
+"id":"6a6c0cb5fc2046adb32e564a7508092d",
 "type":"code"
 }
 ],
