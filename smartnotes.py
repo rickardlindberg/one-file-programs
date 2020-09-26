@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import pygame
+import sys
 
 def main():
     pygame.init()
@@ -10,7 +11,7 @@ def main():
         print(f"frame = {clock.get_time()} (fps = {clock.get_fps()})")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                break
+                return
         screen.fill((100, 200, 50))
         pygame.display.flip()
         clock.tick(60)
