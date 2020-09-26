@@ -15,6 +15,7 @@ class Note(object):
     def tick(self, screen, elapsed_ms):
         self.rotation = self.rotation.rotate(elapsed_ms/5.0)
         screen.blit(self.box, self.center+self.rotation)
+
 class DebugBar(object):
 
     HEIGHT = 50
@@ -56,6 +57,7 @@ class DebugBar(object):
             )
         )
         screen.blit(bar, (0, screen.get_height()-bar.get_height()+offset))
+
 class Animation(object):
 
     def __init__(self):
