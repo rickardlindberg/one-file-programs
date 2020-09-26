@@ -38,7 +38,7 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    while True:\n        print(f\"frame = {clock.get_time()} (fps = {clock.get_fps()})\")\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n        screen.fill((100, 200, 50))\n        pygame.display.flip()\n        clock.tick(60)\n",
+"text":"def main():\n    pygame.init()\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    box = pygame.Surface((20, 20))\n    box.fill((123, 214, 55))\n    box_rect = box.get_rect()\n    while True:\n        print(f\"frame = {clock.get_time()} (fps = {clock.get_fps()})\")\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n        box_rect = box_rect.move((1, 1))\n        screen.fill((100, 200, 50))\n        screen.blit(box, box_rect.topleft)\n        pygame.display.flip()\n        clock.tick(60)\n",
 "type":"code"
 }
 ],
