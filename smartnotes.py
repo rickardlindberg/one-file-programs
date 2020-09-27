@@ -23,6 +23,34 @@ class Note(object):
         )
         screen.blit(self.image, self.rect)
 
+class Link(object):
+
+    def __init__(self, start, end):
+        self.start = start
+        self.end = end
+        self.font = pygame.freetype.SysFont(
+            pygame.freetype.get_default_font(),
+            10
+        )
+
+    def tick(self, screen, elapsed_ms):
+        start = pygame.math.Vector2(self.start.rect.midright)
+        end = pygame.math.Vector2(self.end.rect.midleft)
+
+        pygame.draw.aaline(
+            screen,
+            (0, 0, 0),
+            start,
+            end,
+        )
+        direction = end - start
+        text, rect = self.font.render(
+            "label",
+            rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))
+        )
+        screen.blit(text, rect.move(start-rect.center+direction/2))
+
+
 class DebugBar(object):
 
     HEIGHT = 50
@@ -96,11 +124,8 @@ def main():
     clock = pygame.time.Clock()
     n1 = Note(pygame.math.Vector2(100, 100), 40)
     n2 = Note(pygame.math.Vector2(200, 100), 30)
+    l = Link(n1, n2)
     debug_bar = DebugBar(clock)
-    font = pygame.freetype.SysFont(
-        pygame.freetype.get_default_font(),
-        10
-    )
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -111,20 +136,7 @@ def main():
         elapsed_ms = clock.get_time()
         n1.tick(screen, elapsed_ms)
         n2.tick(screen, elapsed_ms)
-        start = pygame.math.Vector2(n1.rect.midright)
-        end = pygame.math.Vector2(n2.rect.midleft)
-        pygame.draw.aaline(
-            screen,
-            (0, 0, 0),
-            start,
-            end,
-        )
-        direction = end - start
-        text, rect = font.render(
-            "label",
-            rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))
-        )
-        screen.blit(text, rect.move(start-rect.center+direction/2))
+        l.tick(screen, elapsed_ms)
         debug_bar.tick(screen, elapsed_ms)
         pygame.display.flip()
         clock.tick(60)
