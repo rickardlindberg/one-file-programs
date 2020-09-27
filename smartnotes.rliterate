@@ -82,7 +82,7 @@
 "type":"variable"
 },
 {
-"text":" = clock.get_time()\n        n1.",
+"text":" = clock.get_time()\n        rect = screen.get_rect()\n        n1.",
 "type":"code"
 },
 {
@@ -90,7 +90,15 @@
 "type":"variable"
 },
 {
-"text":"(screen, ",
+"text":"(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
 "type":"code"
 },
 {
@@ -106,7 +114,15 @@
 "type":"variable"
 },
 {
-"text":"(screen, ",
+"text":"(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
 "type":"code"
 },
 {
@@ -122,7 +138,15 @@
 "type":"variable"
 },
 {
-"text":"(screen, ",
+"text":"(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
 "type":"code"
 },
 {
@@ -138,7 +162,15 @@
 "type":"variable"
 },
 {
-"text":"(screen, ",
+"text":"(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
 "type":"code"
 },
 {
@@ -202,7 +234,15 @@
 "type":"variable"
 },
 {
-"text":"(self, screen, ",
+"text":"(self, ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
 "type":"code"
 },
 {
@@ -250,7 +290,15 @@
 "type":"variable"
 },
 {
-"text":"(self, screen, ",
+"text":"(self, ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
 "type":"code"
 },
 {
@@ -290,7 +338,15 @@
 "type":"variable"
 },
 {
-"text":"(self, screen, ",
+"text":"(self, ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
 "type":"code"
 },
 {
@@ -298,7 +354,15 @@
 "type":"variable"
 },
 {
-"text":"):\n        if not self.visible and not self.animation.active():\n            return\n        self.image = pygame.Surface((screen.get_width(), self.HEIGHT))\n        self.image.fill((100, 100, 100))\n        text, text_rect = self.font.render(\n            f\"",
+"text":"):\n        if not self.visible and not self.animation.active():\n            return\n        self.image = pygame.Surface((",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":".width, self.HEIGHT))\n        self.image.fill((100, 100, 100))\n        text, text_rect = self.font.render(\n            f\"",
 "type":"code"
 },
 {
@@ -322,7 +386,15 @@
 "type":"variable"
 },
 {
-"text":")\n        if self.visible:\n            alpha = int(255 * percent)\n            offset = self.image.get_height()-int(self.image.get_height()*percent)\n        else:\n            alpha = 255 - int(255 * percent)\n            offset = int(self.image.get_height()*percent)\n        self.image.set_alpha(alpha)\n        self.image.blit(\n            text,\n            (\n                self.image.get_width()-text_rect.width-10,\n                self.image.get_height()/2-text_rect.height/2\n            )\n        )\n        self.rect = self.image.get_rect().move((0, screen.get_height()-self.image.get_height()+offset))\n\n    def ",
+"text":")\n        if self.visible:\n            alpha = int(255 * percent)\n            offset = self.image.get_height()-int(self.image.get_height()*percent)\n        else:\n            alpha = 255 - int(255 * percent)\n            offset = int(self.image.get_height()*percent)\n        self.image.set_alpha(alpha)\n        self.image.blit(\n            text,\n            (\n                self.image.get_width()-text_rect.width-10,\n                self.image.get_height()/2-text_rect.height/2\n            )\n        )\n        self.rect = self.image.get_rect().move((0, ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":".height-self.image.get_height()+offset))\n\n    def ",
 "type":"code"
 },
 {
@@ -341,6 +413,7 @@
 "title":"Smart Notes"
 },
 "variables":{
+"595003a78e1e4326ac5ef9aa70b79fd9":"rect",
 "7583be08dcbd4bcca0e6a043d3791710":"elapsed_ms",
 "8cce3dd9f80645e6a8df699f872f1736":"update",
 "acab4c17f89046f4a05b14a8c35ad89a":"draw"

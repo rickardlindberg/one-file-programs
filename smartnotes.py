@@ -13,7 +13,7 @@ class Note(object):
         self.image = pygame.Surface((30, 30))
         self.image.fill((123, 214, 55))
 
-    def update(self, screen, elapsed_ms):
+    def update(self, rect, elapsed_ms):
         if not self.animation.active():
             self.animation.start(2000)
         self.rect = self.image.get_rect().move(
@@ -36,7 +36,7 @@ class Link(object):
             10
         )
 
-    def update(self, screen, elapsed_ms):
+    def update(self, rect, elapsed_ms):
         pass
 
     def draw(self, screen):
@@ -73,10 +73,10 @@ class DebugBar(object):
         self.visible = not self.visible
         self.animation.start(200)
 
-    def update(self, screen, elapsed_ms):
+    def update(self, rect, elapsed_ms):
         if not self.visible and not self.animation.active():
             return
-        self.image = pygame.Surface((screen.get_width(), self.HEIGHT))
+        self.image = pygame.Surface((rect.width, self.HEIGHT))
         self.image.fill((100, 100, 100))
         text, text_rect = self.font.render(
             f"elapsed_ms = {elapsed_ms} | fps = {int(round(self.clock.get_fps()))}"
@@ -96,7 +96,7 @@ class DebugBar(object):
                 self.image.get_height()/2-text_rect.height/2
             )
         )
-        self.rect = self.image.get_rect().move((0, screen.get_height()-self.image.get_height()+offset))
+        self.rect = self.image.get_rect().move((0, rect.height-self.image.get_height()+offset))
 
     def draw(self, screen):
         if not self.visible and not self.animation.active():
@@ -143,10 +143,11 @@ def main():
                 debug_bar.toggle()
         screen.fill((100, 200, 50))
         elapsed_ms = clock.get_time()
-        n1.update(screen, elapsed_ms)
-        n2.update(screen, elapsed_ms)
-        l.update(screen, elapsed_ms)
-        debug_bar.update(screen, elapsed_ms)
+        rect = screen.get_rect()
+        n1.update(rect, elapsed_ms)
+        n2.update(rect, elapsed_ms)
+        l.update(rect, elapsed_ms)
+        debug_bar.update(rect, elapsed_ms)
         n1.draw(screen)
         n2.draw(screen)
         l.draw(screen)
