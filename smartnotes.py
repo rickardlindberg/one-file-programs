@@ -113,33 +113,37 @@ class Network(object):
         if not widths:
             return
         if note.incoming:
+            padding = 5
             space_width, stripe_width = widths[0]
             stripe = rect.copy()
             stripe.width = stripe_width
             stripe.right = rect.left - space_width
-            stripe.height = rect.height / len(note.incoming)
+            stripe.height = rect.height / len(note.incoming) - padding
+            stripe.top += padding
             for link in note.incoming:
                 link.start.update(stripe, elapsed_ms)
                 self.notes.append(link.start)
                 self.links.append(link)
                 self._stripe_left(link.start, stripe, widths[1:], elapsed_ms)
-                stripe = stripe.move(0, stripe.height)
+                stripe = stripe.move(0, stripe.height+padding)
 
     def _stripe_right(self, note, rect, widths, elapsed_ms):
         if not widths:
             return
         if note.outgoing:
+            padding = 5
             space_width, stripe_width = widths[0]
             stripe = rect.copy()
             stripe.width = stripe_width
             stripe.left = rect.right + space_width
-            stripe.height = rect.height / len(note.outgoing)
+            stripe.height = rect.height / len(note.outgoing) - padding
+            stripe.top += padding
             for link in note.outgoing:
                 link.end.update(stripe, elapsed_ms)
                 self.notes.append(link.end)
                 self.links.append(link)
                 self._stripe_right(link.end, stripe, widths[1:], elapsed_ms)
-                stripe = stripe.move(0, stripe.height)
+                stripe = stripe.move(0, stripe.height+padding)
 
     def _stripe(self, rect, factor=0.2):
         stripe = rect.copy()
