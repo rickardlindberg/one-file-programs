@@ -202,10 +202,10 @@ def main():
     pygame.display.set_caption("Smart Notes")
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
-    n1 = Note({"text": "root"}, pygame.math.Vector2(100, 100))
-    n2 = Note({"text": "first child"}, pygame.math.Vector2(200, 100))
-    n1.link(n2, {"label": "foo"})
-    network = Network(n1)
+    root = Note({"text": "root"}, pygame.math.Vector2(100, 100))
+    root.link(Note({"text": "first child"}, pygame.math.Vector2(200, 100)), {"label": "foo"})
+    root.link(Note({"text": "second child"}, pygame.math.Vector2(200, 100)), {"label": "bar"})
+    network = Network(root)
     debug_bar = DebugBar(clock)
     while True:
         for event in pygame.event.get():
