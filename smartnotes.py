@@ -29,8 +29,8 @@ class Note(object):
         border.x -= border_size
         border.y -= border_size
         pygame.draw.rect(self.card, (250, 250, 250), border)
-        font = pygame.freetype.SysFont(
-            pygame.freetype.get_default_font(),
+        font = pygame.freetype.Font(
+            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
             20
         )
         text, rect = font.render(self.data["text"])
