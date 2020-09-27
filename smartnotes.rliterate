@@ -74,7 +74,7 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    root = Note({\"text\": \"root\"})\n    root.link(Note({\"text\": \"first child\"}), {\"label\": \"foo\"})\n    root.link(Note({\"text\": \"second child\"}), {\"label\": \"bar\"})\n    network = Network(root)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ",
+"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    root = Note({\"text\": \"root\"})\n    root.link(Note({\"text\": \"first child\"}), {\"label\": \"foo\"})\n    second = Note({\"text\": \"second child\"})\n    root.link(second, {\"label\": \"bar\"})\n    for i in range(5):\n        Note({\"text\": f\"pre {i}\"}).link(root, {\"label\": f\"haha {i}\"})\n    second.link(Note({\"text\": \"second 1\"}), {\"label\": \"second 1\"})\n    second.link(Note({\"text\": \"second 2\"}), {\"label\": \"second 2\"})\n    network = Network(root)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ",
 "type":"code"
 },
 {
@@ -266,7 +266,7 @@
 "type":"variable"
 },
 {
-"text":")\n        self.notes.append(self.root_note)\n        ### first right\n        stripe_right_1 = self._stripe(",
+"text":")\n        self.notes.append(self.root_note)\n        ### first right\n        if len(self.root_note.outgoing) > 0:\n            stripe_right_1 = self._stripe(",
 "type":"code"
 },
 {
@@ -274,7 +274,7 @@
 "type":"variable"
 },
 {
-"text":", 0.2)\n        stripe_right_1.left = middle_stripe.right\n        y_offset = stripe_right_1.height/len(self.root_note.outgoing)\n        r = stripe_right_1.copy()\n        r.height = y_offset\n        for link in self.root_note.outgoing:\n            link.end.",
+"text":", 0.2)\n            stripe_right_1.left = middle_stripe.right\n            y_offset = stripe_right_1.height/len(self.root_note.outgoing)\n            r = stripe_right_1.copy()\n            r.height = y_offset\n            for link in self.root_note.outgoing:\n                link.end.",
 "type":"code"
 },
 {
@@ -290,7 +290,31 @@
 "type":"variable"
 },
 {
-"text":")\n            self.notes.append(link.end)\n            self.links.append(link)\n            r.y += y_offset\n\n    def _stripe(self, rect, factor=0.2):\n        stripe = rect.copy()\n        stripe.width *= factor\n        stripe.centerx = rect.centerx\n        return stripe\n\n    def ",
+"text":")\n                self.notes.append(link.end)\n                self.links.append(link)\n                r.y += y_offset\n        ### first left\n        if len(self.root_note.incoming) > 0:\n            stripe_left_1 = self._stripe(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", 0.2)\n            stripe_left_1.right = middle_stripe.left\n            y_offset = stripe_left_1.height/len(self.root_note.incoming)\n            r = stripe_left_1.copy()\n            r.height = y_offset\n            for link in self.root_note.incoming:\n                link.start.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(r, ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n                self.notes.append(link.start)\n                self.links.append(link)\n                r.y += y_offset\n\n    def _stripe(self, rect, factor=0.2):\n        stripe = rect.copy()\n        stripe.width *= factor\n        stripe.centerx = rect.centerx\n        return stripe\n\n    def ",
 "type":"code"
 },
 {

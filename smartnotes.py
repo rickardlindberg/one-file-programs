@@ -47,16 +47,29 @@ class Network(object):
         self.root_note.update(middle_stripe, elapsed_ms)
         self.notes.append(self.root_note)
         ### first right
-        stripe_right_1 = self._stripe(rect, 0.2)
-        stripe_right_1.left = middle_stripe.right
-        y_offset = stripe_right_1.height/len(self.root_note.outgoing)
-        r = stripe_right_1.copy()
-        r.height = y_offset
-        for link in self.root_note.outgoing:
-            link.end.update(r, elapsed_ms)
-            self.notes.append(link.end)
-            self.links.append(link)
-            r.y += y_offset
+        if len(self.root_note.outgoing) > 0:
+            stripe_right_1 = self._stripe(rect, 0.2)
+            stripe_right_1.left = middle_stripe.right
+            y_offset = stripe_right_1.height/len(self.root_note.outgoing)
+            r = stripe_right_1.copy()
+            r.height = y_offset
+            for link in self.root_note.outgoing:
+                link.end.update(r, elapsed_ms)
+                self.notes.append(link.end)
+                self.links.append(link)
+                r.y += y_offset
+        ### first left
+        if len(self.root_note.incoming) > 0:
+            stripe_left_1 = self._stripe(rect, 0.2)
+            stripe_left_1.right = middle_stripe.left
+            y_offset = stripe_left_1.height/len(self.root_note.incoming)
+            r = stripe_left_1.copy()
+            r.height = y_offset
+            for link in self.root_note.incoming:
+                link.start.update(r, elapsed_ms)
+                self.notes.append(link.start)
+                self.links.append(link)
+                r.y += y_offset
 
     def _stripe(self, rect, factor=0.2):
         stripe = rect.copy()
@@ -195,7 +208,12 @@ def main():
     clock = pygame.time.Clock()
     root = Note({"text": "root"})
     root.link(Note({"text": "first child"}), {"label": "foo"})
-    root.link(Note({"text": "second child"}), {"label": "bar"})
+    second = Note({"text": "second child"})
+    root.link(second, {"label": "bar"})
+    for i in range(5):
+        Note({"text": f"pre {i}"}).link(root, {"label": f"haha {i}"})
+    second.link(Note({"text": "second 1"}), {"label": "second 1"})
+    second.link(Note({"text": "second 2"}), {"label": "second 2"})
     network = Network(root)
     debug_bar = DebugBar(clock)
     while True:
