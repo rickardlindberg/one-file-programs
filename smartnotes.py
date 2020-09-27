@@ -85,11 +85,26 @@ class Link(object):
     def draw(self, screen):
         start = pygame.math.Vector2(self.start.rect.midright)
         end = pygame.math.Vector2(self.end.rect.midleft)
+        norm_arrow = (start-end).normalize()*8
+        left_arrow = norm_arrow.rotate(30)+end
+        right_arrow = norm_arrow.rotate(-30)+end
         pygame.draw.aaline(
             screen,
             (0, 0, 0),
             start,
             end,
+        )
+        pygame.draw.aaline(
+            screen,
+            (0, 0, 0),
+            end,
+            left_arrow,
+        )
+        pygame.draw.aaline(
+            screen,
+            (0, 0, 0),
+            end,
+            right_arrow,
         )
         if self.data.get("label"):
             direction = end - start

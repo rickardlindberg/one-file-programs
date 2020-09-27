@@ -458,7 +458,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            start,\n            end,\n        )\n        if self.data.get(\"label\"):\n            direction = end - start\n            text, rect = self.font.render(\n                self.data[\"label\"],\n                rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))\n            )\n            screen.blit(text, rect.move(start-rect.center+direction/2))\n",
+"text":"(self, screen):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        norm_arrow = (start-end).normalize()*8\n        left_arrow = norm_arrow.rotate(30)+end\n        right_arrow = norm_arrow.rotate(-30)+end\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            start,\n            end,\n        )\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            end,\n            left_arrow,\n        )\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            end,\n            right_arrow,\n        )\n        if self.data.get(\"label\"):\n            direction = end - start\n            text, rect = self.font.render(\n                self.data[\"label\"],\n                rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))\n            )\n            screen.blit(text, rect.move(start-rect.center+direction/2))\n",
 "type":"code"
 }
 ],
