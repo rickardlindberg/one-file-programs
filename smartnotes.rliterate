@@ -74,7 +74,7 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    n1 = Note(pygame.math.Vector2(100, 100), 40)\n    n2 = Note(pygame.math.Vector2(200, 100), 30)\n    l = Link(n1, n2)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ",
+"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    n1 = Note(pygame.math.Vector2(100, 100), 40)\n    n2 = Note(pygame.math.Vector2(200, 100), 30)\n    l = Link(n1, n2)\n    network = Network(n1)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ",
 "type":"code"
 },
 {
@@ -82,55 +82,7 @@
 "type":"variable"
 },
 {
-"text":" = clock.get_time()\n        rect = screen.get_rect()\n        n1.",
-"type":"code"
-},
-{
-"id":"8cce3dd9f80645e6a8df699f872f1736",
-"type":"variable"
-},
-{
-"text":"(",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":", ",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":")\n        n2.",
-"type":"code"
-},
-{
-"id":"8cce3dd9f80645e6a8df699f872f1736",
-"type":"variable"
-},
-{
-"text":"(",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":", ",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":")\n        l.",
+"text":" = clock.get_time()\n        rect = screen.get_rect()\n        network.",
 "type":"code"
 },
 {
@@ -178,23 +130,7 @@
 "type":"variable"
 },
 {
-"text":")\n        n1.",
-"type":"code"
-},
-{
-"id":"acab4c17f89046f4a05b14a8c35ad89a",
-"type":"variable"
-},
-{
-"text":"(screen)\n        n2.",
-"type":"code"
-},
-{
-"id":"acab4c17f89046f4a05b14a8c35ad89a",
-"type":"variable"
-},
-{
-"text":"(screen)\n        l.",
+"text":")\n        network.",
 "type":"code"
 },
 {
@@ -226,7 +162,7 @@
 ],
 "fragments":[
 {
-"text":"class Note(object):\n\n    def __init__(self, center, radius):\n        self.animation = Animation()\n        self.center = center\n        self.radius = pygame.math.Vector2(radius, radius)\n        self.image = pygame.Surface((30, 30))\n        self.image.fill((123, 214, 55))\n\n    def ",
+"text":"class Note(object):\n\n    def __init__(self, center, radius):\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.center = center\n        self.radius = pygame.math.Vector2(radius, radius)\n        self.image = pygame.Surface((30, 30))\n        self.image.fill((123, 214, 55))\n\n    def iter_incoming(self):\n        for link in self.incoming:\n            yield (link, link.start)\n            for x in link.start.iter_incoming():\n                yield x\n\n    def iter_outgoing(self):\n        for link in self.outgoing:\n            yield (link, link.end)\n            for x in link.end.iter_outgoing():\n                yield x\n\n    def ",
 "type":"code"
 },
 {
@@ -282,7 +218,215 @@
 ],
 "fragments":[
 {
-"text":"class Link(object):\n\n    def __init__(self, start, end):\n        self.data = {\"label\": \"label\"}\n        self.start = start\n        self.end = end\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            10\n        )\n\n    def ",
+"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n\n    def ",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(self, ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":"):\n        self.root_note.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n        for (link, note) in self.root_note.iter_incoming():\n            note.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n        for (link, note) in self.root_note.iter_outgoing():\n            note.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n        for (link, note) in self.root_note.iter_incoming():\n            link.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n        for (link, note) in self.root_note.iter_outgoing():\n            link.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n\n    def ",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(self, screen):\n        self.root_note.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n        for (link, note) in self.root_note.iter_incoming():\n            note.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n        for (link, note) in self.root_note.iter_outgoing():\n            note.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n        for (link, note) in self.root_note.iter_incoming():\n            link.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n        for (link, note) in self.root_note.iter_outgoing():\n            link.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n",
+"type":"code"
+}
+],
+"id":"3e4e2f6747ce48c0bd359d776fe37203",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class Link(object):\n\n    def __init__(self, start, end):\n        self.data = {\"label\": \"label\"}\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            10\n        )\n\n    def ",
 "type":"code"
 },
 {

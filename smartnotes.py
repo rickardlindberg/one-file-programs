@@ -7,11 +7,25 @@ import sys
 class Note(object):
 
     def __init__(self, center, radius):
+        self.incoming = []
+        self.outgoing = []
         self.animation = Animation()
         self.center = center
         self.radius = pygame.math.Vector2(radius, radius)
         self.image = pygame.Surface((30, 30))
         self.image.fill((123, 214, 55))
+
+    def iter_incoming(self):
+        for link in self.incoming:
+            yield (link, link.start)
+            for x in link.start.iter_incoming():
+                yield x
+
+    def iter_outgoing(self):
+        for link in self.outgoing:
+            yield (link, link.end)
+            for x in link.end.iter_outgoing():
+                yield x
 
     def update(self, rect, elapsed_ms):
         if not self.animation.active():
@@ -25,12 +39,41 @@ class Note(object):
     def draw(self, screen):
         screen.blit(self.image, self.rect)
 
+class Network(object):
+
+    def __init__(self, root_note):
+        self.root_note = root_note
+
+    def update(self, rect, elapsed_ms):
+        self.root_note.update(rect, elapsed_ms)
+        for (link, note) in self.root_note.iter_incoming():
+            note.update(rect, elapsed_ms)
+        for (link, note) in self.root_note.iter_outgoing():
+            note.update(rect, elapsed_ms)
+        for (link, note) in self.root_note.iter_incoming():
+            link.update(rect, elapsed_ms)
+        for (link, note) in self.root_note.iter_outgoing():
+            link.update(rect, elapsed_ms)
+
+    def draw(self, screen):
+        self.root_note.draw(screen)
+        for (link, note) in self.root_note.iter_incoming():
+            note.draw(screen)
+        for (link, note) in self.root_note.iter_outgoing():
+            note.draw(screen)
+        for (link, note) in self.root_note.iter_incoming():
+            link.draw(screen)
+        for (link, note) in self.root_note.iter_outgoing():
+            link.draw(screen)
+
 class Link(object):
 
     def __init__(self, start, end):
         self.data = {"label": "label"}
         self.start = start
         self.end = end
+        self.start.outgoing.append(self)
+        self.end.incoming.append(self)
         self.font = pygame.freetype.SysFont(
             pygame.freetype.get_default_font(),
             10
@@ -134,6 +177,7 @@ def main():
     n1 = Note(pygame.math.Vector2(100, 100), 40)
     n2 = Note(pygame.math.Vector2(200, 100), 30)
     l = Link(n1, n2)
+    network = Network(n1)
     debug_bar = DebugBar(clock)
     while True:
         for event in pygame.event.get():
@@ -144,13 +188,9 @@ def main():
         screen.fill((100, 200, 50))
         elapsed_ms = clock.get_time()
         rect = screen.get_rect()
-        n1.update(rect, elapsed_ms)
-        n2.update(rect, elapsed_ms)
-        l.update(rect, elapsed_ms)
+        network.update(rect, elapsed_ms)
         debug_bar.update(rect, elapsed_ms)
-        n1.draw(screen)
-        n2.draw(screen)
-        l.draw(screen)
+        network.draw(screen)
         debug_bar.draw(screen)
         pygame.display.flip()
         clock.tick(60)
