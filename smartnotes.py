@@ -14,6 +14,9 @@ class Note(object):
         self.image = pygame.Surface((size, size))
         self.image.fill((123, 214, 55))
 
+    def make_root(self):
+        pass
+
     def link(self, other_note, data):
         return Link(data, self, other_note)
 
@@ -38,6 +41,10 @@ class Network(object):
 
     def __init__(self, root_note):
         self.root_note = root_note
+
+    def make_root(self, node):
+        node.make_root()
+        self.root_note = node
 
     def update(self, rect, elapsed_ms):
         self.notes = []
@@ -222,6 +229,8 @@ def main():
                 return
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 debug_bar.toggle()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
+                network.make_root(second)
         screen.fill((100, 200, 50))
         elapsed_ms = clock.get_time()
         rect = screen.get_rect()

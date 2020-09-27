@@ -74,7 +74,7 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    root = Note({\"text\": \"root\"})\n    root.link(Note({\"text\": \"first child\"}), {\"label\": \"foo\"})\n    second = Note({\"text\": \"second child\"})\n    root.link(second, {\"label\": \"bar\"})\n    for i in range(5):\n        Note({\"text\": f\"pre {i}\"}).link(root, {\"label\": f\"haha {i}\"})\n    second.link(Note({\"text\": \"second 1\"}), {\"label\": \"second 1\"})\n    second.link(Note({\"text\": \"second 2\"}), {\"label\": \"second 2\"})\n    network = Network(root)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ",
+"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    root = Note({\"text\": \"root\"})\n    root.link(Note({\"text\": \"first child\"}), {\"label\": \"foo\"})\n    second = Note({\"text\": \"second child\"})\n    root.link(second, {\"label\": \"bar\"})\n    for i in range(5):\n        Note({\"text\": f\"pre {i}\"}).link(root, {\"label\": f\"haha {i}\"})\n    second.link(Note({\"text\": \"second 1\"}), {\"label\": \"second 1\"})\n    second.link(Note({\"text\": \"second 2\"}), {\"label\": \"second 2\"})\n    network = Network(root)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:\n                network.make_root(second)\n        screen.fill((100, 200, 50))\n        ",
 "type":"code"
 },
 {
@@ -162,7 +162,7 @@
 ],
 "fragments":[
 {
-"text":"class Note(object):\n\n    def __init__(self, data):\n        self.data = data\n        self.incoming = []\n        self.outgoing = []\n        size = len(data[\"text\"]*10)\n        self.image = pygame.Surface((size, size))\n        self.image.fill((123, 214, 55))\n\n    def link(self, other_note, data):\n        return Link(data, self, other_note)\n\n    def ",
+"text":"class Note(object):\n\n    def __init__(self, data):\n        self.data = data\n        self.incoming = []\n        self.outgoing = []\n        size = len(data[\"text\"]*10)\n        self.image = pygame.Surface((size, size))\n        self.image.fill((123, 214, 55))\n\n    def make_root(self):\n        pass\n\n    def link(self, other_note, data):\n        return Link(data, self, other_note)\n\n    def ",
 "type":"code"
 },
 {
@@ -218,7 +218,7 @@
 ],
 "fragments":[
 {
-"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n\n    def ",
+"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n\n    def make_root(self, node):\n        node.make_root()\n        self.root_note = node\n\n    def ",
 "type":"code"
 },
 {
