@@ -30,6 +30,14 @@ class Note(object):
         border.x -= border_size
         border.y -= border_size
         pygame.draw.rect(self.card, (250, 250, 250), border)
+        font = pygame.freetype.SysFont(
+            pygame.freetype.get_default_font(),
+            11
+        )
+        text, rect = font.render(self.data["text"])
+        self.card.blit(text, rect.move(
+            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)
+        ))
 
     def make_root(self):
         pass
@@ -59,15 +67,7 @@ class Note(object):
             )
 
     def draw(self, screen):
-        font = pygame.freetype.SysFont(
-            pygame.freetype.get_default_font(),
-            11
-        )
-        text, rect = font.render(self.data["text"])
         screen.blit(self.image, self.rect)
-        screen.blit(text, rect.move(
-            pygame.math.Vector2(self.rect.center)-pygame.math.Vector2(rect.center)
-        ))
 
 class Network(object):
 
