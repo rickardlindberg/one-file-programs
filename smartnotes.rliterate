@@ -74,7 +74,7 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    n1 = Note(pygame.math.Vector2(100, 100), 40)\n    n2 = Note(pygame.math.Vector2(200, 100), 30)\n    l = Link(n1, n2)\n    network = Network(n1)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ",
+"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    n1 = Note({\"text\": \"root\"}, pygame.math.Vector2(100, 100))\n    n2 = Note({\"text\": \"first child\"}, pygame.math.Vector2(200, 100))\n    n1.link(n2, {\"label\": \"foo\"})\n    network = Network(n1)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n        screen.fill((100, 200, 50))\n        ",
 "type":"code"
 },
 {
@@ -162,7 +162,7 @@
 ],
 "fragments":[
 {
-"text":"class Note(object):\n\n    def __init__(self, center, radius):\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.center = center\n        self.radius = pygame.math.Vector2(radius, radius)\n        self.image = pygame.Surface((30, 30))\n        self.image.fill((123, 214, 55))\n\n    def iter_incoming(self):\n        for link in self.incoming:\n            yield (link, link.start)\n            for x in link.start.iter_incoming():\n                yield x\n\n    def iter_outgoing(self):\n        for link in self.outgoing:\n            yield (link, link.end)\n            for x in link.end.iter_outgoing():\n                yield x\n\n    def ",
+"text":"class Note(object):\n\n    def __init__(self, data, center):\n        self.data = data\n        self.center = center\n        self.radius = pygame.math.Vector2(10, 10)\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        size = len(data[\"text\"]*10)\n        self.image = pygame.Surface((size, size))\n        self.image.fill((123, 214, 55))\n\n    def link(self, other_note, data):\n        return Link(data, self, other_note)\n\n    def iter_incoming(self):\n        for link in self.incoming:\n            yield (link, link.start)\n            for x in link.start.iter_incoming():\n                yield x\n\n    def iter_outgoing(self):\n        for link in self.outgoing:\n            yield (link, link.end)\n            for x in link.end.iter_outgoing():\n                yield x\n\n    def ",
 "type":"code"
 },
 {
@@ -202,7 +202,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        screen.blit(self.image, self.rect)\n",
+"text":"(self, screen):\n        font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            11\n        )\n        text, rect = font.render(self.data[\"text\"])\n        screen.blit(self.image, self.rect)\n        screen.blit(text, rect.move(\n            pygame.math.Vector2(self.rect.center)-pygame.math.Vector2(rect.center)\n        ))\n",
 "type":"code"
 }
 ],
@@ -426,7 +426,7 @@
 ],
 "fragments":[
 {
-"text":"class Link(object):\n\n    def __init__(self, start, end):\n        self.data = {\"label\": \"label\"}\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            10\n        )\n\n    def ",
+"text":"class Link(object):\n\n    def __init__(self, data, start, end):\n        self.data = data\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            10\n        )\n\n    def ",
 "type":"code"
 },
 {

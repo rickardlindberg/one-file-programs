@@ -6,14 +6,19 @@ import sys
 
 class Note(object):
 
-    def __init__(self, center, radius):
+    def __init__(self, data, center):
+        self.data = data
+        self.center = center
+        self.radius = pygame.math.Vector2(10, 10)
         self.incoming = []
         self.outgoing = []
         self.animation = Animation()
-        self.center = center
-        self.radius = pygame.math.Vector2(radius, radius)
-        self.image = pygame.Surface((30, 30))
+        size = len(data["text"]*10)
+        self.image = pygame.Surface((size, size))
         self.image.fill((123, 214, 55))
+
+    def link(self, other_note, data):
+        return Link(data, self, other_note)
 
     def iter_incoming(self):
         for link in self.incoming:
@@ -37,7 +42,15 @@ class Note(object):
         )
 
     def draw(self, screen):
+        font = pygame.freetype.SysFont(
+            pygame.freetype.get_default_font(),
+            11
+        )
+        text, rect = font.render(self.data["text"])
         screen.blit(self.image, self.rect)
+        screen.blit(text, rect.move(
+            pygame.math.Vector2(self.rect.center)-pygame.math.Vector2(rect.center)
+        ))
 
 class Network(object):
 
@@ -68,8 +81,8 @@ class Network(object):
 
 class Link(object):
 
-    def __init__(self, start, end):
-        self.data = {"label": "label"}
+    def __init__(self, data, start, end):
+        self.data = data
         self.start = start
         self.end = end
         self.start.outgoing.append(self)
@@ -189,9 +202,9 @@ def main():
     pygame.display.set_caption("Smart Notes")
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
-    n1 = Note(pygame.math.Vector2(100, 100), 40)
-    n2 = Note(pygame.math.Vector2(200, 100), 30)
-    l = Link(n1, n2)
+    n1 = Note({"text": "root"}, pygame.math.Vector2(100, 100))
+    n2 = Note({"text": "first child"}, pygame.math.Vector2(200, 100))
+    n1.link(n2, {"label": "foo"})
     network = Network(n1)
     debug_bar = DebugBar(clock)
     while True:
