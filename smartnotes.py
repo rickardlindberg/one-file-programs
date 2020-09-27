@@ -6,13 +6,10 @@ import sys
 
 class Note(object):
 
-    def __init__(self, data, center):
+    def __init__(self, data):
         self.data = data
-        self.center = center
-        self.radius = pygame.math.Vector2(10, 10)
         self.incoming = []
         self.outgoing = []
-        self.animation = Animation()
         size = len(data["text"]*10)
         self.image = pygame.Surface((size, size))
         self.image.fill((123, 214, 55))
@@ -33,12 +30,9 @@ class Note(object):
                 yield x
 
     def update(self, rect, elapsed_ms):
-        if not self.animation.active():
-            self.animation.start(2000)
         self.rect = self.image.get_rect().move(
-            self.radius.rotate(
-                self.animation.advance(elapsed_ms)*360
-            ) + self.center
+            pygame.math.Vector2(rect.center) -
+            pygame.math.Vector2(self.image.get_rect().center)
         )
 
     def draw(self, screen):
@@ -58,25 +52,34 @@ class Network(object):
         self.root_note = root_note
 
     def update(self, rect, elapsed_ms):
-        self.root_note.update(rect, elapsed_ms)
-        for (link, note) in self.root_note.iter_incoming():
-            note.update(rect, elapsed_ms)
-        for (link, note) in self.root_note.iter_outgoing():
-            note.update(rect, elapsed_ms)
-        for (link, note) in self.root_note.iter_incoming():
-            link.update(rect, elapsed_ms)
-        for (link, note) in self.root_note.iter_outgoing():
-            link.update(rect, elapsed_ms)
+        self.notes = []
+        self.links = []
+        ### middle
+        middle_stripe = self._stripe(rect, 0.5)
+        self.root_note.update(middle_stripe, elapsed_ms)
+        self.notes.append(self.root_note)
+        ### first right
+        stripe_right_1 = self._stripe(rect, 0.2)
+        stripe_right_1.left = middle_stripe.right
+        y_offset = stripe_right_1.height/len(self.root_note.outgoing)
+        r = stripe_right_1.copy()
+        r.height = y_offset
+        for link in self.root_note.outgoing:
+            link.end.update(r, elapsed_ms)
+            self.notes.append(link.end)
+            self.links.append(link)
+            r.y += y_offset
+
+    def _stripe(self, rect, factor=0.2):
+        stripe = rect.copy()
+        stripe.width *= factor
+        stripe.centerx = rect.centerx
+        return stripe
 
     def draw(self, screen):
-        self.root_note.draw(screen)
-        for (link, note) in self.root_note.iter_incoming():
+        for note in self.notes:
             note.draw(screen)
-        for (link, note) in self.root_note.iter_outgoing():
-            note.draw(screen)
-        for (link, note) in self.root_note.iter_incoming():
-            link.draw(screen)
-        for (link, note) in self.root_note.iter_outgoing():
+        for link in self.links:
             link.draw(screen)
 
 class Link(object):
@@ -202,9 +205,9 @@ def main():
     pygame.display.set_caption("Smart Notes")
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
-    root = Note({"text": "root"}, pygame.math.Vector2(100, 100))
-    root.link(Note({"text": "first child"}, pygame.math.Vector2(200, 100)), {"label": "foo"})
-    root.link(Note({"text": "second child"}, pygame.math.Vector2(200, 100)), {"label": "bar"})
+    root = Note({"text": "root"})
+    root.link(Note({"text": "first child"}), {"label": "foo"})
+    root.link(Note({"text": "second child"}), {"label": "bar"})
     network = Network(root)
     debug_bar = DebugBar(clock)
     while True:
