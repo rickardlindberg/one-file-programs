@@ -32,6 +32,8 @@ class Note(object):
         if self.rect is None:
             self.rect = self.target = self.previous = rect
         elif rect != self.target:
+            if self.animation.active():
+                self.rect = self.target
             self.target = rect
             self.previous = self.rect
             self.animation.start(200)
@@ -157,9 +159,8 @@ class Link(object):
 
 class DebugBar(object):
 
-    HEIGHT = 50
-
     def __init__(self, clock):
+        self.height = 50
         self.clock = clock
         self.visible = True
         self.animation = Animation()
@@ -175,7 +176,7 @@ class DebugBar(object):
     def update(self, rect, elapsed_ms):
         if not self.visible and not self.animation.active():
             return
-        self.image = pygame.Surface((rect.width, self.HEIGHT))
+        self.image = pygame.Surface(rect.size)
         self.image.fill((100, 100, 100))
         text, text_rect = self.font.render(
             f"elapsed_ms = {elapsed_ms} | fps = {int(round(self.clock.get_fps()))}"
@@ -183,10 +184,8 @@ class DebugBar(object):
         percent = self.animation.advance(elapsed_ms)
         if self.visible:
             alpha = int(255 * percent)
-            offset = self.image.get_height()-int(self.image.get_height()*percent)
         else:
             alpha = 255 - int(255 * percent)
-            offset = int(self.image.get_height()*percent)
         self.image.set_alpha(alpha)
         self.image.blit(
             text,
@@ -195,7 +194,7 @@ class DebugBar(object):
                 self.image.get_height()/2-text_rect.height/2
             )
         )
-        self.rect = self.image.get_rect().move((0, rect.height-self.image.get_height()+offset))
+        self.rect = rect
 
     def draw(self, screen):
         if not self.visible and not self.animation.active():
@@ -240,12 +239,14 @@ def main():
     second.link(Note({"text": "second 2"}), {"label": "second 2"})
     network = Network(root)
     debug_bar = DebugBar(clock)
+    animation = Animation()
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 debug_bar.toggle()
+                animation.start(200)
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
                 if network.root_note == root:
                     network.make_root(second)
@@ -254,8 +255,16 @@ def main():
         screen.fill((100, 200, 50))
         elapsed_ms = clock.get_time()
         rect = screen.get_rect()
-        network.update(rect, elapsed_ms)
-        debug_bar.update(rect, elapsed_ms)
+        network_rect = rect.copy()
+        if debug_bar.visible:
+            network_rect.height -= debug_bar.height*animation.advance(elapsed_ms)
+        else:
+            network_rect.height -= debug_bar.height-debug_bar.height*animation.advance(elapsed_ms)
+        network.update(network_rect, elapsed_ms)
+        debug_bar_rect = rect.copy()
+        debug_bar_rect.height = debug_bar.height
+        debug_bar_rect.top = network_rect.bottom
+        debug_bar.update(debug_bar_rect, elapsed_ms)
         network.draw(screen)
         debug_bar.draw(screen)
         pygame.display.flip()
