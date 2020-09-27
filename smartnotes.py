@@ -17,7 +17,7 @@ class Note(object):
         self._make_card()
 
     def _make_card(self, factor=100):
-        size = (5*factor, 3*factor)
+        size = (384, 230)
         border_size = 4
         self.card = pygame.Surface(size, pygame.SRCALPHA)
         border = pygame.Rect((0, 0), size)
