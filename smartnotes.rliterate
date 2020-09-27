@@ -298,7 +298,7 @@
 "type":"variable"
 },
 {
-"text":", 0.4)\n        self.root_note.",
+"text":", 0.3)\n        self.root_note.",
 "type":"code"
 },
 {
@@ -314,7 +314,7 @@
 "type":"variable"
 },
 {
-"text":")\n        self.notes.append(self.root_note)\n        self._stripe_left(self.root_note, middle_stripe, [",
+"text":")\n        self.notes.append(self.root_note)\n        sizes = [\n            (",
 "type":"code"
 },
 {
@@ -322,7 +322,7 @@
 "type":"variable"
 },
 {
-"text":".width*0.2, ",
+"text":".width*0.05, ",
 "type":"code"
 },
 {
@@ -330,7 +330,23 @@
 "type":"variable"
 },
 {
-"text":".width*0.1], ",
+"text":".width*0.15),\n            (",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":".width*0.03, ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":".width*0.1),\n        ]\n        self._stripe_left(\n            self.root_note,\n            middle_stripe,\n            sizes,\n            ",
 "type":"code"
 },
 {
@@ -338,23 +354,7 @@
 "type":"variable"
 },
 {
-"text":")\n        self._stripe_right(self.root_note, middle_stripe, [",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":".width*0.2, ",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":".width*0.1], ",
+"text":"\n        )\n        self._stripe_right(\n            self.root_note,\n            middle_stripe,\n            sizes,\n            ",
 "type":"code"
 },
 {
@@ -362,7 +362,7 @@
 "type":"variable"
 },
 {
-"text":")\n\n    def _stripe_left(self, note, rect, widths, ",
+"text":"\n        )\n\n    def _stripe_left(self, note, rect, widths, ",
 "type":"code"
 },
 {
@@ -370,7 +370,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        if not widths:\n            return\n        if note.incoming:\n            stripe = rect.copy()\n            stripe.width = widths[0]\n            stripe.right = rect.left\n            stripe.height = rect.height / len(note.incoming)\n            for link in note.incoming:\n                link.start.",
+"text":"):\n        if not widths:\n            return\n        if note.incoming:\n            space_width, stripe_width = widths[0]\n            stripe = rect.copy()\n            stripe.width = stripe_width\n            stripe.right = rect.left - space_width\n            stripe.height = rect.height / len(note.incoming)\n            for link in note.incoming:\n                link.start.",
 "type":"code"
 },
 {
@@ -402,7 +402,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        if not widths:\n            return\n        if note.outgoing:\n            stripe = rect.copy()\n            stripe.width = widths[0]\n            stripe.left = rect.right\n            stripe.height = rect.height / len(note.outgoing)\n            for link in note.outgoing:\n                link.end.",
+"text":"):\n        if not widths:\n            return\n        if note.outgoing:\n            space_width, stripe_width = widths[0]\n            stripe = rect.copy()\n            stripe.width = stripe_width\n            stripe.left = rect.right + space_width\n            stripe.height = rect.height / len(note.outgoing)\n            for link in note.outgoing:\n                link.end.",
 "type":"code"
 },
 {

@@ -89,19 +89,34 @@ class Network(object):
     def update(self, rect, elapsed_ms):
         self.notes = []
         self.links = []
-        middle_stripe = self._stripe(rect, 0.4)
+        middle_stripe = self._stripe(rect, 0.3)
         self.root_note.update(middle_stripe, elapsed_ms)
         self.notes.append(self.root_note)
-        self._stripe_left(self.root_note, middle_stripe, [rect.width*0.2, rect.width*0.1], elapsed_ms)
-        self._stripe_right(self.root_note, middle_stripe, [rect.width*0.2, rect.width*0.1], elapsed_ms)
+        sizes = [
+            (rect.width*0.05, rect.width*0.15),
+            (rect.width*0.03, rect.width*0.1),
+        ]
+        self._stripe_left(
+            self.root_note,
+            middle_stripe,
+            sizes,
+            elapsed_ms
+        )
+        self._stripe_right(
+            self.root_note,
+            middle_stripe,
+            sizes,
+            elapsed_ms
+        )
 
     def _stripe_left(self, note, rect, widths, elapsed_ms):
         if not widths:
             return
         if note.incoming:
+            space_width, stripe_width = widths[0]
             stripe = rect.copy()
-            stripe.width = widths[0]
-            stripe.right = rect.left
+            stripe.width = stripe_width
+            stripe.right = rect.left - space_width
             stripe.height = rect.height / len(note.incoming)
             for link in note.incoming:
                 link.start.update(stripe, elapsed_ms)
@@ -114,9 +129,10 @@ class Network(object):
         if not widths:
             return
         if note.outgoing:
+            space_width, stripe_width = widths[0]
             stripe = rect.copy()
-            stripe.width = widths[0]
-            stripe.left = rect.right
+            stripe.width = stripe_width
+            stripe.left = rect.right + space_width
             stripe.height = rect.height / len(note.outgoing)
             for link in note.outgoing:
                 link.end.update(stripe, elapsed_ms)
