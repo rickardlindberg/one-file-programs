@@ -26,6 +26,7 @@ class Note(object):
 class Link(object):
 
     def __init__(self, start, end):
+        self.data = {"label": "label"}
         self.start = start
         self.end = end
         self.font = pygame.freetype.SysFont(
@@ -36,19 +37,19 @@ class Link(object):
     def tick(self, screen, elapsed_ms):
         start = pygame.math.Vector2(self.start.rect.midright)
         end = pygame.math.Vector2(self.end.rect.midleft)
-
         pygame.draw.aaline(
             screen,
             (0, 0, 0),
             start,
             end,
         )
-        direction = end - start
-        text, rect = self.font.render(
-            "label",
-            rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))
-        )
-        screen.blit(text, rect.move(start-rect.center+direction/2))
+        if self.data.get("label"):
+            direction = end - start
+            text, rect = self.font.render(
+                self.data["label"],
+                rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))
+            )
+            screen.blit(text, rect.move(start-rect.center+direction/2))
 
 
 class DebugBar(object):

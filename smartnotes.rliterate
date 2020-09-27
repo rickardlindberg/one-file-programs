@@ -178,7 +178,7 @@
 ],
 "fragments":[
 {
-"text":"class Link(object):\n\n    def __init__(self, start, end):\n        self.start = start\n        self.end = end\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            10\n        )\n\n    def ",
+"text":"class Link(object):\n\n    def __init__(self, start, end):\n        self.data = {\"label\": \"label\"}\n        self.start = start\n        self.end = end\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            10\n        )\n\n    def ",
 "type":"code"
 },
 {
@@ -194,7 +194,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            start,\n            end,\n        )\n        direction = end - start\n        text, rect = self.font.render(\n            \"label\",\n            rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))\n        )\n        screen.blit(text, rect.move(start-rect.center+direction/2))\n\n",
+"text":"):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            start,\n            end,\n        )\n        if self.data.get(\"label\"):\n            direction = end - start\n            text, rect = self.font.render(\n                self.data[\"label\"],\n                rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))\n            )\n            screen.blit(text, rect.move(start-rect.center+direction/2))\n\n",
 "type":"code"
 }
 ],
