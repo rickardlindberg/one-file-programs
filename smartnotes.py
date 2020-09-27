@@ -68,34 +68,41 @@ class Network(object):
     def update(self, rect, elapsed_ms):
         self.notes = []
         self.links = []
-        ### middle
-        middle_stripe = self._stripe(rect, 0.5)
+        middle_stripe = self._stripe(rect, 0.4)
         self.root_note.update(middle_stripe, elapsed_ms)
         self.notes.append(self.root_note)
-        ### first right
-        if len(self.root_note.outgoing) > 0:
-            stripe_right_1 = self._stripe(rect, 0.2)
-            stripe_right_1.left = middle_stripe.right
-            y_offset = stripe_right_1.height/len(self.root_note.outgoing)
-            r = stripe_right_1.copy()
-            r.height = y_offset
-            for link in self.root_note.outgoing:
-                link.end.update(r, elapsed_ms)
-                self.notes.append(link.end)
-                self.links.append(link)
-                r.y += y_offset
-        ### first left
-        if len(self.root_note.incoming) > 0:
-            stripe_left_1 = self._stripe(rect, 0.2)
-            stripe_left_1.right = middle_stripe.left
-            y_offset = stripe_left_1.height/len(self.root_note.incoming)
-            r = stripe_left_1.copy()
-            r.height = y_offset
-            for link in self.root_note.incoming:
-                link.start.update(r, elapsed_ms)
+        self._stripe_left(self.root_note, middle_stripe, [rect.width*0.2, rect.width*0.1], elapsed_ms)
+        self._stripe_right(self.root_note, middle_stripe, [rect.width*0.2, rect.width*0.1], elapsed_ms)
+
+    def _stripe_left(self, note, rect, widths, elapsed_ms):
+        if not widths:
+            return
+        if note.incoming:
+            stripe = rect.copy()
+            stripe.width = widths[0]
+            stripe.right = rect.left
+            stripe.height = rect.height / len(note.incoming)
+            for link in note.incoming:
+                link.start.update(stripe, elapsed_ms)
                 self.notes.append(link.start)
                 self.links.append(link)
-                r.y += y_offset
+                self._stripe_left(link.start, stripe, widths[1:], elapsed_ms)
+                stripe = stripe.move(0, stripe.height)
+
+    def _stripe_right(self, note, rect, widths, elapsed_ms):
+        if not widths:
+            return
+        if note.outgoing:
+            stripe = rect.copy()
+            stripe.width = widths[0]
+            stripe.left = rect.right
+            stripe.height = rect.height / len(note.outgoing)
+            for link in note.outgoing:
+                link.end.update(stripe, elapsed_ms)
+                self.notes.append(link.end)
+                self.links.append(link)
+                self._stripe_right(link.end, stripe, widths[1:], elapsed_ms)
+                stripe = stripe.move(0, stripe.height)
 
     def _stripe(self, rect, factor=0.2):
         stripe = rect.copy()
@@ -233,6 +240,7 @@ def main():
     root.link(Note({"text": "first child"}), {"label": "foo"})
     second = Note({"text": "second child"})
     root.link(second, {"label": "bar"})
+    Note({"text": f"hidden?"}).link(second, {"label": "bar"})
     for i in range(5):
         Note({"text": f"pre {i}"}).link(root, {"label": f"haha {i}"})
     second.link(Note({"text": "second 1"}), {"label": "second 1"})
