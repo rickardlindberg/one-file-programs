@@ -13,6 +13,10 @@ class Note(object):
         size = len(data["text"]*10)
         self.image = pygame.Surface((size, size))
         self.image.fill((123, 214, 55))
+        self.animation = Animation()
+        self.rect = None
+        self.target = None
+        self.previous = None
 
     def make_root(self):
         pass
@@ -21,10 +25,23 @@ class Note(object):
         return Link(data, self, other_note)
 
     def update(self, rect, elapsed_ms):
-        self.rect = self.image.get_rect().move(
+        rect = self.image.get_rect().move(
             pygame.math.Vector2(rect.center) -
             pygame.math.Vector2(self.image.get_rect().center)
         )
+        if self.rect is None:
+            self.rect = self.target = self.previous = rect
+        elif rect != self.target:
+            self.target = rect
+            self.previous = self.rect
+            self.animation.start(200)
+        if self.animation.active():
+            self.rect = self.previous.move(
+                (
+                    pygame.math.Vector2(self.target.center)-
+                    pygame.math.Vector2(self.previous.center)
+                )*self.animation.advance(elapsed_ms)
+            )
 
     def draw(self, screen):
         font = pygame.freetype.SysFont(
@@ -230,7 +247,10 @@ def main():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 debug_bar.toggle()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
-                network.make_root(second)
+                if network.root_note == root:
+                    network.make_root(second)
+                else:
+                    network.make_root(root)
         screen.fill((100, 200, 50))
         elapsed_ms = clock.get_time()
         rect = screen.get_rect()

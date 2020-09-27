@@ -74,7 +74,7 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    root = Note({\"text\": \"root\"})\n    root.link(Note({\"text\": \"first child\"}), {\"label\": \"foo\"})\n    second = Note({\"text\": \"second child\"})\n    root.link(second, {\"label\": \"bar\"})\n    for i in range(5):\n        Note({\"text\": f\"pre {i}\"}).link(root, {\"label\": f\"haha {i}\"})\n    second.link(Note({\"text\": \"second 1\"}), {\"label\": \"second 1\"})\n    second.link(Note({\"text\": \"second 2\"}), {\"label\": \"second 2\"})\n    network = Network(root)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:\n                network.make_root(second)\n        screen.fill((100, 200, 50))\n        ",
+"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    root = Note({\"text\": \"root\"})\n    root.link(Note({\"text\": \"first child\"}), {\"label\": \"foo\"})\n    second = Note({\"text\": \"second child\"})\n    root.link(second, {\"label\": \"bar\"})\n    for i in range(5):\n        Note({\"text\": f\"pre {i}\"}).link(root, {\"label\": f\"haha {i}\"})\n    second.link(Note({\"text\": \"second 1\"}), {\"label\": \"second 1\"})\n    second.link(Note({\"text\": \"second 2\"}), {\"label\": \"second 2\"})\n    network = Network(root)\n    debug_bar = DebugBar(clock)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:\n                if network.root_note == root:\n                    network.make_root(second)\n                else:\n                    network.make_root(root)\n        screen.fill((100, 200, 50))\n        ",
 "type":"code"
 },
 {
@@ -162,7 +162,7 @@
 ],
 "fragments":[
 {
-"text":"class Note(object):\n\n    def __init__(self, data):\n        self.data = data\n        self.incoming = []\n        self.outgoing = []\n        size = len(data[\"text\"]*10)\n        self.image = pygame.Surface((size, size))\n        self.image.fill((123, 214, 55))\n\n    def make_root(self):\n        pass\n\n    def link(self, other_note, data):\n        return Link(data, self, other_note)\n\n    def ",
+"text":"class Note(object):\n\n    def __init__(self, data):\n        self.data = data\n        self.incoming = []\n        self.outgoing = []\n        size = len(data[\"text\"]*10)\n        self.image = pygame.Surface((size, size))\n        self.image.fill((123, 214, 55))\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def make_root(self):\n        pass\n\n    def link(self, other_note, data):\n        return Link(data, self, other_note)\n\n    def ",
 "type":"code"
 },
 {
@@ -186,7 +186,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.rect = self.image.get_rect().move(\n            pygame.math.Vector2(",
+"text":"):\n        rect = self.image.get_rect().move(\n            pygame.math.Vector2(",
 "type":"code"
 },
 {
@@ -194,7 +194,15 @@
 "type":"variable"
 },
 {
-"text":".center) -\n            pygame.math.Vector2(self.image.get_rect().center)\n        )\n\n    def ",
+"text":".center) -\n            pygame.math.Vector2(self.image.get_rect().center)\n        )\n        if self.rect is None:\n            self.rect = self.target = self.previous = rect\n        elif rect != self.target:\n            self.target = rect\n            self.previous = self.rect\n            self.animation.start(200)\n        if self.animation.active():\n            self.rect = self.previous.move(\n                (\n                    pygame.math.Vector2(self.target.center)-\n                    pygame.math.Vector2(self.previous.center)\n                )*self.animation.advance(",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n            )\n\n    def ",
 "type":"code"
 },
 {
