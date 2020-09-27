@@ -10,13 +10,26 @@ class Note(object):
         self.data = data
         self.incoming = []
         self.outgoing = []
-        size = len(data["text"]*10)
-        self.image = pygame.Surface((size, size))
-        self.image.fill((123, 214, 55))
+        self._make_card()
+        self.image = self.card
         self.animation = Animation()
         self.rect = None
         self.target = None
         self.previous = None
+
+    def _make_card(self, factor=50):
+        size = (5*factor, 3*factor)
+        border_size = 4
+        self.card = pygame.Surface(size, pygame.SRCALPHA)
+        border = pygame.Rect((0, 0), size)
+        border.width -= border_size
+        border.height -= border_size
+        border.x += border_size
+        border.y += border_size
+        pygame.draw.rect(self.card, (50, 50, 50, 150), border)
+        border.x -= border_size
+        border.y -= border_size
+        pygame.draw.rect(self.card, (250, 250, 250), border)
 
     def make_root(self):
         pass

@@ -178,7 +178,7 @@
 ],
 "fragments":[
 {
-"text":"class Note(object):\n\n    def __init__(self, data):\n        self.data = data\n        self.incoming = []\n        self.outgoing = []\n        size = len(data[\"text\"]*10)\n        self.image = pygame.Surface((size, size))\n        self.image.fill((123, 214, 55))\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def make_root(self):\n        pass\n\n    def link(self, other_note, data):\n        return Link(data, self, other_note)\n\n    def ",
+"text":"class Note(object):\n\n    def __init__(self, data):\n        self.data = data\n        self.incoming = []\n        self.outgoing = []\n        self._make_card()\n        self.image = self.card\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def _make_card(self, factor=50):\n        size = (5*factor, 3*factor)\n        border_size = 4\n        self.card = pygame.Surface(size, pygame.SRCALPHA)\n        border = pygame.Rect((0, 0), size)\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        pygame.draw.rect(self.card, (50, 50, 50, 150), border)\n        border.x -= border_size\n        border.y -= border_size\n        pygame.draw.rect(self.card, (250, 250, 250), border)\n\n    def make_root(self):\n        pass\n\n    def link(self, other_note, data):\n        return Link(data, self, other_note)\n\n    def ",
 "type":"code"
 },
 {
