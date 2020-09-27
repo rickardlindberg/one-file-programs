@@ -17,18 +17,6 @@ class Note(object):
     def link(self, other_note, data):
         return Link(data, self, other_note)
 
-    def iter_incoming(self):
-        for link in self.incoming:
-            yield (link, link.start)
-            for x in link.start.iter_incoming():
-                yield x
-
-    def iter_outgoing(self):
-        for link in self.outgoing:
-            yield (link, link.end)
-            for x in link.end.iter_outgoing():
-                yield x
-
     def update(self, rect, elapsed_ms):
         self.rect = self.image.get_rect().move(
             pygame.math.Vector2(rect.center) -

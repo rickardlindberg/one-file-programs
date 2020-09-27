@@ -162,7 +162,7 @@
 ],
 "fragments":[
 {
-"text":"class Note(object):\n\n    def __init__(self, data):\n        self.data = data\n        self.incoming = []\n        self.outgoing = []\n        size = len(data[\"text\"]*10)\n        self.image = pygame.Surface((size, size))\n        self.image.fill((123, 214, 55))\n\n    def link(self, other_note, data):\n        return Link(data, self, other_note)\n\n    def iter_incoming(self):\n        for link in self.incoming:\n            yield (link, link.start)\n            for x in link.start.iter_incoming():\n                yield x\n\n    def iter_outgoing(self):\n        for link in self.outgoing:\n            yield (link, link.end)\n            for x in link.end.iter_outgoing():\n                yield x\n\n    def ",
+"text":"class Note(object):\n\n    def __init__(self, data):\n        self.data = data\n        self.incoming = []\n        self.outgoing = []\n        size = len(data[\"text\"]*10)\n        self.image = pygame.Surface((size, size))\n        self.image.fill((123, 214, 55))\n\n    def link(self, other_note, data):\n        return Link(data, self, other_note)\n\n    def ",
 "type":"code"
 },
 {
