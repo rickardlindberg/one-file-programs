@@ -13,7 +13,7 @@ class Note(object):
         self.image = pygame.Surface((30, 30))
         self.image.fill((123, 214, 55))
 
-    def tick(self, screen, elapsed_ms):
+    def update(self, screen, elapsed_ms):
         if not self.animation.active():
             self.animation.start(2000)
         self.rect = self.image.get_rect().move(
@@ -21,6 +21,8 @@ class Note(object):
                 self.animation.advance(elapsed_ms)*360
             ) + self.center
         )
+
+    def draw(self, screen):
         screen.blit(self.image, self.rect)
 
 class Link(object):
@@ -34,7 +36,10 @@ class Link(object):
             10
         )
 
-    def tick(self, screen, elapsed_ms):
+    def update(self, screen, elapsed_ms):
+        pass
+
+    def draw(self, screen):
         start = pygame.math.Vector2(self.start.rect.midright)
         end = pygame.math.Vector2(self.end.rect.midleft)
         pygame.draw.aaline(
@@ -50,7 +55,6 @@ class Link(object):
                 rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))
             )
             screen.blit(text, rect.move(start-rect.center+direction/2))
-
 
 class DebugBar(object):
 
@@ -69,7 +73,7 @@ class DebugBar(object):
         self.visible = not self.visible
         self.animation.start(200)
 
-    def tick(self, screen, elapsed_ms):
+    def update(self, screen, elapsed_ms):
         if not self.visible and not self.animation.active():
             return
         self.image = pygame.Surface((screen.get_width(), self.HEIGHT))
@@ -93,6 +97,10 @@ class DebugBar(object):
             )
         )
         self.rect = self.image.get_rect().move((0, screen.get_height()-self.image.get_height()+offset))
+
+    def draw(self, screen):
+        if not self.visible and not self.animation.active():
+            return
         screen.blit(self.image, self.rect)
 
 class Animation(object):
@@ -135,10 +143,14 @@ def main():
                 debug_bar.toggle()
         screen.fill((100, 200, 50))
         elapsed_ms = clock.get_time()
-        n1.tick(screen, elapsed_ms)
-        n2.tick(screen, elapsed_ms)
-        l.tick(screen, elapsed_ms)
-        debug_bar.tick(screen, elapsed_ms)
+        n1.update(screen, elapsed_ms)
+        n2.update(screen, elapsed_ms)
+        l.update(screen, elapsed_ms)
+        debug_bar.update(screen, elapsed_ms)
+        n1.draw(screen)
+        n2.draw(screen)
+        l.draw(screen)
+        debug_bar.draw(screen)
         pygame.display.flip()
         clock.tick(60)
 

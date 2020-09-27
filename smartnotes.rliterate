@@ -122,7 +122,39 @@
 "type":"variable"
 },
 {
-"text":")\n        pygame.display.flip()\n        clock.tick(60)\n",
+"text":")\n        n1.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n        n2.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n        l.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n        debug_bar.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n        pygame.display.flip()\n        clock.tick(60)\n",
 "type":"code"
 }
 ],
@@ -162,7 +194,15 @@
 "type":"variable"
 },
 {
-"text":")*360\n            ) + self.center\n        )\n        screen.blit(self.image, self.rect)\n",
+"text":")*360\n            ) + self.center\n        )\n\n    def ",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(self, screen):\n        screen.blit(self.image, self.rect)\n",
 "type":"code"
 }
 ],
@@ -194,7 +234,15 @@
 "type":"variable"
 },
 {
-"text":"):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            start,\n            end,\n        )\n        if self.data.get(\"label\"):\n            direction = end - start\n            text, rect = self.font.render(\n                self.data[\"label\"],\n                rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))\n            )\n            screen.blit(text, rect.move(start-rect.center+direction/2))\n\n",
+"text":"):\n        pass\n\n    def ",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(self, screen):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            start,\n            end,\n        )\n        if self.data.get(\"label\"):\n            direction = end - start\n            text, rect = self.font.render(\n                self.data[\"label\"],\n                rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))\n            )\n            screen.blit(text, rect.move(start-rect.center+direction/2))\n",
 "type":"code"
 }
 ],
@@ -250,7 +298,15 @@
 "type":"variable"
 },
 {
-"text":")\n        if self.visible:\n            alpha = int(255 * percent)\n            offset = self.image.get_height()-int(self.image.get_height()*percent)\n        else:\n            alpha = 255 - int(255 * percent)\n            offset = int(self.image.get_height()*percent)\n        self.image.set_alpha(alpha)\n        self.image.blit(\n            text,\n            (\n                self.image.get_width()-text_rect.width-10,\n                self.image.get_height()/2-text_rect.height/2\n            )\n        )\n        self.rect = self.image.get_rect().move((0, screen.get_height()-self.image.get_height()+offset))\n        screen.blit(self.image, self.rect)\n",
+"text":")\n        if self.visible:\n            alpha = int(255 * percent)\n            offset = self.image.get_height()-int(self.image.get_height()*percent)\n        else:\n            alpha = 255 - int(255 * percent)\n            offset = int(self.image.get_height()*percent)\n        self.image.set_alpha(alpha)\n        self.image.blit(\n            text,\n            (\n                self.image.get_width()-text_rect.width-10,\n                self.image.get_height()/2-text_rect.height/2\n            )\n        )\n        self.rect = self.image.get_rect().move((0, screen.get_height()-self.image.get_height()+offset))\n\n    def ",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(self, screen):\n        if not self.visible and not self.animation.active():\n            return\n        screen.blit(self.image, self.rect)\n",
 "type":"code"
 }
 ],
@@ -278,6 +334,7 @@
 },
 "variables":{
 "7583be08dcbd4bcca0e6a043d3791710":"elapsed_ms",
-"8cce3dd9f80645e6a8df699f872f1736":"tick"
+"8cce3dd9f80645e6a8df699f872f1736":"update",
+"acab4c17f89046f4a05b14a8c35ad89a":"draw"
 }
 }
