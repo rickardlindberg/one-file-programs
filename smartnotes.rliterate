@@ -344,7 +344,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        norm_arrow = (start-end).normalize()*8\n        left_arrow = norm_arrow.rotate(30)+end\n        right_arrow = norm_arrow.rotate(-30)+end\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            start,\n            end,\n        )\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            end,\n            left_arrow,\n        )\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            end,\n            right_arrow,\n        )\n",
+"text":"(self, screen):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        norm_arrow = (start-end).normalize()*8\n        left_arrow = norm_arrow.rotate(30)+end\n        right_arrow = norm_arrow.rotate(-30)+end\n        color = (68, 85, 108)\n        pygame.draw.aaline(\n            screen,\n            color,\n            start,\n            end,\n        )\n        pygame.draw.aaline(\n            screen,\n            color,\n            end,\n            left_arrow,\n        )\n        pygame.draw.aaline(\n            screen,\n            color,\n            end,\n            right_arrow,\n        )\n",
 "type":"code"
 }
 ],
@@ -399,7 +399,7 @@
 "type":"variable"
 },
 {
-"text":".size)\n        self.image.fill((100, 100, 100))\n        text, text_rect = self.font.render(\n            f\"",
+"text":".size)\n        self.image.fill((84, 106, 134))\n        text, text_rect = self.font.render(\n            f\"",
 "type":"code"
 },
 {
@@ -534,7 +534,7 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    root = Note({\"text\": \"root\"})\n    root.link(Note({\"text\": \"first child\"}), {})\n    second = Note({\"text\": \"second child\"})\n    root.link(second, {})\n    hidden = Note({\"text\": f\"hidden?\"})\n    hidden.link(second, {})\n    for i in range(10):\n        Note({\"text\": f\"pre {i}\"}).link(root, {})\n    for i in range(10):\n        Note({\"text\": f\"pre {i}\"}).link(hidden, {})\n    second.link(Note({\"text\": \"second 1\"}), {})\n    second.link(Note({\"text\": \"second 2\"}), {})\n    network = Network(root)\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:\n                if network.root_note == root:\n                    network.make_root(second)\n                else:\n                    network.make_root(root)\n        screen.fill((100, 200, 50))\n        ",
+"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    root = Note({\"text\": \"root\"})\n    root.link(Note({\"text\": \"first child\"}), {})\n    second = Note({\"text\": \"second child\"})\n    root.link(second, {})\n    hidden = Note({\"text\": f\"hidden?\"})\n    hidden.link(second, {})\n    for i in range(10):\n        Note({\"text\": f\"pre {i}\"}).link(root, {})\n    for i in range(10):\n        Note({\"text\": f\"pre {i}\"}).link(hidden, {})\n    second.link(Note({\"text\": \"second 1\"}), {})\n    second.link(Note({\"text\": \"second 2\"}), {})\n    network = Network(root)\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:\n                if network.root_note == root:\n                    network.make_root(second)\n                else:\n                    network.make_root(root)\n        screen.fill((134, 169, 214))\n        ",
 "type":"code"
 },
 {

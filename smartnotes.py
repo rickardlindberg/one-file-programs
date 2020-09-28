@@ -180,21 +180,22 @@ class Link(object):
         norm_arrow = (start-end).normalize()*8
         left_arrow = norm_arrow.rotate(30)+end
         right_arrow = norm_arrow.rotate(-30)+end
+        color = (68, 85, 108)
         pygame.draw.aaline(
             screen,
-            (0, 0, 0),
+            color,
             start,
             end,
         )
         pygame.draw.aaline(
             screen,
-            (0, 0, 0),
+            color,
             end,
             left_arrow,
         )
         pygame.draw.aaline(
             screen,
-            (0, 0, 0),
+            color,
             end,
             right_arrow,
         )
@@ -219,7 +220,7 @@ class DebugBar(object):
         if not self.visible and not self.animation.active():
             return
         self.image = pygame.Surface(rect.size)
-        self.image.fill((100, 100, 100))
+        self.image.fill((84, 106, 134))
         text, text_rect = self.font.render(
             f"elapsed_ms = {elapsed_ms} | fps = {int(round(self.clock.get_fps()))}"
         )
@@ -298,7 +299,7 @@ def main():
                     network.make_root(second)
                 else:
                     network.make_root(root)
-        screen.fill((100, 200, 50))
+        screen.fill((134, 169, 214))
         elapsed_ms = clock.get_time()
         rect = screen.get_rect()
         network_rect = rect.copy()
