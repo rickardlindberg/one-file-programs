@@ -128,7 +128,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        if not widths:\n            return\n        if note.incoming:\n            padding = 5\n            space_width, stripe_width = widths[0]\n            stripe = rect.copy()\n            stripe.width = stripe_width\n            stripe.right = rect.left - space_width\n            stripe.height = rect.height / len(note.incoming) - padding\n            stripe.top += padding\n            for link in note.incoming:\n                link.start.",
+"text":"):\n        if not widths:\n            return\n        if note.incoming:\n            padding = 5\n            space_width, stripe_width = widths[0]\n            stripe = rect.copy()\n            stripe.width = stripe_width\n            stripe.right = rect.left - space_width\n            stripe.height = (rect.height-padding) / len(note.incoming) - padding\n            stripe.top += padding\n            for link in note.incoming:\n                link.start.",
 "type":"code"
 },
 {
@@ -160,7 +160,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        if not widths:\n            return\n        if note.outgoing:\n            padding = 5\n            space_width, stripe_width = widths[0]\n            stripe = rect.copy()\n            stripe.width = stripe_width\n            stripe.left = rect.right + space_width\n            stripe.height = rect.height / len(note.outgoing) - padding\n            stripe.top += padding\n            for link in note.outgoing:\n                link.end.",
+"text":"):\n        if not widths:\n            return\n        if note.outgoing:\n            padding = 5\n            space_width, stripe_width = widths[0]\n            stripe = rect.copy()\n            stripe.width = stripe_width\n            stripe.left = rect.right + space_width\n            stripe.height = (rect.height-padding) / len(note.outgoing) - padding\n            stripe.top += padding\n            for link in note.outgoing:\n                link.end.",
 "type":"code"
 },
 {

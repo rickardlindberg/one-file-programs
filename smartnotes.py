@@ -46,7 +46,7 @@ class Network(object):
             stripe = rect.copy()
             stripe.width = stripe_width
             stripe.right = rect.left - space_width
-            stripe.height = rect.height / len(note.incoming) - padding
+            stripe.height = (rect.height-padding) / len(note.incoming) - padding
             stripe.top += padding
             for link in note.incoming:
                 link.start.update(stripe, elapsed_ms, self.full_width)
@@ -64,7 +64,7 @@ class Network(object):
             stripe = rect.copy()
             stripe.width = stripe_width
             stripe.left = rect.right + space_width
-            stripe.height = rect.height / len(note.outgoing) - padding
+            stripe.height = (rect.height-padding) / len(note.outgoing) - padding
             stripe.top += padding
             for link in note.outgoing:
                 link.end.update(stripe, elapsed_ms, self.full_width)
