@@ -4,79 +4,6 @@ import pygame
 import pygame.freetype
 import sys
 
-class Note(object):
-
-    def __init__(self, data):
-        self.data = data
-        self.incoming = []
-        self.outgoing = []
-        self.animation = Animation()
-        self.rect = None
-        self.target = None
-        self.previous = None
-        self._make_card()
-
-    def _make_card(self, factor=100):
-        size = (384, 230)
-        border_size = 4
-        self.card = pygame.Surface(size, pygame.SRCALPHA)
-        border = pygame.Rect((0, 0), size)
-        border.width -= border_size
-        border.height -= border_size
-        border.x += border_size
-        border.y += border_size
-        pygame.draw.rect(self.card, (50, 50, 50, 150), border)
-        border.x -= border_size
-        border.y -= border_size
-        pygame.draw.rect(self.card, (250, 250, 250), border)
-        font = pygame.freetype.Font(
-            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
-            20
-        )
-        text, rect = font.render(self.data["text"])
-        self.card.blit(text, rect.move(
-            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)
-        ))
-
-    def make_root(self):
-        pass
-
-    def link(self, other_note, data):
-        return Link(data, self, other_note)
-
-    def update(self, rect, elapsed_ms):
-        target = self._get_target(rect)
-        if self.rect is None:
-            self.rect = self.target = self.previous = target
-        elif target != self.target:
-            if self.animation.active():
-                self.rect = self.target
-            self.target = target
-            self.previous = self.rect
-            self.animation.start(200)
-        if self.animation.active():
-            x_diff = self.target.width - self.previous.width
-            y_diff = self.target.height - self.previous.height
-            percent = self.animation.advance(elapsed_ms)
-            self.rect = self.previous.inflate(x_diff*percent, y_diff*percent).move(
-                (
-                    pygame.math.Vector2(self.target.center)-
-                    pygame.math.Vector2(self.previous.center)
-                )*percent
-            )
-
-    def _get_target(self, rect):
-        target = self.card.get_rect()
-        target = target.fit(rect)
-        target.center = rect.center
-        return target
-
-    def draw(self, screen):
-        screen.blit(
-            pygame.transform.smoothscale(self.card, self.rect.size),
-            self.rect
-        )
-
 class Network(object):
 
     def __init__(self, root_note):
@@ -156,6 +83,79 @@ class Network(object):
             note.draw(screen)
         for link in self.links:
             link.draw(screen)
+
+class Note(object):
+
+    def __init__(self, data):
+        self.data = data
+        self.incoming = []
+        self.outgoing = []
+        self.animation = Animation()
+        self.rect = None
+        self.target = None
+        self.previous = None
+        self._make_card()
+
+    def _make_card(self, factor=100):
+        size = (384, 230)
+        border_size = 4
+        self.card = pygame.Surface(size, pygame.SRCALPHA)
+        border = pygame.Rect((0, 0), size)
+        border.width -= border_size
+        border.height -= border_size
+        border.x += border_size
+        border.y += border_size
+        pygame.draw.rect(self.card, (50, 50, 50, 150), border)
+        border.x -= border_size
+        border.y -= border_size
+        pygame.draw.rect(self.card, (250, 250, 250), border)
+        font = pygame.freetype.Font(
+            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
+            20
+        )
+        text, rect = font.render(self.data["text"])
+        self.card.blit(text, rect.move(
+            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)
+        ))
+
+    def make_root(self):
+        pass
+
+    def link(self, other_note, data):
+        return Link(data, self, other_note)
+
+    def update(self, rect, elapsed_ms):
+        target = self._get_target(rect)
+        if self.rect is None:
+            self.rect = self.target = self.previous = target
+        elif target != self.target:
+            if self.animation.active():
+                self.rect = self.target
+            self.target = target
+            self.previous = self.rect
+            self.animation.start(200)
+        if self.animation.active():
+            x_diff = self.target.width - self.previous.width
+            y_diff = self.target.height - self.previous.height
+            percent = self.animation.advance(elapsed_ms)
+            self.rect = self.previous.inflate(x_diff*percent, y_diff*percent).move(
+                (
+                    pygame.math.Vector2(self.target.center)-
+                    pygame.math.Vector2(self.previous.center)
+                )*percent
+            )
+
+    def _get_target(self, rect):
+        target = self.card.get_rect()
+        target = target.fit(rect)
+        target.center = rect.center
+        return target
+
+    def draw(self, screen):
+        screen.blit(
+            pygame.transform.smoothscale(self.card, self.rect.size),
+            self.rect
+        )
 
 class Link(object):
 
