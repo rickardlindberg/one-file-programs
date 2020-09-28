@@ -272,7 +272,7 @@ def main():
     second = Note({"text": "second child"})
     root.link(second, {})
     Note({"text": f"hidden?"}).link(second, {})
-    for i in range(5):
+    for i in range(8):
         Note({"text": f"pre {i}"}).link(root, {})
     second.link(Note({"text": "second 1"}), {})
     second.link(Note({"text": "second 2"}), {})
