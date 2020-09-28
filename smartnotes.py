@@ -14,10 +14,11 @@ class Network(object):
         self.root_note = node
 
     def update(self, rect, elapsed_ms):
+        self.full_width = int(rect.width * 0.3)
         self.notes = []
         self.links = []
         middle_stripe = self._stripe(rect, 0.3)
-        self.root_note.update(middle_stripe, elapsed_ms)
+        self.root_note.update(middle_stripe, elapsed_ms, self.full_width)
         self.notes.append(self.root_note)
         sizes = [
             (rect.width*0.05, rect.width*0.15),
@@ -48,7 +49,7 @@ class Network(object):
             stripe.height = rect.height / len(note.incoming) - padding
             stripe.top += padding
             for link in note.incoming:
-                link.start.update(stripe, elapsed_ms)
+                link.start.update(stripe, elapsed_ms, self.full_width)
                 self.notes.append(link.start)
                 self.links.append(link)
                 self._stripe_left(link.start, stripe, widths[1:], elapsed_ms)
@@ -66,7 +67,7 @@ class Network(object):
             stripe.height = rect.height / len(note.outgoing) - padding
             stripe.top += padding
             for link in note.outgoing:
-                link.end.update(stripe, elapsed_ms)
+                link.end.update(stripe, elapsed_ms, self.full_width)
                 self.notes.append(link.end)
                 self.links.append(link)
                 self._stripe_right(link.end, stripe, widths[1:], elapsed_ms)
@@ -94,10 +95,9 @@ class Note(object):
         self.rect = None
         self.target = None
         self.previous = None
-        self._make_card()
 
-    def _make_card(self, factor=100):
-        size = (384, 230)
+    def _make_card(self, full_width):
+        size = (full_width, int(full_width*3/5))
         border_size = 4
         self.card = pygame.Surface(size, pygame.SRCALPHA)
         border = pygame.Rect((0, 0), size)
@@ -124,7 +124,8 @@ class Note(object):
     def link(self, other_note, data):
         return Link(data, self, other_note)
 
-    def update(self, rect, elapsed_ms):
+    def update(self, rect, elapsed_ms, full_width):
+        self._make_card(full_width)
         target = self._get_target(rect)
         if self.rect is None:
             self.rect = self.target = self.previous = target
