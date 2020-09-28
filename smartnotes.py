@@ -95,8 +95,12 @@ class Note(object):
         self.rect = None
         self.target = None
         self.previous = None
+        self.full_width = None
 
     def _make_card(self, full_width):
+        if self.full_width == full_width:
+            return
+        self.full_width = full_width
         size = (full_width, int(full_width*3/5))
         border_size = 4
         self.card = pygame.Surface(size, pygame.SRCALPHA)
@@ -271,9 +275,12 @@ def main():
     root.link(Note({"text": "first child"}), {})
     second = Note({"text": "second child"})
     root.link(second, {})
-    Note({"text": f"hidden?"}).link(second, {})
-    for i in range(8):
+    hidden = Note({"text": f"hidden?"})
+    hidden.link(second, {})
+    for i in range(10):
         Note({"text": f"pre {i}"}).link(root, {})
+    for i in range(10):
+        Note({"text": f"pre {i}"}).link(hidden, {})
     second.link(Note({"text": "second 1"}), {})
     second.link(Note({"text": "second 2"}), {})
     network = Network(root)
