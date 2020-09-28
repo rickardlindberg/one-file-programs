@@ -165,10 +165,6 @@ class Link(object):
         self.end = end
         self.start.outgoing.append(self)
         self.end.incoming.append(self)
-        self.font = pygame.freetype.SysFont(
-            pygame.freetype.get_default_font(),
-            10
-        )
 
     def update(self, rect, elapsed_ms):
         pass
@@ -197,13 +193,6 @@ class Link(object):
             end,
             right_arrow,
         )
-        if self.data.get("label"):
-            direction = end - start
-            text, rect = self.font.render(
-                self.data["label"],
-                rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))
-            )
-            screen.blit(text, rect.move(start-rect.center+direction/2))
 
 class DebugBar(object):
 
@@ -278,14 +267,14 @@ def main():
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
     root = Note({"text": "root"})
-    root.link(Note({"text": "first child"}), {"label": "foo"})
+    root.link(Note({"text": "first child"}), {})
     second = Note({"text": "second child"})
-    root.link(second, {"label": "bar"})
-    Note({"text": f"hidden?"}).link(second, {"label": "bar"})
+    root.link(second, {})
+    Note({"text": f"hidden?"}).link(second, {})
     for i in range(5):
-        Note({"text": f"pre {i}"}).link(root, {"label": f"haha {i}"})
-    second.link(Note({"text": "second 1"}), {"label": "second 1"})
-    second.link(Note({"text": "second 2"}), {"label": "second 2"})
+        Note({"text": f"pre {i}"}).link(root, {})
+    second.link(Note({"text": "second 1"}), {})
+    second.link(Note({"text": "second 2"}), {})
     network = Network(root)
     debug_bar = DebugBar(clock)
     animation = Animation()

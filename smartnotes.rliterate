@@ -74,7 +74,7 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    root = Note({\"text\": \"root\"})\n    root.link(Note({\"text\": \"first child\"}), {\"label\": \"foo\"})\n    second = Note({\"text\": \"second child\"})\n    root.link(second, {\"label\": \"bar\"})\n    Note({\"text\": f\"hidden?\"}).link(second, {\"label\": \"bar\"})\n    for i in range(5):\n        Note({\"text\": f\"pre {i}\"}).link(root, {\"label\": f\"haha {i}\"})\n    second.link(Note({\"text\": \"second 1\"}), {\"label\": \"second 1\"})\n    second.link(Note({\"text\": \"second 2\"}), {\"label\": \"second 2\"})\n    network = Network(root)\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:\n                if network.root_note == root:\n                    network.make_root(second)\n                else:\n                    network.make_root(root)\n        screen.fill((100, 200, 50))\n        ",
+"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    root = Note({\"text\": \"root\"})\n    root.link(Note({\"text\": \"first child\"}), {})\n    second = Note({\"text\": \"second child\"})\n    root.link(second, {})\n    Note({\"text\": f\"hidden?\"}).link(second, {})\n    for i in range(5):\n        Note({\"text\": f\"pre {i}\"}).link(root, {})\n    second.link(Note({\"text\": \"second 1\"}), {})\n    second.link(Note({\"text\": \"second 2\"}), {})\n    network = Network(root)\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:\n                if network.root_note == root:\n                    network.make_root(second)\n                else:\n                    network.make_root(root)\n        screen.fill((100, 200, 50))\n        ",
 "type":"code"
 },
 {
@@ -466,7 +466,7 @@
 ],
 "fragments":[
 {
-"text":"class Link(object):\n\n    def __init__(self, data, start, end):\n        self.data = data\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            10\n        )\n\n    def ",
+"text":"class Link(object):\n\n    def __init__(self, data, start, end):\n        self.data = data\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n\n    def ",
 "type":"code"
 },
 {
@@ -498,7 +498,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        norm_arrow = (start-end).normalize()*8\n        left_arrow = norm_arrow.rotate(30)+end\n        right_arrow = norm_arrow.rotate(-30)+end\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            start,\n            end,\n        )\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            end,\n            left_arrow,\n        )\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            end,\n            right_arrow,\n        )\n        if self.data.get(\"label\"):\n            direction = end - start\n            text, rect = self.font.render(\n                self.data[\"label\"],\n                rotation=-int(pygame.math.Vector2((0, 0)).angle_to(direction))\n            )\n            screen.blit(text, rect.move(start-rect.center+direction/2))\n",
+"text":"(self, screen):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        norm_arrow = (start-end).normalize()*8\n        left_arrow = norm_arrow.rotate(30)+end\n        right_arrow = norm_arrow.rotate(-30)+end\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            start,\n            end,\n        )\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            end,\n            left_arrow,\n        )\n        pygame.draw.aaline(\n            screen,\n            (0, 0, 0),\n            end,\n            right_arrow,\n        )\n",
 "type":"code"
 }
 ],
