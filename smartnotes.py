@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import cairo
+import io
 import pygame
 import pygame.freetype
 import sys
@@ -314,8 +316,28 @@ def main():
         debug_bar.update(debug_bar_rect, elapsed_ms)
         network.draw(screen)
         debug_bar.draw(screen)
+        def draw(ctx, width, height):
+            ctx.move_to(10, 10)
+            ctx.line_to(190, 190)
+            ctx.line_to(100, 50)
+            ctx.set_line_width(10)
+            ctx.set_source_rgb(1, 0, 0)
+            ctx.stroke()
+            ctx.rectangle(10, 100, 40, 40)
+            ctx.set_source_rgba(0.5, 0.5, 0.5, 1)
+            ctx.fill()
+        screen.blit(draw_cairo(200, 200, draw), (10, 10))
         pygame.display.flip()
         clock.tick(60)
+
+def draw_cairo(width, height, fn):
+    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+    ctx = cairo.Context(surface)
+    fn(ctx, width, height)
+    buf = io.BytesIO()
+    surface.write_to_png(buf)
+    buf.seek(0)
+    return pygame.image.load(buf).convert_alpha()
 
 if __name__ == "__main__":
     main()

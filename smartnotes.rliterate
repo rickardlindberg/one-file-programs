@@ -478,6 +478,29 @@
 }
 ],
 "title":"Animation"
+},
+{
+"children":[],
+"id":"c89f4fbdf1dd465090fc8229a498b6c3",
+"paragraphs":[
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def draw_cairo(width, height, fn):\n    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)\n    ctx = cairo.Context(surface)\n    fn(ctx, width, height)\n    buf = io.BytesIO()\n    surface.write_to_png(buf)\n    buf.seek(0)\n    return pygame.image.load(buf).convert_alpha()\n",
+"type":"code"
+}
+],
+"id":"41a0aaa0ccd143e983455fb3e85f2451",
+"type":"code"
+}
+],
+"title":"Cairo"
 }
 ],
 "id":"0b150af1003a44dab87710c2149af734",
@@ -494,7 +517,7 @@
 ],
 "fragments":[
 {
-"text":"#!/usr/bin/env python3\n\nimport pygame\nimport pygame.freetype\nimport sys\n\n",
+"text":"#!/usr/bin/env python3\n\nimport cairo\nimport io\nimport pygame\nimport pygame.freetype\nimport sys\n\n",
 "type":"code"
 },
 {
@@ -622,7 +645,7 @@
 "type":"variable"
 },
 {
-"text":"(screen)\n        pygame.display.flip()\n        clock.tick(60)\n",
+"text":"(screen)\n        def draw(ctx, width, height):\n            ctx.move_to(10, 10)\n            ctx.line_to(190, 190)\n            ctx.line_to(100, 50)\n            ctx.set_line_width(10)\n            ctx.set_source_rgb(1, 0, 0)\n            ctx.stroke()\n            ctx.rectangle(10, 100, 40, 40)\n            ctx.set_source_rgba(0.5, 0.5, 0.5, 1)\n            ctx.fill()\n        screen.blit(draw_cairo(200, 200, draw), (10, 10))\n        pygame.display.flip()\n        clock.tick(60)\n",
 "type":"code"
 }
 ],
