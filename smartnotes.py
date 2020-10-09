@@ -38,6 +38,8 @@ class Network(object):
             sizes,
             elapsed_ms
         )
+        for link in self.links:
+            link.update(None, elapsed_ms)
 
     def _stripe_left(self, note, rect, widths, elapsed_ms):
         if not widths:
@@ -172,35 +174,56 @@ class Link(object):
         self.end = end
         self.start.outgoing.append(self)
         self.end.incoming.append(self)
+        self.start_pos = None
+        self.end_pos = None
 
     def update(self, rect, elapsed_ms):
-        pass
-
-    def draw(self, screen):
+        def draw(ctx, width, height):
+            if start.x < end.x:
+                startx = 0
+                endx = width
+                c1x = 0.6*width
+                c2x = 0.4*width
+            else:
+                startx = width
+                endx = 0
+                c1x = 0.4*width
+                c2x = 0.6*width
+            if start.y < end.y:
+                starty = PADDING
+                endy = height-PADDING
+                c1y = 0.0*(height-PADDING)+PADDING
+                c2y = 1.0*(height-PADDING)+PADDING
+            else:
+                starty = height-PADDING
+                endy = PADDING
+                c1y = 1.0*(height-PADDING)+PADDING
+                c2y = 0.0*(height-PADDING)+PADDING
+            ctx.move_to(startx, starty)
+            ctx.line_to(startx+0.02*(endx-startx), starty)
+            ctx.curve_to(c1x, c1y, c2x, c2y, endx-0.02*(endx-startx), endy)
+            ctx.line_to(endx, endy)
+            ctx.set_source_rgb(0.45, 0.5, 0.7)
+            ctx.set_line_width(1.5)
+            ctx.stroke()
         start = pygame.math.Vector2(self.start.rect.midright)
         end = pygame.math.Vector2(self.end.rect.midleft)
-        norm_arrow = (start-end).normalize()*8
-        left_arrow = norm_arrow.rotate(30)+end
-        right_arrow = norm_arrow.rotate(-30)+end
-        color = (68, 85, 108)
-        pygame.draw.aaline(
-            screen,
-            color,
-            start,
-            end,
-        )
-        pygame.draw.aaline(
-            screen,
-            color,
-            end,
-            left_arrow,
-        )
-        pygame.draw.aaline(
-            screen,
-            color,
-            end,
-            right_arrow,
-        )
+        if start != self.start_pos or end != self.end_pos:
+            self.start_pos = start
+            self.end_pos = end
+            PADDING = 3
+            self.image = draw_cairo(
+                max(1, int(abs(start.x-end.x))),
+                max(1, int(abs(start.y-end.y)))+2*PADDING,
+                draw
+            )
+            self.pos = (
+                min(start.x, end.x),
+                min(start.y, end.y)-PADDING,
+            )
+
+    def draw(self, screen):
+        screen.blit(self.image, self.pos)
 
 class DebugBar(object):
 
@@ -316,17 +339,6 @@ def main():
         debug_bar.update(debug_bar_rect, elapsed_ms)
         network.draw(screen)
         debug_bar.draw(screen)
-        def draw(ctx, width, height):
-            ctx.move_to(10, 10)
-            ctx.line_to(190, 190)
-            ctx.line_to(100, 50)
-            ctx.set_line_width(10)
-            ctx.set_source_rgb(1, 0, 0)
-            ctx.stroke()
-            ctx.rectangle(10, 100, 40, 40)
-            ctx.set_source_rgba(0.5, 0.5, 0.5, 1)
-            ctx.fill()
-        screen.blit(draw_cairo(200, 200, draw), (10, 10))
         pygame.display.flip()
         clock.tick(60)
 
@@ -338,6 +350,12 @@ def draw_cairo(width, height, fn):
     surface.write_to_png(buf)
     buf.seek(0)
     return pygame.image.load(buf).convert_alpha()
+    #surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+    #ctx = cairo.Context(surface)
+    #fn(ctx, width, height)
+    #buf = surface.get_data()
+    #image = pygame.image.frombuffer(buf, (width, height), "ARGB")
+    #return image
 
 if __name__ == "__main__":
     main()

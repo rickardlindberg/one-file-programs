@@ -120,7 +120,23 @@
 "type":"variable"
 },
 {
-"text":"\n        )\n\n    def _stripe_left(self, note, rect, widths, ",
+"text":"\n        )\n        for link in self.links:\n            link.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(None, ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n\n    def _stripe_left(self, note, rect, widths, ",
 "type":"code"
 },
 {
@@ -312,7 +328,7 @@
 ],
 "fragments":[
 {
-"text":"class Link(object):\n\n    def __init__(self, data, start, end):\n        self.data = data\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n\n    def ",
+"text":"class Link(object):\n\n    def __init__(self, data, start, end):\n        self.data = data\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n        self.start_pos = None\n        self.end_pos = None\n\n    def ",
 "type":"code"
 },
 {
@@ -336,7 +352,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        pass\n\n    def ",
+"text":"):\n        def draw(ctx, width, height):\n            if start.x < end.x:\n                startx = 0\n                endx = width\n                c1x = 0.6*width\n                c2x = 0.4*width\n            else:\n                startx = width\n                endx = 0\n                c1x = 0.4*width\n                c2x = 0.6*width\n            if start.y < end.y:\n                starty = PADDING\n                endy = height-PADDING\n                c1y = 0.0*(height-PADDING)+PADDING\n                c2y = 1.0*(height-PADDING)+PADDING\n            else:\n                starty = height-PADDING\n                endy = PADDING\n                c1y = 1.0*(height-PADDING)+PADDING\n                c2y = 0.0*(height-PADDING)+PADDING\n            ctx.move_to(startx, starty)\n            ctx.line_to(startx+0.02*(endx-startx), starty)\n            ctx.curve_to(c1x, c1y, c2x, c2y, endx-0.02*(endx-startx), endy)\n            ctx.line_to(endx, endy)\n            ctx.set_source_rgb(0.45, 0.5, 0.7)\n            ctx.set_line_width(1.5)\n            ctx.stroke()\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        if start != self.start_pos or end != self.end_pos:\n            self.start_pos = start\n            self.end_pos = end\n            PADDING = 3\n            self.image = draw_cairo(\n                max(1, int(abs(start.x-end.x))),\n                max(1, int(abs(start.y-end.y)))+2*PADDING,\n                draw\n            )\n            self.pos = (\n                min(start.x, end.x),\n                min(start.y, end.y)-PADDING,\n            )\n\n    def ",
 "type":"code"
 },
 {
@@ -344,7 +360,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        norm_arrow = (start-end).normalize()*8\n        left_arrow = norm_arrow.rotate(30)+end\n        right_arrow = norm_arrow.rotate(-30)+end\n        color = (68, 85, 108)\n        pygame.draw.aaline(\n            screen,\n            color,\n            start,\n            end,\n        )\n        pygame.draw.aaline(\n            screen,\n            color,\n            end,\n            left_arrow,\n        )\n        pygame.draw.aaline(\n            screen,\n            color,\n            end,\n            right_arrow,\n        )\n",
+"text":"(self, screen):\n        screen.blit(self.image, self.pos)\n",
 "type":"code"
 }
 ],
@@ -492,7 +508,7 @@
 ],
 "fragments":[
 {
-"text":"def draw_cairo(width, height, fn):\n    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)\n    ctx = cairo.Context(surface)\n    fn(ctx, width, height)\n    buf = io.BytesIO()\n    surface.write_to_png(buf)\n    buf.seek(0)\n    return pygame.image.load(buf).convert_alpha()\n",
+"text":"def draw_cairo(width, height, fn):\n    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)\n    ctx = cairo.Context(surface)\n    fn(ctx, width, height)\n    buf = io.BytesIO()\n    surface.write_to_png(buf)\n    buf.seek(0)\n    return pygame.image.load(buf).convert_alpha()\n    #surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)\n    #ctx = cairo.Context(surface)\n    #fn(ctx, width, height)\n    #buf = surface.get_data()\n    #image = pygame.image.frombuffer(buf, (width, height), \"ARGB\")\n    #return image\n",
 "type":"code"
 }
 ],
@@ -645,7 +661,7 @@
 "type":"variable"
 },
 {
-"text":"(screen)\n        def draw(ctx, width, height):\n            ctx.move_to(10, 10)\n            ctx.line_to(190, 190)\n            ctx.line_to(100, 50)\n            ctx.set_line_width(10)\n            ctx.set_source_rgb(1, 0, 0)\n            ctx.stroke()\n            ctx.rectangle(10, 100, 40, 40)\n            ctx.set_source_rgba(0.5, 0.5, 0.5, 1)\n            ctx.fill()\n        screen.blit(draw_cairo(200, 200, draw), (10, 10))\n        pygame.display.flip()\n        clock.tick(60)\n",
+"text":"(screen)\n        pygame.display.flip()\n        clock.tick(60)\n",
 "type":"code"
 }
 ],
