@@ -56,7 +56,7 @@
 "type":"variable"
 },
 {
-"text":", 0.3).inflate(0, -padding)\n        self.root_note.",
+"text":", 0.3)\n        self.root_note.",
 "type":"code"
 },
 {
@@ -144,7 +144,7 @@
 "type":"variable"
 },
 {
-"text":", padding):\n        if not widths:\n            return\n        if note.incoming:\n            space_width, stripe_width = widths[0]\n            for link, y_center, height in self._vertical_stripes(rect, note.incoming):\n                stripe = pygame.Rect(rect.left-space_width-stripe_width, 0, stripe_width, height)\n                stripe.centery = y_center\n                link.start.",
+"text":", padding):\n        if not widths:\n            return\n        rect = rect.inflate(0, -padding)\n        if note.incoming:\n            space_width, stripe_width = widths[0]\n            for link, y_center, height in self._vertical_stripes(rect, note.incoming):\n                stripe = pygame.Rect(rect.left-space_width-stripe_width, 0, stripe_width, height)\n                stripe.centery = y_center\n                link.start.",
 "type":"code"
 },
 {
@@ -176,7 +176,7 @@
 "type":"variable"
 },
 {
-"text":", padding):\n        if not widths:\n            return\n        if note.outgoing:\n            space_width, stripe_width = widths[0]\n            for link, y_center, height in self._vertical_stripes(rect, note.outgoing):\n                stripe = pygame.Rect(rect.right+space_width, 0, stripe_width, height)\n                stripe.centery = y_center\n                link.end.",
+"text":", padding):\n        if not widths:\n            return\n        rect = rect.inflate(0, -padding)\n        if note.outgoing:\n            space_width, stripe_width = widths[0]\n            for link, y_center, height in self._vertical_stripes(rect, note.outgoing):\n                stripe = pygame.Rect(rect.right+space_width, 0, stripe_width, height)\n                stripe.centery = y_center\n                link.end.",
 "type":"code"
 },
 {

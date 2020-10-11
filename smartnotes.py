@@ -28,7 +28,7 @@ class Network(object):
         self.full_width = int(rect.width * 0.3)
         self.notes = []
         self.links = []
-        middle_stripe = self._stripe(rect, 0.3).inflate(0, -padding)
+        middle_stripe = self._stripe(rect, 0.3)
         self.root_note.update(middle_stripe, elapsed_ms, self.full_width, "center")
         self.notes.append(self.root_note)
         sizes = [
@@ -55,6 +55,7 @@ class Network(object):
     def _stripe_left(self, note, rect, widths, elapsed_ms, padding):
         if not widths:
             return
+        rect = rect.inflate(0, -padding)
         if note.incoming:
             space_width, stripe_width = widths[0]
             for link, y_center, height in self._vertical_stripes(rect, note.incoming):
@@ -68,6 +69,7 @@ class Network(object):
     def _stripe_right(self, note, rect, widths, elapsed_ms, padding):
         if not widths:
             return
+        rect = rect.inflate(0, -padding)
         if note.outgoing:
             space_width, stripe_width = widths[0]
             for link, y_center, height in self._vertical_stripes(rect, note.outgoing):
