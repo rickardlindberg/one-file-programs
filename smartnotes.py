@@ -10,6 +10,14 @@ class Network(object):
 
     def __init__(self, root_note):
         self.root_note = root_note
+        self.pos = (-1, -1)
+
+    def mouse_pos(self, pos):
+        self.pos = pos
+        print(self.pos)
+
+    def deactivate(self):
+        self.active = False
 
     def make_root(self, node):
         node.make_root()
@@ -329,6 +337,8 @@ def main():
                     network.make_root(second)
                 else:
                     network.make_root(root)
+            elif event.type == pygame.MOUSEMOTION:
+                network.mouse_pos(event.pos)
         screen.fill((134, 169, 214))
         elapsed_ms = clock.get_time()
         rect = screen.get_rect()
