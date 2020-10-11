@@ -35,50 +35,49 @@ class Network(object):
             (rect.width*0.05, rect.width*0.15),
             (rect.width*0.03, rect.width*0.1),
         ]
-        self._stripe_left(
+        self._stripe_recursive(
             self.root_note,
             middle_stripe,
             sizes,
             elapsed_ms,
-            padding
+            padding,
+            "left"
         )
-        self._stripe_right(
+        self._stripe_recursive(
             self.root_note,
             middle_stripe,
             sizes,
             elapsed_ms,
-            padding
+            padding,
+            "right"
         )
         for link in self.links:
             link.update(None, elapsed_ms)
 
-    def _stripe_left(self, note, rect, widths, elapsed_ms, padding):
+    def _stripe_recursive(self, note, rect, widths, elapsed_ms, padding, direction):
         if not widths:
             return
         rect = rect.inflate(0, -padding)
-        if note.incoming:
+        if direction == "left":
+            links = note.incoming
+        else:
+            links = note.outgoing
+        if links:
             space_width, stripe_width = widths[0]
-            for link, y_center, height in self._vertical_stripes(rect, note.incoming):
-                stripe = pygame.Rect(rect.left-space_width-stripe_width, 0, stripe_width, height)
+            for link, y_center, height in self._vertical_stripes(rect, links):
+                if direction == "left":
+                    stripe = pygame.Rect(rect.left-space_width-stripe_width, 0, stripe_width, height)
+                else:
+                    stripe = pygame.Rect(rect.right+space_width, 0, stripe_width, height)
                 stripe.centery = y_center
-                link.start.update(stripe.inflate(0, -padding), elapsed_ms, self.full_width, "left")
-                self.notes.append(link.start)
+                if direction == "left":
+                    linked = link.start
+                else:
+                    linked = link.end
+                linked.update(stripe.inflate(0, -padding), elapsed_ms, self.full_width, direction)
+                self.notes.append(linked)
                 self.links.append(link)
-                self._stripe_left(link.start, stripe, widths[1:], elapsed_ms, int(padding*0.8))
-
-    def _stripe_right(self, note, rect, widths, elapsed_ms, padding):
-        if not widths:
-            return
-        rect = rect.inflate(0, -padding)
-        if note.outgoing:
-            space_width, stripe_width = widths[0]
-            for link, y_center, height in self._vertical_stripes(rect, note.outgoing):
-                stripe = pygame.Rect(rect.right+space_width, 0, stripe_width, height)
-                stripe.centery = y_center
-                link.end.update(stripe.inflate(0, -padding), elapsed_ms, self.full_width, "right")
-                self.notes.append(link.end)
-                self.links.append(link)
-                self._stripe_right(link.end, stripe, widths[1:], elapsed_ms, int(padding*0.8))
+                self._stripe_recursive(linked, stripe, widths[1:], elapsed_ms, int(padding*0.8), direction)
 
     def _vertical_stripes(self, rect, links):
         height = rect.height / len(links)
