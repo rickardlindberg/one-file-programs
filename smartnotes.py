@@ -20,7 +20,7 @@ class Network(object):
         self.notes = []
         self.links = []
         middle_stripe = self._stripe(rect, 0.3)
-        self.root_note.update(middle_stripe, elapsed_ms, self.full_width)
+        self.root_note.update(middle_stripe, elapsed_ms, self.full_width, "center")
         self.notes.append(self.root_note)
         sizes = [
             (rect.width*0.05, rect.width*0.15),
@@ -53,7 +53,7 @@ class Network(object):
             stripe.height = (rect.height-padding) / len(note.incoming) - padding
             stripe.top += padding
             for link in note.incoming:
-                link.start.update(stripe, elapsed_ms, self.full_width)
+                link.start.update(stripe, elapsed_ms, self.full_width, "left")
                 self.notes.append(link.start)
                 self.links.append(link)
                 self._stripe_left(link.start, stripe, widths[1:], elapsed_ms)
@@ -71,7 +71,7 @@ class Network(object):
             stripe.height = (rect.height-padding) / len(note.outgoing) - padding
             stripe.top += padding
             for link in note.outgoing:
-                link.end.update(stripe, elapsed_ms, self.full_width)
+                link.end.update(stripe, elapsed_ms, self.full_width, "right")
                 self.notes.append(link.end)
                 self.links.append(link)
                 self._stripe_right(link.end, stripe, widths[1:], elapsed_ms)
@@ -132,9 +132,9 @@ class Note(object):
     def link(self, other_note, data):
         return Link(data, self, other_note)
 
-    def update(self, rect, elapsed_ms, full_width):
+    def update(self, rect, elapsed_ms, full_width, side):
         self._make_card(full_width)
-        target = self._get_target(rect)
+        target = self._get_target(rect, side)
         if self.rect is None:
             self.rect = self.target = self.previous = target
         elif target != self.target:
@@ -154,10 +154,15 @@ class Note(object):
                 )*percent
             )
 
-    def _get_target(self, rect):
+    def _get_target(self, rect, side):
         target = self.card.get_rect()
         target = target.fit(rect)
-        target.center = rect.center
+        if side == "left":
+            target.midright = rect.midright
+        elif side == "right":
+            target.midleft = rect.midleft
+        else:
+            target.center = rect.center
         return target
 
     def draw(self, screen):
