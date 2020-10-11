@@ -24,10 +24,11 @@ class Network(object):
         self.root_note = node
 
     def update(self, rect, elapsed_ms):
+        padding = 8
         self.full_width = int(rect.width * 0.3)
         self.notes = []
         self.links = []
-        middle_stripe = self._stripe(rect, 0.3)
+        middle_stripe = self._stripe(rect, 0.3).inflate(0, -padding)
         self.root_note.update(middle_stripe, elapsed_ms, self.full_width, "center")
         self.notes.append(self.root_note)
         sizes = [
@@ -38,52 +39,49 @@ class Network(object):
             self.root_note,
             middle_stripe,
             sizes,
-            elapsed_ms
+            elapsed_ms,
+            padding
         )
         self._stripe_right(
             self.root_note,
             middle_stripe,
             sizes,
-            elapsed_ms
+            elapsed_ms,
+            padding
         )
         for link in self.links:
             link.update(None, elapsed_ms)
 
-    def _stripe_left(self, note, rect, widths, elapsed_ms):
+    def _stripe_left(self, note, rect, widths, elapsed_ms, padding):
         if not widths:
             return
         if note.incoming:
-            padding = 5
             space_width, stripe_width = widths[0]
-            stripe = rect.copy()
-            stripe.width = stripe_width
-            stripe.right = rect.left - space_width
-            stripe.height = (rect.height-padding) / len(note.incoming) - padding
-            stripe.top += padding
-            for link in note.incoming:
-                link.start.update(stripe, elapsed_ms, self.full_width, "left")
+            for link, y_center, height in self._vertical_stripes(rect, note.incoming):
+                stripe = pygame.Rect(rect.left-space_width-stripe_width, 0, stripe_width, height)
+                stripe.centery = y_center
+                link.start.update(stripe.inflate(0, -padding), elapsed_ms, self.full_width, "left")
                 self.notes.append(link.start)
                 self.links.append(link)
-                self._stripe_left(link.start, stripe, widths[1:], elapsed_ms)
-                stripe = stripe.move(0, stripe.height+padding)
+                self._stripe_left(link.start, stripe, widths[1:], elapsed_ms, int(padding*0.8))
 
-    def _stripe_right(self, note, rect, widths, elapsed_ms):
+    def _stripe_right(self, note, rect, widths, elapsed_ms, padding):
         if not widths:
             return
         if note.outgoing:
-            padding = 5
             space_width, stripe_width = widths[0]
-            stripe = rect.copy()
-            stripe.width = stripe_width
-            stripe.left = rect.right + space_width
-            stripe.height = (rect.height-padding) / len(note.outgoing) - padding
-            stripe.top += padding
-            for link in note.outgoing:
-                link.end.update(stripe, elapsed_ms, self.full_width, "right")
+            for link, y_center, height in self._vertical_stripes(rect, note.outgoing):
+                stripe = pygame.Rect(rect.right+space_width, 0, stripe_width, height)
+                stripe.centery = y_center
+                link.end.update(stripe.inflate(0, -padding), elapsed_ms, self.full_width, "right")
                 self.notes.append(link.end)
                 self.links.append(link)
-                self._stripe_right(link.end, stripe, widths[1:], elapsed_ms)
-                stripe = stripe.move(0, stripe.height+padding)
+                self._stripe_right(link.end, stripe, widths[1:], elapsed_ms, int(padding*0.8))
+
+    def _vertical_stripes(self, rect, links):
+        height = rect.height / len(links)
+        for index, link in enumerate(links):
+            yield (link, rect.y+index*height+height/2, height)
 
     def _stripe(self, rect, factor=0.2):
         stripe = rect.copy()

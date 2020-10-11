@@ -40,7 +40,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.full_width = int(",
+"text":"):\n        padding = 8\n        self.full_width = int(",
 "type":"code"
 },
 {
@@ -56,7 +56,7 @@
 "type":"variable"
 },
 {
-"text":", 0.3)\n        self.root_note.",
+"text":", 0.3).inflate(0, -padding)\n        self.root_note.",
 "type":"code"
 },
 {
@@ -112,7 +112,7 @@
 "type":"variable"
 },
 {
-"text":"\n        )\n        self._stripe_right(\n            self.root_note,\n            middle_stripe,\n            sizes,\n            ",
+"text":",\n            padding\n        )\n        self._stripe_right(\n            self.root_note,\n            middle_stripe,\n            sizes,\n            ",
 "type":"code"
 },
 {
@@ -120,7 +120,7 @@
 "type":"variable"
 },
 {
-"text":"\n        )\n        for link in self.links:\n            link.",
+"text":",\n            padding\n        )\n        for link in self.links:\n            link.",
 "type":"code"
 },
 {
@@ -144,7 +144,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        if not widths:\n            return\n        if note.incoming:\n            padding = 5\n            space_width, stripe_width = widths[0]\n            stripe = rect.copy()\n            stripe.width = stripe_width\n            stripe.right = rect.left - space_width\n            stripe.height = (rect.height-padding) / len(note.incoming) - padding\n            stripe.top += padding\n            for link in note.incoming:\n                link.start.",
+"text":", padding):\n        if not widths:\n            return\n        if note.incoming:\n            space_width, stripe_width = widths[0]\n            for link, y_center, height in self._vertical_stripes(rect, note.incoming):\n                stripe = pygame.Rect(rect.left-space_width-stripe_width, 0, stripe_width, height)\n                stripe.centery = y_center\n                link.start.",
 "type":"code"
 },
 {
@@ -152,7 +152,7 @@
 "type":"variable"
 },
 {
-"text":"(stripe, ",
+"text":"(stripe.inflate(0, -padding), ",
 "type":"code"
 },
 {
@@ -168,7 +168,7 @@
 "type":"variable"
 },
 {
-"text":")\n                stripe = stripe.move(0, stripe.height+padding)\n\n    def _stripe_right(self, note, rect, widths, ",
+"text":", int(padding*0.8))\n\n    def _stripe_right(self, note, rect, widths, ",
 "type":"code"
 },
 {
@@ -176,7 +176,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        if not widths:\n            return\n        if note.outgoing:\n            padding = 5\n            space_width, stripe_width = widths[0]\n            stripe = rect.copy()\n            stripe.width = stripe_width\n            stripe.left = rect.right + space_width\n            stripe.height = (rect.height-padding) / len(note.outgoing) - padding\n            stripe.top += padding\n            for link in note.outgoing:\n                link.end.",
+"text":", padding):\n        if not widths:\n            return\n        if note.outgoing:\n            space_width, stripe_width = widths[0]\n            for link, y_center, height in self._vertical_stripes(rect, note.outgoing):\n                stripe = pygame.Rect(rect.right+space_width, 0, stripe_width, height)\n                stripe.centery = y_center\n                link.end.",
 "type":"code"
 },
 {
@@ -184,7 +184,7 @@
 "type":"variable"
 },
 {
-"text":"(stripe, ",
+"text":"(stripe.inflate(0, -padding), ",
 "type":"code"
 },
 {
@@ -200,7 +200,7 @@
 "type":"variable"
 },
 {
-"text":")\n                stripe = stripe.move(0, stripe.height+padding)\n\n    def _stripe(self, rect, factor=0.2):\n        stripe = rect.copy()\n        stripe.width *= factor\n        stripe.centerx = rect.centerx\n        return stripe\n\n    def ",
+"text":", int(padding*0.8))\n\n    def _vertical_stripes(self, rect, links):\n        height = rect.height / len(links)\n        for index, link in enumerate(links):\n            yield (link, rect.y+index*height+height/2, height)\n\n    def _stripe(self, rect, factor=0.2):\n        stripe = rect.copy()\n        stripe.width *= factor\n        stripe.centerx = rect.centerx\n        return stripe\n\n    def ",
 "type":"code"
 },
 {
