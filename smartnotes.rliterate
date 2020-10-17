@@ -232,7 +232,15 @@
 "type":"variable"
 },
 {
-"text":", full_width, side):\n        self._make_card(full_width)\n        target = self._get_target(",
+"text":", full_width, side):\n        self.true_rect = ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":"\n        self._make_card(full_width)\n        target = self._get_target(",
 "type":"code"
 },
 {
@@ -296,7 +304,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        screen.blit(\n            pygame.transform.smoothscale(self.card, self.rect.size),\n            self.rect\n        )\n",
+"text":"(self, screen):\n        screen.blit(\n            pygame.transform.smoothscale(self.card, self.rect.size),\n            self.rect\n        )\n        if DEBUG_NOTE_BORDER:\n            pygame.draw.rect(screen, (255, 0, 0), self.true_rect, 1)\n",
 "type":"code"
 }
 ],
@@ -517,7 +525,7 @@
 ],
 "fragments":[
 {
-"text":"#!/usr/bin/env python3\n\nimport cairo\nimport io\nimport pygame\nimport pygame.freetype\nimport sys\n\n",
+"text":"#!/usr/bin/env python3\n\nimport cairo\nimport io\nimport os\nimport pygame\nimport pygame.freetype\nimport sys\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\n\n",
 "type":"code"
 },
 {

@@ -2,9 +2,12 @@
 
 import cairo
 import io
+import os
 import pygame
 import pygame.freetype
 import sys
+
+DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 
 class Network(object):
 
@@ -140,6 +143,7 @@ class Note(object):
         return Link(data, self, other_note)
 
     def update(self, rect, elapsed_ms, full_width, side):
+        self.true_rect = rect
         self._make_card(full_width)
         target = self._get_target(rect, side)
         if self.rect is None:
@@ -177,6 +181,8 @@ class Note(object):
             pygame.transform.smoothscale(self.card, self.rect.size),
             self.rect
         )
+        if DEBUG_NOTE_BORDER:
+            pygame.draw.rect(screen, (255, 0, 0), self.true_rect, 1)
 
 class Link(object):
 
