@@ -16,7 +16,7 @@
 ],
 "fragments":[
 {
-"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n        self.pos = (-1, -1)\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n        print(self.pos)\n\n    def deactivate(self):\n        self.active = False\n\n    def make_root(self, node):\n        node.make_root()\n        self.root_note = node\n\n    def ",
+"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n        self.pos = (-1, -1)\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def deactivate(self):\n        self.active = False\n\n    def make_root(self, node):\n        node.make_root()\n        self.root_note = node\n\n    def ",
 "type":"code"
 },
 {
@@ -40,7 +40,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        padding = 8\n        self.full_width = int(",
+"text":"):\n        self.stripe_rects = []\n        padding = 8\n        self.full_width = int(",
 "type":"code"
 },
 {
@@ -136,7 +136,7 @@
 "type":"variable"
 },
 {
-"text":")\n\n    def _stripe_recursive(self, note, rect, widths, ",
+"text":")\n\n    def _stripe_recursive(self, note, parent_rect, widths, ",
 "type":"code"
 },
 {
@@ -144,7 +144,7 @@
 "type":"variable"
 },
 {
-"text":", padding, direction):\n        if not widths:\n            return\n        rect = rect.inflate(0, -padding)\n        if direction == \"left\":\n            links = note.incoming\n        else:\n            links = note.outgoing\n        if links:\n            space_width, stripe_width = widths[0]\n            for link, y_center, height in self._vertical_stripes(rect, links):\n                if direction == \"left\":\n                    stripe = pygame.Rect(rect.left-space_width-stripe_width, 0, stripe_width, height)\n                else:\n                    stripe = pygame.Rect(rect.right+space_width, 0, stripe_width, height)\n                stripe.centery = y_center\n                if direction == \"left\":\n                    linked = link.start\n                else:\n                    linked = link.end\n                linked.",
+"text":", padding, direction):\n        if not widths:\n            return\n        parent_rect = parent_rect.inflate(0, -padding)\n        if direction == \"left\":\n            links = note.incoming\n        else:\n            links = note.outgoing\n        if links:\n            space_width, stripe_width = widths[0]\n            if direction == \"left\":\n                rect = parent_rect.move(-space_width-stripe_width, 0)\n                rect.width = stripe_width\n            else:\n                rect = parent_rect.move(parent_rect.width+space_width, 0)\n                rect.width = stripe_width\n            self.stripe_rects.append(rect)\n            for link, y_center, height in self._vertical_stripes(rect, links):\n                if direction == \"left\":\n                    stripe = pygame.Rect(rect.x, 0, stripe_width, height)\n                    linked = link.start\n                else:\n                    stripe = pygame.Rect(rect.x, 0, stripe_width, height)\n                    linked = link.end\n                stripe.centery = y_center\n                linked.",
 "type":"code"
 },
 {
@@ -168,7 +168,7 @@
 "type":"variable"
 },
 {
-"text":", int(padding*0.8), direction)\n\n    def _vertical_stripes(self, rect, links):\n        height = rect.height / len(links)\n        for index, link in enumerate(links):\n            yield (link, rect.y+index*height+height/2, height)\n\n    def _stripe(self, rect, factor=0.2):\n        stripe = rect.copy()\n        stripe.width *= factor\n        stripe.centerx = rect.centerx\n        return stripe\n\n    def ",
+"text":", int(padding*0.8), direction)\n\n    def _vertical_stripes(self, rect, links):\n        if rect.collidepoint(self.pos):\n            print((self.pos[1]-rect.y)/rect.height)\n        height = rect.height / len(links)\n        for index, link in enumerate(links):\n            yield (link, rect.y+index*height+height/2, height)\n\n    def _stripe(self, rect, factor=0.2):\n        stripe = rect.copy()\n        stripe.width *= factor\n        stripe.centerx = rect.centerx\n        return stripe\n\n    def ",
 "type":"code"
 },
 {
@@ -176,7 +176,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        for note in self.notes:\n            note.",
+"text":"(self, screen):\n        if DEBUG_NOTE_BORDER:\n            for rect in self.stripe_rects:\n                pygame.draw.rect(screen, (255, 255, 0), rect, 2)\n        for note in self.notes:\n            note.",
 "type":"code"
 },
 {
