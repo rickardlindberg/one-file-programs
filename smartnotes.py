@@ -88,11 +88,21 @@ class Network(object):
                 self._stripe_recursive(linked, stripe, widths[1:], elapsed_ms, int(padding*0.8), direction)
 
     def _vertical_stripes(self, rect, links):
-        if rect.collidepoint(self.pos):
-            print((self.pos[1]-rect.y)/rect.height)
-        height = rect.height / len(links)
+        fractions = []
+        ideal_height = rect.height / len(links)
         for index, link in enumerate(links):
-            yield (link, rect.y+index*height+height/2, height)
+            if rect.collidepoint(self.pos):
+                center_y = rect.y+index*ideal_height+ideal_height/2
+                y_diff = abs(center_y - self.pos[1])
+                fractions.append(max(100 - y_diff, 10))
+            else:
+                fractions.append(1)
+        one_fraction_h = rect.height / sum(fractions)
+        y = 0
+        for fraction, link in zip(fractions, links):
+            h = one_fraction_h * fraction
+            yield (link, rect.y+y+h/2, h)
+            y += h
 
     def _stripe(self, rect, factor=0.2):
         stripe = rect.copy()
