@@ -18,9 +18,6 @@ class Network(object):
     def mouse_pos(self, pos):
         self.pos = pos
 
-    def deactivate(self):
-        self.active = False
-
     def make_root(self, node):
         node.make_root()
         self.root_note = node

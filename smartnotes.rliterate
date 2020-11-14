@@ -16,7 +16,7 @@
 ],
 "fragments":[
 {
-"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n        self.pos = (-1, -1)\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def deactivate(self):\n        self.active = False\n\n    def make_root(self, node):\n        node.make_root()\n        self.root_note = node\n\n    def ",
+"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n        self.pos = (-1, -1)\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def make_root(self, node):\n        node.make_root()\n        self.root_note = node\n\n    def ",
 "type":"code"
 },
 {
