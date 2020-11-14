@@ -176,7 +176,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        if DEBUG_NOTE_BORDER:\n            for rect in self.stripe_rects:\n                pygame.draw.rect(screen, (255, 255, 0), rect, 2)\n        for note in self.notes:\n            note.",
+"text":"(self, screen):\n        if DEBUG_NOTE_BORDER:\n            for rect in self.stripe_rects:\n                pygame.draw.rect(screen, (255, 255, 0), rect, 2)\n        for link in self.links:\n            link.",
 "type":"code"
 },
 {
@@ -184,7 +184,7 @@
 "type":"variable"
 },
 {
-"text":"(screen)\n        for link in self.links:\n            link.",
+"text":"(screen)\n        for note in self.notes:\n            note.",
 "type":"code"
 },
 {

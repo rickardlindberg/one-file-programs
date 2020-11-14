@@ -133,10 +133,10 @@ class Network(object):
         if DEBUG_NOTE_BORDER:
             for rect in self.stripe_rects:
                 pygame.draw.rect(screen, (255, 255, 0), rect, 2)
-        for note in self.notes:
-            note.draw(screen)
         for link in self.links:
             link.draw(screen)
+        for note in self.notes:
+            note.draw(screen)
 
 class Note(object):
 
