@@ -18,6 +18,12 @@ class Network(object):
     def mouse_pos(self, pos):
         self.pos = pos
 
+    def click(self, pos):
+        for note in self.notes:
+            if note.rect.collidepoint(pos):
+                self.make_root(note)
+                return
+
     def make_root(self, node):
         node.make_root()
         self.root_note = node
@@ -369,13 +375,10 @@ def main():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 debug_bar.toggle()
                 animation.start(200)
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
-                if network.root_note == root:
-                    network.make_root(second)
-                else:
-                    network.make_root(root)
             elif event.type == pygame.MOUSEMOTION:
                 network.mouse_pos(event.pos)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                network.click(event.pos)
         screen.fill((134, 169, 214))
         elapsed_ms = clock.get_time()
         rect = screen.get_rect()
