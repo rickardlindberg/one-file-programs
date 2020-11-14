@@ -88,21 +88,36 @@ class Network(object):
                 self._stripe_recursive(linked, stripe, widths[1:], elapsed_ms, int(padding*0.8), direction)
 
     def _vertical_stripes(self, rect, links):
-        fractions = []
-        ideal_height = rect.height / len(links)
-        for index, link in enumerate(links):
-            if rect.collidepoint(self.pos):
-                center_y = rect.y+index*ideal_height+ideal_height/2
-                y_diff = abs(center_y - self.pos[1])
-                fractions.append(max(100 - y_diff, 10))
+        if rect.collidepoint(self.pos):
+            even_height = rect.height / len(links)
+            even_width = even_height * 5/3
+            if rect.width < even_width:
+                yield from self._vertical_stripes_even(rect, links)
             else:
-                fractions.append(1)
+                yield from self._vertical_stripes_fish_eye(rect, links)
+        else:
+            yield from self._vertical_stripes_even(rect, links)
+
+    def _vertical_stripes_fish_eye(self, rect, links):
+        fractions = []
+        even_height = rect.height / len(links)
+        for index, link in enumerate(links):
+            center_y = rect.y+index*even_height+even_height/2
+            y_diff = abs(center_y - self.pos[1])
+            fractions.append(max(even_height*3-y_diff, even_height))
         one_fraction_h = rect.height / sum(fractions)
         y = 0
         for fraction, link in zip(fractions, links):
             h = one_fraction_h * fraction
             yield (link, rect.y+y+h/2, h)
             y += h
+
+    def _vertical_stripes_even(self, rect, links):
+        even_height = rect.height / len(links)
+        y = 0
+        for link in links:
+            yield (link, rect.y+y+even_height/2, even_height)
+            y += even_height
 
     def _stripe(self, rect, factor=0.2):
         stripe = rect.copy()
