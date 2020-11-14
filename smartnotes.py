@@ -8,6 +8,7 @@ import pygame.freetype
 import sys
 
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
+DEBUG_ANIMATIONS = os.environ.get("DEBUG_ANIMATIONS") == "yes"
 
 class Network(object):
 
@@ -191,7 +192,7 @@ class Note(object):
                 self.rect = self.target
             self.target = target
             self.previous = self.rect
-            self.animation.start(200)
+            self.animation.start(3000 if DEBUG_ANIMATIONS else 200)
         if self.animation.active():
             x_diff = self.target.width - self.previous.width
             y_diff = self.target.height - self.previous.height
