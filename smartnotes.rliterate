@@ -248,7 +248,7 @@
 "type":"variable"
 },
 {
-"text":", side)\n        if fade_from_rect:\n            self.rect = self.target = self.previous = fade_from_rect\n        if self.rect is None:\n            self.rect = self.target = self.previous = target\n        if target != self.target:\n            if self.animation.active():\n                self.rect = self.target\n            self.target = target\n            self.previous = self.rect\n            self.animation.start(3000 if DEBUG_ANIMATIONS else 300)\n        if self.animation.active():\n            x_diff = self.target.width - self.previous.width\n            y_diff = self.target.height - self.previous.height\n            percent = self.animation.advance(",
+"text":", side)\n        if fade_from_rect:\n            x = target.copy()\n            x.center = fade_from_rect.center\n            self.rect = self.target = self.previous = x\n        if self.rect is None:\n            self.rect = self.target = self.previous = target\n        if target != self.target:\n            if self.animation.active():\n                self.rect = self.target\n            self.target = target\n            self.previous = self.rect\n            self.animation.start(3000 if DEBUG_ANIMATIONS else 300)\n        if self.animation.active():\n            x_diff = self.target.width - self.previous.width\n            y_diff = self.target.height - self.previous.height\n            percent = self.animation.advance(",
 "type":"code"
 },
 {

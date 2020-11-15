@@ -200,7 +200,9 @@ class Note(object):
         self._make_card(full_width)
         target = self._get_target(rect, side)
         if fade_from_rect:
-            self.rect = self.target = self.previous = fade_from_rect
+            x = target.copy()
+            x.center = fade_from_rect.center
+            self.rect = self.target = self.previous = x
         if self.rect is None:
             self.rect = self.target = self.previous = target
         if target != self.target:
