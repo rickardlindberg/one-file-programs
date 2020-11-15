@@ -16,7 +16,7 @@
 ],
 "fragments":[
 {
-"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n        self.pos = (-1, -1)\n        self.notes = []\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in self.notes:\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def make_root(self, node):\n        node.make_root()\n        self.root_note = node\n\n    def ",
+"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def make_root(self, node):\n        node.make_root()\n        self.root_note = node\n\n    def ",
 "type":"code"
 },
 {
@@ -40,7 +40,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.stripe_rects = []\n        padding = 8\n        self.full_width = int(",
+"text":"):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(self.pos):\n                self.selected_note = note\n                break\n        self.stripe_rects = []\n        padding = 8\n        self.full_width = int(",
 "type":"code"
 },
 {
@@ -72,7 +72,7 @@
 "type":"variable"
 },
 {
-"text":",\n            self.full_width,\n            \"center\",\n            None\n        )\n        self.notes.append(self.root_note)\n        sizes = [\n            (",
+"text":",\n            self.full_width,\n            \"center\",\n            None,\n            self.root_note is self.selected_note\n        )\n        self.notes.append(self.root_note)\n        sizes = [\n            (",
 "type":"code"
 },
 {
@@ -160,7 +160,7 @@
 "type":"variable"
 },
 {
-"text":",\n                    self.full_width,\n                    direction,\n                    note.rect if linked not in self.old_nodes else None\n                )\n                self.notes.insert(0, linked)\n                self.links.append(link)\n                self._stripe_recursive(linked, stripe, widths[1:], ",
+"text":",\n                    self.full_width,\n                    direction,\n                    note.rect if linked not in self.old_nodes else None,\n                    linked is self.selected_note\n                )\n                self.notes.insert(0, linked)\n                self.links.append(link)\n                self._stripe_recursive(linked, stripe, widths[1:], ",
 "type":"code"
 },
 {
@@ -232,7 +232,7 @@
 "type":"variable"
 },
 {
-"text":", full_width, side, fade_from_rect):\n        self.true_rect = ",
+"text":", full_width, side,\n            fade_from_rect, selected):\n        self.selected = selected\n        self.true_rect = ",
 "type":"code"
 },
 {
@@ -304,7 +304,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        screen.blit(\n            pygame.transform.smoothscale(self.card, self.rect.size),\n            self.rect\n        )\n        if DEBUG_NOTE_BORDER:\n            pygame.draw.rect(screen, (255, 0, 0), self.true_rect, 1)\n",
+"text":"(self, screen):\n        screen.blit(\n            pygame.transform.smoothscale(self.card, self.rect.size),\n            self.rect\n        )\n        if self.selected:\n            pygame.draw.rect(screen, (255, 0, 0), self.rect.inflate(-6, -6), 2)\n        if DEBUG_NOTE_BORDER:\n            pygame.draw.rect(screen, (255, 0, 0), self.true_rect, 1)\n",
 "type":"code"
 }
 ],

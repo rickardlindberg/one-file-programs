@@ -16,12 +16,13 @@ class Network(object):
         self.root_note = root_note
         self.pos = (-1, -1)
         self.notes = []
+        self.selected_note = None
 
     def mouse_pos(self, pos):
         self.pos = pos
 
     def click(self, pos):
-        for note in self.notes:
+        for note in reversed(self.notes):
             if note.rect.collidepoint(pos):
                 self.make_root(note)
                 return
@@ -31,6 +32,10 @@ class Network(object):
         self.root_note = node
 
     def update(self, rect, elapsed_ms):
+        for note in reversed(self.notes):
+            if note.rect.collidepoint(self.pos):
+                self.selected_note = note
+                break
         self.stripe_rects = []
         padding = 8
         self.full_width = int(rect.width * 0.3)
@@ -43,7 +48,8 @@ class Network(object):
             elapsed_ms,
             self.full_width,
             "center",
-            None
+            None,
+            self.root_note is self.selected_note
         )
         self.notes.append(self.root_note)
         sizes = [
@@ -99,7 +105,8 @@ class Network(object):
                     elapsed_ms,
                     self.full_width,
                     direction,
-                    note.rect if linked not in self.old_nodes else None
+                    note.rect if linked not in self.old_nodes else None,
+                    linked is self.selected_note
                 )
                 self.notes.insert(0, linked)
                 self.links.append(link)
@@ -195,7 +202,9 @@ class Note(object):
     def link(self, other_note, data):
         return Link(data, self, other_note)
 
-    def update(self, rect, elapsed_ms, full_width, side, fade_from_rect):
+    def update(self, rect, elapsed_ms, full_width, side,
+            fade_from_rect, selected):
+        self.selected = selected
         self.true_rect = rect
         self._make_card(full_width)
         target = self._get_target(rect, side)
@@ -238,6 +247,8 @@ class Note(object):
             pygame.transform.smoothscale(self.card, self.rect.size),
             self.rect
         )
+        if self.selected:
+            pygame.draw.rect(screen, (255, 0, 0), self.rect.inflate(-6, -6), 2)
         if DEBUG_NOTE_BORDER:
             pygame.draw.rect(screen, (255, 0, 0), self.true_rect, 1)
 
