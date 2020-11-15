@@ -16,7 +16,7 @@
 ],
 "fragments":[
 {
-"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n        self.pos = (-1, -1)\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in self.notes:\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def make_root(self, node):\n        node.make_root()\n        self.root_note = node\n\n    def ",
+"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n        self.pos = (-1, -1)\n        self.notes = []\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in self.notes:\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def make_root(self, node):\n        node.make_root()\n        self.root_note = node\n\n    def ",
 "type":"code"
 },
 {
@@ -48,7 +48,7 @@
 "type":"variable"
 },
 {
-"text":".width * 0.3)\n        self.notes = []\n        self.links = []\n        middle_stripe = self._stripe(",
+"text":".width * 0.3)\n        self.old_nodes = self.notes\n        self.notes = []\n        self.links = []\n        middle_stripe = self._stripe(",
 "type":"code"
 },
 {
@@ -64,7 +64,7 @@
 "type":"variable"
 },
 {
-"text":"(middle_stripe, ",
+"text":"(\n            middle_stripe,\n            ",
 "type":"code"
 },
 {
@@ -72,7 +72,7 @@
 "type":"variable"
 },
 {
-"text":", self.full_width, \"center\")\n        self.notes.append(self.root_note)\n        sizes = [\n            (",
+"text":",\n            self.full_width,\n            \"center\",\n            None\n        )\n        self.notes.append(self.root_note)\n        sizes = [\n            (",
 "type":"code"
 },
 {
@@ -152,7 +152,7 @@
 "type":"variable"
 },
 {
-"text":"(stripe.inflate(0, -padding), ",
+"text":"(\n                    stripe.inflate(0, -padding),\n                    ",
 "type":"code"
 },
 {
@@ -160,7 +160,7 @@
 "type":"variable"
 },
 {
-"text":", self.full_width, direction)\n                self.notes.append(linked)\n                self.links.append(link)\n                self._stripe_recursive(linked, stripe, widths[1:], ",
+"text":",\n                    self.full_width,\n                    direction,\n                    note.rect if linked not in self.old_nodes else None\n                )\n                self.notes.insert(0, linked)\n                self.links.append(link)\n                self._stripe_recursive(linked, stripe, widths[1:], ",
 "type":"code"
 },
 {
@@ -232,7 +232,7 @@
 "type":"variable"
 },
 {
-"text":", full_width, side):\n        self.true_rect = ",
+"text":", full_width, side, fade_from_rect):\n        self.true_rect = ",
 "type":"code"
 },
 {
@@ -248,7 +248,7 @@
 "type":"variable"
 },
 {
-"text":", side)\n        if self.rect is None:\n            self.rect = self.target = self.previous = target\n        elif target != self.target:\n            if self.animation.active():\n                self.rect = self.target\n            self.target = target\n            self.previous = self.rect\n            self.animation.start(3000 if DEBUG_ANIMATIONS else 200)\n        if self.animation.active():\n            x_diff = self.target.width - self.previous.width\n            y_diff = self.target.height - self.previous.height\n            percent = self.animation.advance(",
+"text":", side)\n        if fade_from_rect:\n            self.rect = self.target = self.previous = fade_from_rect\n        if self.rect is None:\n            self.rect = self.target = self.previous = target\n        if target != self.target:\n            if self.animation.active():\n                self.rect = self.target\n            self.target = target\n            self.previous = self.rect\n            self.animation.start(3000 if DEBUG_ANIMATIONS else 300)\n        if self.animation.active():\n            x_diff = self.target.width - self.previous.width\n            y_diff = self.target.height - self.previous.height\n            percent = self.animation.advance(",
 "type":"code"
 },
 {

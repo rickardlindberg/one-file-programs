@@ -15,6 +15,7 @@ class Network(object):
     def __init__(self, root_note):
         self.root_note = root_note
         self.pos = (-1, -1)
+        self.notes = []
 
     def mouse_pos(self, pos):
         self.pos = pos
@@ -33,10 +34,17 @@ class Network(object):
         self.stripe_rects = []
         padding = 8
         self.full_width = int(rect.width * 0.3)
+        self.old_nodes = self.notes
         self.notes = []
         self.links = []
         middle_stripe = self._stripe(rect, 0.3)
-        self.root_note.update(middle_stripe, elapsed_ms, self.full_width, "center")
+        self.root_note.update(
+            middle_stripe,
+            elapsed_ms,
+            self.full_width,
+            "center",
+            None
+        )
         self.notes.append(self.root_note)
         sizes = [
             (rect.width*0.05, rect.width*0.15),
@@ -86,8 +94,14 @@ class Network(object):
                     stripe = pygame.Rect(rect.x, 0, stripe_width, height)
                     linked = link.end
                 stripe.centery = y_center
-                linked.update(stripe.inflate(0, -padding), elapsed_ms, self.full_width, direction)
-                self.notes.append(linked)
+                linked.update(
+                    stripe.inflate(0, -padding),
+                    elapsed_ms,
+                    self.full_width,
+                    direction,
+                    note.rect if linked not in self.old_nodes else None
+                )
+                self.notes.insert(0, linked)
                 self.links.append(link)
                 self._stripe_recursive(linked, stripe, widths[1:], elapsed_ms, int(padding*0.8), direction)
 
@@ -181,18 +195,20 @@ class Note(object):
     def link(self, other_note, data):
         return Link(data, self, other_note)
 
-    def update(self, rect, elapsed_ms, full_width, side):
+    def update(self, rect, elapsed_ms, full_width, side, fade_from_rect):
         self.true_rect = rect
         self._make_card(full_width)
         target = self._get_target(rect, side)
+        if fade_from_rect:
+            self.rect = self.target = self.previous = fade_from_rect
         if self.rect is None:
             self.rect = self.target = self.previous = target
-        elif target != self.target:
+        if target != self.target:
             if self.animation.active():
                 self.rect = self.target
             self.target = target
             self.previous = self.rect
-            self.animation.start(3000 if DEBUG_ANIMATIONS else 200)
+            self.animation.start(3000 if DEBUG_ANIMATIONS else 300)
         if self.animation.active():
             x_diff = self.target.width - self.previous.width
             y_diff = self.target.height - self.previous.height
