@@ -36,6 +36,8 @@ class Network(object):
             if note.rect.collidepoint(self.pos):
                 self.selected_note = note
                 break
+        else:
+            self.selected_note = None
         self.stripe_rects = []
         padding = 8
         self.full_width = int(rect.width * 0.3)

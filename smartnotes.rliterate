@@ -40,7 +40,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(self.pos):\n                self.selected_note = note\n                break\n        self.stripe_rects = []\n        padding = 8\n        self.full_width = int(",
+"text":"):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(self.pos):\n                self.selected_note = note\n                break\n        else:\n            self.selected_note = None\n        self.stripe_rects = []\n        padding = 8\n        self.full_width = int(",
 "type":"code"
 },
 {
