@@ -14,7 +14,7 @@ import uuid
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_ANIMATIONS = os.environ.get("DEBUG_ANIMATIONS") == "yes"
 
-class Network(object):
+class NetworkWidget(object):
 
     def __init__(self, db):
         self.db = db
@@ -33,7 +33,7 @@ class Network(object):
                 return
 
     def open_note(self, note_id):
-        self.make_root(Note(self.db, note_id))
+        self.make_root(NoteWidget(self.db, note_id))
 
     def make_root(self, node):
         self.root_note = node
@@ -170,7 +170,7 @@ class Network(object):
         for note in self.notes:
             note.draw(screen)
 
-class Note(object):
+class NoteWidget(object):
 
     def __init__(self, db, note_id):
         self.db = db
@@ -194,10 +194,10 @@ class Note(object):
             if link_id in by_id:
                 self.incoming.append(by_id.pop(link_id))
             else:
-                Link(
+                LinkWidget(
                     self.db,
                     link_id,
-                    Note(self.db, link_data["from"]),
+                    NoteWidget(self.db, link_data["from"]),
                     self
                 )
         return self.incoming
@@ -212,11 +212,11 @@ class Note(object):
             if link_id in by_id:
                 self.outgoing.append(by_id.pop(link_id))
             else:
-                Link(
+                LinkWidget(
                     self.db,
                     link_id,
                     self,
-                    Note(self.db, link_data["to"])
+                    NoteWidget(self.db, link_data["to"])
                 )
         return self.outgoing
 
@@ -294,7 +294,7 @@ class Note(object):
         if DEBUG_NOTE_BORDER:
             pygame.draw.rect(screen, (255, 0, 0), self.true_rect, 1)
 
-class Link(object):
+class LinkWidget(object):
 
     def __init__(self, db, link_id, start, end):
         self.db = db
@@ -487,7 +487,7 @@ def main():
     pygame.display.set_caption("Smart Notes")
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
-    network = Network(db)
+    network = NetworkWidget(db)
     if db.data["notes"]:
         network.open_note(next(iter(db.data["notes"].keys())))
     debug_bar = DebugBar(clock)
