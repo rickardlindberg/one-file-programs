@@ -16,7 +16,7 @@
 ],
 "fragments":[
 {
-"text":"class Network(object):\n\n    def __init__(self, root_note):\n        self.root_note = root_note\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def make_root(self, node):\n        node.make_root()\n        self.root_note = node\n\n    def ",
+"text":"class Network(object):\n\n    def __init__(self, db):\n        self.db = db\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def open_note(self, note_id):\n        self.make_root(Note(self.db, note_id))\n\n    def make_root(self, node):\n        self.root_note = node\n\n    def ",
 "type":"code"
 },
 {
@@ -56,7 +56,7 @@
 "type":"variable"
 },
 {
-"text":", 0.3)\n        self.root_note.",
+"text":", 0.3)\n        if self.root_note is None:\n            return\n        self.root_note.",
 "type":"code"
 },
 {
@@ -144,7 +144,7 @@
 "type":"variable"
 },
 {
-"text":", padding, direction):\n        if not widths:\n            return\n        parent_rect = parent_rect.inflate(0, -padding)\n        if direction == \"left\":\n            links = note.incoming\n        else:\n            links = note.outgoing\n        if links:\n            space_width, stripe_width = widths[0]\n            if direction == \"left\":\n                rect = parent_rect.move(-space_width-stripe_width, 0)\n                rect.width = stripe_width\n            else:\n                rect = parent_rect.move(parent_rect.width+space_width, 0)\n                rect.width = stripe_width\n            self.stripe_rects.append(rect)\n            for link, y_center, height in self._vertical_stripes(rect, links):\n                if direction == \"left\":\n                    stripe = pygame.Rect(rect.x, 0, stripe_width, height)\n                    linked = link.start\n                else:\n                    stripe = pygame.Rect(rect.x, 0, stripe_width, height)\n                    linked = link.end\n                stripe.centery = y_center\n                linked.",
+"text":", padding, direction):\n        if not widths:\n            return\n        parent_rect = parent_rect.inflate(0, -padding)\n        if direction == \"left\":\n            links = note.update_incoming()\n        else:\n            links = note.update_outgoing()\n        if links:\n            space_width, stripe_width = widths[0]\n            if direction == \"left\":\n                rect = parent_rect.move(-space_width-stripe_width, 0)\n                rect.width = stripe_width\n            else:\n                rect = parent_rect.move(parent_rect.width+space_width, 0)\n                rect.width = stripe_width\n            self.stripe_rects.append(rect)\n            for link, y_center, height in self._vertical_stripes(rect, links):\n                if direction == \"left\":\n                    stripe = pygame.Rect(rect.x, 0, stripe_width, height)\n                    linked = link.start\n                else:\n                    stripe = pygame.Rect(rect.x, 0, stripe_width, height)\n                    linked = link.end\n                stripe.centery = y_center\n                linked.",
 "type":"code"
 },
 {
@@ -208,7 +208,31 @@
 ],
 "fragments":[
 {
-"text":"class Note(object):\n\n    def __init__(self, data):\n        self.data = data\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n        self.full_width = None\n\n    def _make_card(self, full_width):\n        if self.full_width == full_width:\n            return\n        self.full_width = full_width\n        size = (full_width, int(full_width*3/5))\n        border_size = 4\n        self.card = pygame.Surface(size, pygame.SRCALPHA)\n        border = pygame.Rect((0, 0), size)\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        pygame.draw.rect(self.card, (50, 50, 50, 150), border)\n        border.x -= border_size\n        border.y -= border_size\n        pygame.draw.rect(self.card, (250, 250, 250), border)\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            20\n        )\n        text, rect = font.render(self.data[\"text\"])\n        self.card.blit(text, rect.move(\n            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)\n        ))\n\n    def make_root(self):\n        pass\n\n    def link(self, other_note, data):\n        return Link(data, self, other_note)\n\n    def ",
+"text":"class Note(object):\n\n    def __init__(self, db, note_id):\n        self.db = db\n        self.note_id = note_id\n        self.incoming = []\n        self.outgoing = []\n        self.data = db.",
+"type":"code"
+},
+{
+"id":"7efd9878f5b944e09e96228ab258303b",
+"type":"variable"
+},
+{
+"text":"(note_id)\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n        self.full_width = None\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
+"type":"code"
+},
+{
+"id":"4b5405a3ae174b3e9bb6938c905bb18e",
+"type":"variable"
+},
+{
+"text":"(self.note_id):\n            if link_id in by_id:\n                self.incoming.append(by_id.pop(link_id))\n            else:\n                Link(\n                    self.db,\n                    link_id,\n                    Note(self.db, link_data[\"from\"]),\n                    self\n                )\n        return self.incoming\n\n    def update_outgoing(self):\n        by_id = {\n            link.link_id: link\n            for link in self.outgoing\n        }\n        self.outgoing = []\n        for link_id, link_data in self.db.",
+"type":"code"
+},
+{
+"id":"6b3f131bafd84a0eafcc6a947995a761",
+"type":"variable"
+},
+{
+"text":"(self.note_id):\n            if link_id in by_id:\n                self.outgoing.append(by_id.pop(link_id))\n            else:\n                Link(\n                    self.db,\n                    link_id,\n                    self,\n                    Note(self.db, link_data[\"to\"])\n                )\n        return self.outgoing\n\n    def _make_card(self, full_width):\n        if self.full_width == full_width:\n            return\n        self.full_width = full_width\n        size = (full_width, int(full_width*3/5))\n        border_size = 4\n        self.card = pygame.Surface(size, pygame.SRCALPHA)\n        border = pygame.Rect((0, 0), size)\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        pygame.draw.rect(self.card, (50, 50, 50, 150), border)\n        border.x -= border_size\n        border.y -= border_size\n        pygame.draw.rect(self.card, (250, 250, 250), border)\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            20\n        )\n        text, rect = font.render(self.data[\"text\"])\n        self.card.blit(text, rect.move(\n            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)\n        ))\n\n    def ",
 "type":"code"
 },
 {
@@ -232,7 +256,7 @@
 "type":"variable"
 },
 {
-"text":", full_width, side,\n            fade_from_rect, selected):\n        self.selected = selected\n        self.true_rect = ",
+"text":", full_width, side, fade_from_rect, selected):\n        self.selected = selected\n        self.true_rect = ",
 "type":"code"
 },
 {
@@ -320,7 +344,7 @@
 ],
 "fragments":[
 {
-"text":"class Link(object):\n\n    def __init__(self, data, start, end):\n        self.data = data\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n        self.start_pos = None\n        self.end_pos = None\n\n    def ",
+"text":"class Link(object):\n\n    def __init__(self, db, link_id, start, end):\n        self.db = db\n        self.link_id = link_id\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n        self.start_pos = None\n        self.end_pos = None\n\n    def ",
 "type":"code"
 },
 {
@@ -514,6 +538,133 @@
 "id":"0b150af1003a44dab87710c2149af734",
 "paragraphs":[],
 "title":"Pygame Utilities"
+},
+{
+"children":[],
+"id":"dc011c5af96c4cf5ba82bb7c79f69563",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class NoteDb(object):\n\n    def __init__(self, path):\n        self.path = path\n        self.data = read_json_file(self.path, {\n            \"version\": 1,\n            \"notes\": {},\n            \"links\": {},\n        })\n\n    def ",
+"type":"code"
+},
+{
+"id":"7efd9878f5b944e09e96228ab258303b",
+"type":"variable"
+},
+{
+"text":"(self, note_id):\n        return self.data[\"notes\"][note_id]\n\n    def ",
+"type":"code"
+},
+{
+"id":"6b3f131bafd84a0eafcc6a947995a761",
+"type":"variable"
+},
+{
+"text":"(self, note_id):\n        return [\n            (link_id, link)\n            for link_id, link in self.data[\"links\"].items()\n            if link[\"from\"] == note_id\n        ]\n\n    def ",
+"type":"code"
+},
+{
+"id":"4b5405a3ae174b3e9bb6938c905bb18e",
+"type":"variable"
+},
+{
+"text":"(self, note_id):\n        return [\n            (link_id, link)\n            for link_id, link in self.data[\"links\"].items()\n            if link[\"to\"] == note_id\n        ]\n\n    def create_note(self, **params):\n        note_id = genid()\n        self.data = dict(\n            self.data,\n            notes=dict(\n                self.data[\"notes\"],\n                **{note_id: dict(params, timestamp_created=new_date_string())}\n            )\n        )\n        self._update()\n        return note_id\n\n    def create_link(self, from_id, to_id):\n        link_id = genid()\n        self.data = dict(\n            self.data,\n            links=dict(\n                self.data[\"links\"],\n                **{link_id: {\n                    \"from\": from_id,\n                    \"to\": to_id,\n                    \"timestamp_created\": new_date_string(),\n                }}\n            )\n        )\n        self._update()\n        return link_id\n\n    def _update(self):\n        write_json_file(self.path, self.data)\n",
+"type":"code"
+}
+],
+"id":"486ada8dcbd342f496b9909b2660347d",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def read_json_file(path, default_value):\n    if os.path.exists(path):\n        with open(path) as f:\n            return json.load(f)\n    else:\n        return default_value\n",
+"type":"code"
+}
+],
+"id":"5ef9c213431e485499ca5da086d19013",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def write_json_file(path, value):\n    with safe_write(path) as f:\n        json.dump(value, f)\n",
+"type":"code"
+}
+],
+"id":"bed891eb4b214ccf88663a0ca600d368",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"@contextlib.contextmanager\ndef safe_write(path):\n    tmp_path = f\"{path}.tmp\"\n    with open(tmp_path, \"w\") as f:\n        yield f\n    os.rename(tmp_path, path)\n",
+"type":"code"
+}
+],
+"id":"69dbf4c50e7c444b94bdc693909613d4",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def genid():\n    return uuid.uuid4().hex\n",
+"type":"code"
+}
+],
+"id":"61fac0216a5444a799dd67129536b982",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def new_date_string():\n    return datetime.datetime.utcnow().isoformat()\n",
+"type":"code"
+}
+],
+"id":"b68c021bacf0459b87f8a4c2eaf30912",
+"type":"code"
+}
+],
+"title":"Data model"
 }
 ],
 "id":"4b9f83dd3a9c454e917cf4c9431ea3ae",
@@ -525,7 +676,7 @@
 ],
 "fragments":[
 {
-"text":"#!/usr/bin/env python3\n\nimport cairo\nimport io\nimport os\nimport pygame\nimport pygame.freetype\nimport sys\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\n\n",
+"text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport io\nimport json\nimport os\nimport pygame\nimport pygame.freetype\nimport sys\nimport uuid\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\n\n",
 "type":"code"
 },
 {
@@ -565,7 +716,7 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    root = Note({\"text\": \"root\"})\n    root.link(Note({\"text\": \"first child\"}), {})\n    second = Note({\"text\": \"second child\"})\n    root.link(second, {})\n    hidden = Note({\"text\": f\"hidden?\"})\n    hidden.link(second, {})\n    for i in range(10):\n        Note({\"text\": f\"pre {i}\"}).link(root, {})\n    for i in range(10):\n        Note({\"text\": f\"pre {i}\"}).link(hidden, {})\n    second.link(Note({\"text\": \"second 1\"}), {})\n    second.link(Note({\"text\": \"second 2\"}), {})\n    network = Network(root)\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.MOUSEMOTION:\n                network.mouse_pos(event.pos)\n            elif event.type == pygame.MOUSEBUTTONDOWN:\n                network.click(event.pos)\n        screen.fill((134, 169, 214))\n        ",
+"text":"def main():\n    if len(sys.argv) < 2:\n        sys.exit(\"Usage: smartnotes.py <file>\")\n    db = NoteDb(sys.argv[1])\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    network = Network(db)\n    if db.data[\"notes\"]:\n        network.open_note(next(iter(db.data[\"notes\"].keys())))\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.MOUSEMOTION:\n                network.mouse_pos(event.pos)\n            elif event.type == pygame.MOUSEBUTTONDOWN:\n                network.click(event.pos)\n        screen.fill((134, 169, 214))\n        ",
 "type":"code"
 },
 {
@@ -664,8 +815,11 @@
 "title":"Smart Notes"
 },
 "variables":{
+"4b5405a3ae174b3e9bb6938c905bb18e":"get_incoming_links",
 "595003a78e1e4326ac5ef9aa70b79fd9":"rect",
+"6b3f131bafd84a0eafcc6a947995a761":"get_outgoing_links",
 "7583be08dcbd4bcca0e6a043d3791710":"elapsed_ms",
+"7efd9878f5b944e09e96228ab258303b":"get_note",
 "8cce3dd9f80645e6a8df699f872f1736":"update",
 "acab4c17f89046f4a05b14a8c35ad89a":"draw"
 }

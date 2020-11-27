@@ -1,22 +1,27 @@
 #!/usr/bin/env python3
 
 import cairo
+import contextlib
+import datetime
 import io
+import json
 import os
 import pygame
 import pygame.freetype
 import sys
+import uuid
 
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_ANIMATIONS = os.environ.get("DEBUG_ANIMATIONS") == "yes"
 
 class Network(object):
 
-    def __init__(self, root_note):
-        self.root_note = root_note
+    def __init__(self, db):
+        self.db = db
         self.pos = (-1, -1)
         self.notes = []
         self.selected_note = None
+        self.root_note = None
 
     def mouse_pos(self, pos):
         self.pos = pos
@@ -27,8 +32,10 @@ class Network(object):
                 self.make_root(note)
                 return
 
+    def open_note(self, note_id):
+        self.make_root(Note(self.db, note_id))
+
     def make_root(self, node):
-        node.make_root()
         self.root_note = node
 
     def update(self, rect, elapsed_ms):
@@ -45,6 +52,8 @@ class Network(object):
         self.notes = []
         self.links = []
         middle_stripe = self._stripe(rect, 0.3)
+        if self.root_note is None:
+            return
         self.root_note.update(
             middle_stripe,
             elapsed_ms,
@@ -82,9 +91,9 @@ class Network(object):
             return
         parent_rect = parent_rect.inflate(0, -padding)
         if direction == "left":
-            links = note.incoming
+            links = note.update_incoming()
         else:
-            links = note.outgoing
+            links = note.update_outgoing()
         if links:
             space_width, stripe_width = widths[0]
             if direction == "left":
@@ -163,15 +172,53 @@ class Network(object):
 
 class Note(object):
 
-    def __init__(self, data):
-        self.data = data
+    def __init__(self, db, note_id):
+        self.db = db
+        self.note_id = note_id
         self.incoming = []
         self.outgoing = []
+        self.data = db.get_note(note_id)
         self.animation = Animation()
         self.rect = None
         self.target = None
         self.previous = None
         self.full_width = None
+
+    def update_incoming(self):
+        by_id = {
+            link.link_id: link
+            for link in self.incoming
+        }
+        self.incoming = []
+        for link_id, link_data in self.db.get_incoming_links(self.note_id):
+            if link_id in by_id:
+                self.incoming.append(by_id.pop(link_id))
+            else:
+                Link(
+                    self.db,
+                    link_id,
+                    Note(self.db, link_data["from"]),
+                    self
+                )
+        return self.incoming
+
+    def update_outgoing(self):
+        by_id = {
+            link.link_id: link
+            for link in self.outgoing
+        }
+        self.outgoing = []
+        for link_id, link_data in self.db.get_outgoing_links(self.note_id):
+            if link_id in by_id:
+                self.outgoing.append(by_id.pop(link_id))
+            else:
+                Link(
+                    self.db,
+                    link_id,
+                    self,
+                    Note(self.db, link_data["to"])
+                )
+        return self.outgoing
 
     def _make_card(self, full_width):
         if self.full_width == full_width:
@@ -198,14 +245,7 @@ class Note(object):
             pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)
         ))
 
-    def make_root(self):
-        pass
-
-    def link(self, other_note, data):
-        return Link(data, self, other_note)
-
-    def update(self, rect, elapsed_ms, full_width, side,
-            fade_from_rect, selected):
+    def update(self, rect, elapsed_ms, full_width, side, fade_from_rect, selected):
         self.selected = selected
         self.true_rect = rect
         self._make_card(full_width)
@@ -256,8 +296,9 @@ class Note(object):
 
 class Link(object):
 
-    def __init__(self, data, start, end):
-        self.data = data
+    def __init__(self, db, link_id, start, end):
+        self.db = db
+        self.link_id = link_id
         self.start = start
         self.end = end
         self.start.outgoing.append(self)
@@ -380,24 +421,75 @@ class Animation(object):
     def active(self):
         return self.progress < self.duration_ms or not self.last_consumed
 
+class NoteDb(object):
+
+    def __init__(self, path):
+        self.path = path
+        self.data = read_json_file(self.path, {
+            "version": 1,
+            "notes": {},
+            "links": {},
+        })
+
+    def get_note(self, note_id):
+        return self.data["notes"][note_id]
+
+    def get_outgoing_links(self, note_id):
+        return [
+            (link_id, link)
+            for link_id, link in self.data["links"].items()
+            if link["from"] == note_id
+        ]
+
+    def get_incoming_links(self, note_id):
+        return [
+            (link_id, link)
+            for link_id, link in self.data["links"].items()
+            if link["to"] == note_id
+        ]
+
+    def create_note(self, **params):
+        note_id = genid()
+        self.data = dict(
+            self.data,
+            notes=dict(
+                self.data["notes"],
+                **{note_id: dict(params, timestamp_created=new_date_string())}
+            )
+        )
+        self._update()
+        return note_id
+
+    def create_link(self, from_id, to_id):
+        link_id = genid()
+        self.data = dict(
+            self.data,
+            links=dict(
+                self.data["links"],
+                **{link_id: {
+                    "from": from_id,
+                    "to": to_id,
+                    "timestamp_created": new_date_string(),
+                }}
+            )
+        )
+        self._update()
+        return link_id
+
+    def _update(self):
+        write_json_file(self.path, self.data)
+
 def main():
+    if len(sys.argv) < 2:
+        sys.exit("Usage: smartnotes.py <file>")
+    db = NoteDb(sys.argv[1])
     pygame.init()
     pygame.display.set_caption("Smart Notes")
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
-    root = Note({"text": "root"})
-    root.link(Note({"text": "first child"}), {})
-    second = Note({"text": "second child"})
-    root.link(second, {})
-    hidden = Note({"text": f"hidden?"})
-    hidden.link(second, {})
-    for i in range(10):
-        Note({"text": f"pre {i}"}).link(root, {})
-    for i in range(10):
-        Note({"text": f"pre {i}"}).link(hidden, {})
-    second.link(Note({"text": "second 1"}), {})
-    second.link(Note({"text": "second 2"}), {})
-    network = Network(root)
+    network = Network(db)
+    if db.data["notes"]:
+        network.open_note(next(iter(db.data["notes"].keys())))
     debug_bar = DebugBar(clock)
     animation = Animation()
     while True:
@@ -443,6 +535,30 @@ def draw_cairo(width, height, fn):
     #buf = surface.get_data()
     #image = pygame.image.frombuffer(buf, (width, height), "ARGB")
     #return image
+
+def read_json_file(path, default_value):
+    if os.path.exists(path):
+        with open(path) as f:
+            return json.load(f)
+    else:
+        return default_value
+
+def write_json_file(path, value):
+    with safe_write(path) as f:
+        json.dump(value, f)
+
+@contextlib.contextmanager
+def safe_write(path):
+    tmp_path = f"{path}.tmp"
+    with open(tmp_path, "w") as f:
+        yield f
+    os.rename(tmp_path, path)
+
+def genid():
+    return uuid.uuid4().hex
+
+def new_date_string():
+    return datetime.datetime.utcnow().isoformat()
 
 if __name__ == "__main__":
     main()
