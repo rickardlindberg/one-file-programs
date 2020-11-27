@@ -636,6 +636,14 @@
 "type":"code"
 },
 {
+"id":"a342079796cc418b9f52363ab1ca3cf3",
+"type":"variable"
+},
+{
+"text":"(self):\n        return self.data[\"notes\"].items()\n\n    def ",
+"type":"code"
+},
+{
 "id":"7efd9878f5b944e09e96228ab258303b",
 "type":"variable"
 },
@@ -916,7 +924,15 @@
 "type":"variable"
 },
 {
-"text":"(db)\n    if db.data[\"notes\"]:\n        network.open_note(next(iter(db.data[\"notes\"].keys())))\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.MOUSEMOTION:\n                network.mouse_pos(event.pos)\n            elif event.type == pygame.MOUSEBUTTONDOWN:\n                network.click(event.pos)\n        screen.fill((134, 169, 214))\n        ",
+"text":"(db)\n    for note_id, note_data in db.",
+"type":"code"
+},
+{
+"id":"a342079796cc418b9f52363ab1ca3cf3",
+"type":"variable"
+},
+{
+"text":"():\n        network.open_note(note_id)\n        break\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.MOUSEMOTION:\n                network.mouse_pos(event.pos)\n            elif event.type == pygame.MOUSEBUTTONDOWN:\n                network.click(event.pos)\n        screen.fill((134, 169, 214))\n        ",
 "type":"code"
 },
 {
@@ -1024,9 +1040,10 @@
 "595003a78e1e4326ac5ef9aa70b79fd9":"rect",
 "6b3f131bafd84a0eafcc6a947995a761":"get_outgoing_links",
 "7583be08dcbd4bcca0e6a043d3791710":"elapsed_ms",
-"7efd9878f5b944e09e96228ab258303b":"get_note",
+"7efd9878f5b944e09e96228ab258303b":"get_note_data",
 "8cce3dd9f80645e6a8df699f872f1736":"update",
 "937919ed2e2c41cca33d85a681729a69":"NetworkWidget",
+"a342079796cc418b9f52363ab1ca3cf3":"get_notes",
 "ac730e733b7b46e49245a174f805ac8d":"NoteWidget",
 "acab4c17f89046f4a05b14a8c35ad89a":"draw",
 "b948d840f9574847ab15f4d31f74b5c6":"genid",

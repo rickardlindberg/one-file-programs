@@ -177,7 +177,7 @@ class NoteWidget(object):
         self.note_id = note_id
         self.incoming = []
         self.outgoing = []
-        self.data = db.get_note(note_id)
+        self.data = db.get_note_data(note_id)
         self.animation = Animation()
         self.rect = None
         self.target = None
@@ -431,7 +431,10 @@ class NoteDb(object):
             "links": {},
         })
 
-    def get_note(self, note_id):
+    def get_notes(self):
+        return self.data["notes"].items()
+
+    def get_note_data(self, note_id):
         return self.data["notes"][note_id]
 
     def get_outgoing_links(self, note_id):
@@ -488,8 +491,9 @@ def main():
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
     network = NetworkWidget(db)
-    if db.data["notes"]:
-        network.open_note(next(iter(db.data["notes"].keys())))
+    for note_id, note_data in db.get_notes():
+        network.open_note(note_id)
+        break
     debug_bar = DebugBar(clock)
     animation = Animation()
     while True:
