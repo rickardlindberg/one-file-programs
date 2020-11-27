@@ -454,7 +454,7 @@ class NoteDb(object):
             self.data,
             notes=dict(
                 self.data["notes"],
-                **{note_id: dict(params, timestamp_created=new_date_string())}
+                **{note_id: dict(params, timestamp_created=utcnow_timestamp_string())}
             )
         )
         self._update()
@@ -469,7 +469,7 @@ class NoteDb(object):
                 **{link_id: {
                     "from": from_id,
                     "to": to_id,
-                    "timestamp_created": new_date_string(),
+                    "timestamp_created": utcnow_timestamp_string(),
                 }}
             )
         )
@@ -557,7 +557,7 @@ def safe_write(path):
 def genid():
     return uuid.uuid4().hex
 
-def new_date_string():
+def utcnow_timestamp_string():
     return datetime.datetime.utcnow().isoformat()
 
 if __name__ == "__main__":

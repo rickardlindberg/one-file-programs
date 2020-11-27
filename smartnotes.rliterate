@@ -552,7 +552,23 @@
 ],
 "fragments":[
 {
-"text":"class NoteDb(object):\n\n    def __init__(self, path):\n        self.path = path\n        self.data = read_json_file(self.path, {\n            \"version\": 1,\n            \"notes\": {},\n            \"links\": {},\n        })\n\n    def ",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"03a7c6b0000146f5ba3d059fd0936900",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    def __init__(self, path):\n        self.path = path\n        self.data = ",
+"type":"code"
+},
+{
+"id":"2237aa8492f74e6da9484546734acc06",
+"type":"variable"
+},
+{
+"text":"(self.path, {\n            \"version\": 1,\n            \"notes\": {},\n            \"links\": {},\n        })\n\n    def ",
 "type":"code"
 },
 {
@@ -576,7 +592,63 @@
 "type":"variable"
 },
 {
-"text":"(self, note_id):\n        return [\n            (link_id, link)\n            for link_id, link in self.data[\"links\"].items()\n            if link[\"to\"] == note_id\n        ]\n\n    def create_note(self, **params):\n        note_id = genid()\n        self.data = dict(\n            self.data,\n            notes=dict(\n                self.data[\"notes\"],\n                **{note_id: dict(params, timestamp_created=new_date_string())}\n            )\n        )\n        self._update()\n        return note_id\n\n    def create_link(self, from_id, to_id):\n        link_id = genid()\n        self.data = dict(\n            self.data,\n            links=dict(\n                self.data[\"links\"],\n                **{link_id: {\n                    \"from\": from_id,\n                    \"to\": to_id,\n                    \"timestamp_created\": new_date_string(),\n                }}\n            )\n        )\n        self._update()\n        return link_id\n\n    def _update(self):\n        write_json_file(self.path, self.data)\n",
+"text":"(self, note_id):\n        return [\n            (link_id, link)\n            for link_id, link in self.data[\"links\"].items()\n            if link[\"to\"] == note_id\n        ]\n\n    def ",
+"type":"code"
+},
+{
+"id":"0b307bcf1b0c4063a456d2120dfe8ae0",
+"type":"variable"
+},
+{
+"text":"(self, **params):\n        note_id = ",
+"type":"code"
+},
+{
+"id":"b948d840f9574847ab15f4d31f74b5c6",
+"type":"variable"
+},
+{
+"text":"()\n        self.data = dict(\n            self.data,\n            notes=dict(\n                self.data[\"notes\"],\n                **{note_id: dict(params, timestamp_created=",
+"type":"code"
+},
+{
+"id":"ce3392bc2bab47e78e5a9d8802772b57",
+"type":"variable"
+},
+{
+"text":"())}\n            )\n        )\n        self._update()\n        return note_id\n\n    def ",
+"type":"code"
+},
+{
+"id":"1d6a87fbf9354dd7a07c9fcf3f92ffb4",
+"type":"variable"
+},
+{
+"text":"(self, from_id, to_id):\n        link_id = ",
+"type":"code"
+},
+{
+"id":"b948d840f9574847ab15f4d31f74b5c6",
+"type":"variable"
+},
+{
+"text":"()\n        self.data = dict(\n            self.data,\n            links=dict(\n                self.data[\"links\"],\n                **{link_id: {\n                    \"from\": from_id,\n                    \"to\": to_id,\n                    \"timestamp_created\": ",
+"type":"code"
+},
+{
+"id":"ce3392bc2bab47e78e5a9d8802772b57",
+"type":"variable"
+},
+{
+"text":"(),\n                }}\n            )\n        )\n        self._update()\n        return link_id\n\n    def _update(self):\n        ",
+"type":"code"
+},
+{
+"id":"f8996a2073f44381a80ca3f9efd459a4",
+"type":"variable"
+},
+{
+"text":"(self.path, self.data)\n",
 "type":"code"
 }
 ],
@@ -592,7 +664,15 @@
 ],
 "fragments":[
 {
-"text":"def read_json_file(path, default_value):\n    if os.path.exists(path):\n        with open(path) as f:\n            return json.load(f)\n    else:\n        return default_value\n",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"2237aa8492f74e6da9484546734acc06",
+"type":"variable"
+},
+{
+"text":"(path, default_value):\n    if os.path.exists(path):\n        with open(path) as f:\n            return json.load(f)\n    else:\n        return default_value\n",
 "type":"code"
 }
 ],
@@ -608,7 +688,23 @@
 ],
 "fragments":[
 {
-"text":"def write_json_file(path, value):\n    with safe_write(path) as f:\n        json.dump(value, f)\n",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"f8996a2073f44381a80ca3f9efd459a4",
+"type":"variable"
+},
+{
+"text":"(path, value):\n    with ",
+"type":"code"
+},
+{
+"id":"12a5523894264ebaaff391fa452cb51c",
+"type":"variable"
+},
+{
+"text":"(path) as f:\n        json.dump(value, f)\n",
 "type":"code"
 }
 ],
@@ -624,7 +720,15 @@
 ],
 "fragments":[
 {
-"text":"@contextlib.contextmanager\ndef safe_write(path):\n    tmp_path = f\"{path}.tmp\"\n    with open(tmp_path, \"w\") as f:\n        yield f\n    os.rename(tmp_path, path)\n",
+"text":"@contextlib.contextmanager\ndef ",
+"type":"code"
+},
+{
+"id":"12a5523894264ebaaff391fa452cb51c",
+"type":"variable"
+},
+{
+"text":"(path):\n    tmp_path = f\"{path}.tmp\"\n    with open(tmp_path, \"w\") as f:\n        yield f\n    os.rename(tmp_path, path)\n",
 "type":"code"
 }
 ],
@@ -640,7 +744,15 @@
 ],
 "fragments":[
 {
-"text":"def genid():\n    return uuid.uuid4().hex\n",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"b948d840f9574847ab15f4d31f74b5c6",
+"type":"variable"
+},
+{
+"text":"():\n    return uuid.uuid4().hex\n",
 "type":"code"
 }
 ],
@@ -656,7 +768,15 @@
 ],
 "fragments":[
 {
-"text":"def new_date_string():\n    return datetime.datetime.utcnow().isoformat()\n",
+"text":"def ",
+"type":"code"
+},
+{
+"id":"ce3392bc2bab47e78e5a9d8802772b57",
+"type":"variable"
+},
+{
+"text":"():\n    return datetime.datetime.utcnow().isoformat()\n",
 "type":"code"
 }
 ],
@@ -716,7 +836,15 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    if len(sys.argv) < 2:\n        sys.exit(\"Usage: smartnotes.py <file>\")\n    db = NoteDb(sys.argv[1])\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    network = Network(db)\n    if db.data[\"notes\"]:\n        network.open_note(next(iter(db.data[\"notes\"].keys())))\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.MOUSEMOTION:\n                network.mouse_pos(event.pos)\n            elif event.type == pygame.MOUSEBUTTONDOWN:\n                network.click(event.pos)\n        screen.fill((134, 169, 214))\n        ",
+"text":"def main():\n    if len(sys.argv) < 2:\n        sys.exit(\"Usage: smartnotes.py <file>\")\n    db = ",
+"type":"code"
+},
+{
+"id":"03a7c6b0000146f5ba3d059fd0936900",
+"type":"variable"
+},
+{
+"text":"(sys.argv[1])\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    network = Network(db)\n    if db.data[\"notes\"]:\n        network.open_note(next(iter(db.data[\"notes\"].keys())))\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.MOUSEMOTION:\n                network.mouse_pos(event.pos)\n            elif event.type == pygame.MOUSEBUTTONDOWN:\n                network.click(event.pos)\n        screen.fill((134, 169, 214))\n        ",
 "type":"code"
 },
 {
@@ -815,12 +943,20 @@
 "title":"Smart Notes"
 },
 "variables":{
+"03a7c6b0000146f5ba3d059fd0936900":"NoteDb",
+"0b307bcf1b0c4063a456d2120dfe8ae0":"create_note",
+"12a5523894264ebaaff391fa452cb51c":"safe_write",
+"1d6a87fbf9354dd7a07c9fcf3f92ffb4":"create_link",
+"2237aa8492f74e6da9484546734acc06":"read_json_file",
 "4b5405a3ae174b3e9bb6938c905bb18e":"get_incoming_links",
 "595003a78e1e4326ac5ef9aa70b79fd9":"rect",
 "6b3f131bafd84a0eafcc6a947995a761":"get_outgoing_links",
 "7583be08dcbd4bcca0e6a043d3791710":"elapsed_ms",
 "7efd9878f5b944e09e96228ab258303b":"get_note",
 "8cce3dd9f80645e6a8df699f872f1736":"update",
-"acab4c17f89046f4a05b14a8c35ad89a":"draw"
+"acab4c17f89046f4a05b14a8c35ad89a":"draw",
+"b948d840f9574847ab15f4d31f74b5c6":"genid",
+"ce3392bc2bab47e78e5a9d8802772b57":"utcnow_timestamp_string",
+"f8996a2073f44381a80ca3f9efd459a4":"write_json_file"
 }
 }
