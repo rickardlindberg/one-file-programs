@@ -24,7 +24,15 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, db):\n        self.db = db\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def open_note(self, note_id):\n        self.make_root(",
+"text":"(object):\n\n    def __init__(self, db):\n        self.db = db\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def ",
+"type":"code"
+},
+{
+"id":"550c4c8b55b444af9a0463ba8be1c5b9",
+"type":"variable"
+},
+{
+"text":"(self, note_id):\n        self.make_root(",
 "type":"code"
 },
 {
@@ -232,15 +240,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, db, note_id):\n        self.db = db\n        self.note_id = note_id\n        self.incoming = []\n        self.outgoing = []\n        self.data = db.",
-"type":"code"
-},
-{
-"id":"7efd9878f5b944e09e96228ab258303b",
-"type":"variable"
-},
-{
-"text":"(note_id)\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n        self.full_width = None\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
+"text":"(object):\n\n    def __init__(self, db, note_id):\n        self.db = db\n        self.note_id = note_id\n        self.data = None\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n        self.full_width = None\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -288,7 +288,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, link_data[\"to\"])\n                )\n        return self.outgoing\n\n    def _make_card(self, full_width):\n        if self.full_width == full_width:\n            return\n        self.full_width = full_width\n        size = (full_width, int(full_width*3/5))\n        border_size = 4\n        self.card = pygame.Surface(size, pygame.SRCALPHA)\n        border = pygame.Rect((0, 0), size)\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        pygame.draw.rect(self.card, (50, 50, 50, 150), border)\n        border.x -= border_size\n        border.y -= border_size\n        pygame.draw.rect(self.card, (250, 250, 250), border)\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            20\n        )\n        text, rect = font.render(self.data[\"text\"])\n        self.card.blit(text, rect.move(\n            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)\n        ))\n\n    def ",
+"text":"(self.db, link_data[\"to\"])\n                )\n        return self.outgoing\n\n    def _make_card(self, full_width, data):\n        if self.full_width == full_width and data is self.data:\n            return\n        self.data = data\n        self.full_width = full_width\n        size = (full_width, int(full_width*3/5))\n        border_size = 4\n        self.card = pygame.Surface(size, pygame.SRCALPHA)\n        border = pygame.Rect((0, 0), size)\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        pygame.draw.rect(self.card, (50, 50, 50, 150), border)\n        border.x -= border_size\n        border.y -= border_size\n        pygame.draw.rect(self.card, (250, 250, 250), border)\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            20\n        )\n        text, rect = font.render(self.data[\"text\"])\n        self.card.blit(text, rect.move(\n            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)\n        ))\n\n    def ",
 "type":"code"
 },
 {
@@ -320,7 +320,15 @@
 "type":"variable"
 },
 {
-"text":"\n        self._make_card(full_width)\n        target = self._get_target(",
+"text":"\n        self._make_card(full_width, self.db.",
+"type":"code"
+},
+{
+"id":"7efd9878f5b944e09e96228ab258303b",
+"type":"variable"
+},
+{
+"text":"(self.note_id))\n        target = self._get_target(",
 "type":"code"
 },
 {
@@ -692,6 +700,14 @@
 "type":"code"
 },
 {
+"id":"b31e252cdc2f4776ac95bce3dc27c3f2",
+"type":"variable"
+},
+{
+"text":"(self, note_id, **params):\n        self.data = dict(\n            self.data,\n            notes=dict(\n                self.data[\"notes\"],\n                **{note_id: dict(self.data[\"notes\"][note_id], **params)}\n            )\n        )\n        self._update()\n\n    def ",
+"type":"code"
+},
+{
 "id":"1d6a87fbf9354dd7a07c9fcf3f92ffb4",
 "type":"variable"
 },
@@ -857,6 +873,117 @@
 }
 ],
 "title":"Data model"
+},
+{
+"children":[],
+"id":"d2382bb409e441e781fb02e120e6e629",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"fbbc968c81ea43adac03e7f20e8085dd",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    def __init__(self):\n        self.entries = []\n\n    def add(self, entry):\n        self.entries.append(entry)\n\n    def check(self):\n        self.entries = [\n            entry\n            for entry in self.entries\n            if entry.check()\n        ]\n",
+"type":"code"
+}
+],
+"id":"4fdb5de88ff545a79cb7fc955b5380fe",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"51e0d946025e49788fa31b8cfbab897a",
+"type":"variable"
+},
+{
+"text":"(object):\n\n    def __init__(self, text):\n        self.text = text\n        self.f = tempfile.NamedTemporaryFile(suffix=\"-smartnotes-external-\")\n        self.f.write(self.text.encode(\"utf-8\"))\n        self.f.flush()\n        self.p = subprocess.Popen([\"gvim\", \"--nofork\", self.f.name])\n\n    def check(self):\n        self.f.seek(0)\n        text = self.f.read().decode(\"utf-8\")\n        if text != self.text:\n            self.text = text\n            self._new_text()\n        if self.p.poll() is not None:\n            self.f.close()\n            return False\n        return True\n\n    def _new_text(self):\n        pass\n",
+"type":"code"
+}
+],
+"id":"b16e01bbb1ec4e95b6a30c1ad7b12941",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"8545e167bfcc4a79a004d99b674f6ca1",
+"type":"variable"
+},
+{
+"text":"(",
+"type":"code"
+},
+{
+"id":"51e0d946025e49788fa31b8cfbab897a",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, db, note_id=None):\n        self.db = db\n        self.note_id = note_id\n        ",
+"type":"code"
+},
+{
+"id":"51e0d946025e49788fa31b8cfbab897a",
+"type":"variable"
+},
+{
+"text":".__init__(self, db.",
+"type":"code"
+},
+{
+"id":"7efd9878f5b944e09e96228ab258303b",
+"type":"variable"
+},
+{
+"text":"(self.note_id)[\"text\"])\n\n    def _new_text(self):\n        self.db.",
+"type":"code"
+},
+{
+"id":"b31e252cdc2f4776ac95bce3dc27c3f2",
+"type":"variable"
+},
+{
+"text":"(self.note_id, text=self.text)\n",
+"type":"code"
+}
+],
+"id":"d8e41e42e3c74c77972240dd961292f6",
+"type":"code"
+}
+],
+"title":"External Text Entry"
 }
 ],
 "id":"4b9f83dd3a9c454e917cf4c9431ea3ae",
@@ -868,7 +995,7 @@
 ],
 "fragments":[
 {
-"text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport io\nimport json\nimport os\nimport pygame\nimport pygame.freetype\nimport sys\nimport uuid\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\n\n",
+"text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport io\nimport json\nimport os\nimport pygame\nimport pygame.freetype\nimport subprocess\nimport sys\nimport tempfile\nimport uuid\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\n\n",
 "type":"code"
 },
 {
@@ -932,7 +1059,31 @@
 "type":"variable"
 },
 {
-"text":"():\n        network.open_note(note_id)\n        break\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.MOUSEMOTION:\n                network.mouse_pos(event.pos)\n            elif event.type == pygame.MOUSEBUTTONDOWN:\n                network.click(event.pos)\n        screen.fill((134, 169, 214))\n        ",
+"text":"():\n        network.",
+"type":"code"
+},
+{
+"id":"550c4c8b55b444af9a0463ba8be1c5b9",
+"type":"variable"
+},
+{
+"text":"(note_id)\n        break\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    external_text_entries = ",
+"type":"code"
+},
+{
+"id":"fbbc968c81ea43adac03e7f20e8085dd",
+"type":"variable"
+},
+{
+"text":"()\n    CHECK_EXTERNAL = pygame.USEREVENT\n    pygame.time.set_timer(CHECK_EXTERNAL, 1000)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.MOUSEMOTION:\n                network.mouse_pos(event.pos)\n            elif event.type == pygame.MOUSEBUTTONDOWN:\n                network.click(event.pos)\n            elif event.type == CHECK_EXTERNAL:\n                external_text_entries.check()\n            elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n                if network.selected_note:\n                    external_text_entries.add(\n                        EditNoteText(db, network.selected_note.note_id)\n                    )\n            elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n                if network.selected_note:\n                    child_note_id = db.create_note(text=\"Enter note text...\")\n                    db.create_link(network.selected_note.note_id, child_note_id)\n                    external_text_entries.add(\n                        EditNoteText(db, child_note_id)\n                    )\n            elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n                note_id = db.create_note(text=\"Enter note text...\")\n                network.",
+"type":"code"
+},
+{
+"id":"550c4c8b55b444af9a0463ba8be1c5b9",
+"type":"variable"
+},
+{
+"text":"(note_id)\n                external_text_entries.add(\n                    EditNoteText(db, note_id)\n                )\n        screen.fill((134, 169, 214))\n        ",
 "type":"code"
 },
 {
@@ -1037,18 +1188,23 @@
 "1d6a87fbf9354dd7a07c9fcf3f92ffb4":"create_link",
 "2237aa8492f74e6da9484546734acc06":"read_json_file",
 "4b5405a3ae174b3e9bb6938c905bb18e":"get_incoming_links",
+"51e0d946025e49788fa31b8cfbab897a":"ExternalTextEntry",
+"550c4c8b55b444af9a0463ba8be1c5b9":"open_note",
 "595003a78e1e4326ac5ef9aa70b79fd9":"rect",
 "6b3f131bafd84a0eafcc6a947995a761":"get_outgoing_links",
 "7583be08dcbd4bcca0e6a043d3791710":"elapsed_ms",
 "7efd9878f5b944e09e96228ab258303b":"get_note_data",
+"8545e167bfcc4a79a004d99b674f6ca1":"EditNoteText",
 "8cce3dd9f80645e6a8df699f872f1736":"update",
 "937919ed2e2c41cca33d85a681729a69":"NetworkWidget",
 "a342079796cc418b9f52363ab1ca3cf3":"get_notes",
 "ac730e733b7b46e49245a174f805ac8d":"NoteWidget",
 "acab4c17f89046f4a05b14a8c35ad89a":"draw",
+"b31e252cdc2f4776ac95bce3dc27c3f2":"update_note",
 "b948d840f9574847ab15f4d31f74b5c6":"genid",
 "c2242de47b1049bb9dddb0f72abeea0c":"LinkWidget",
 "ce3392bc2bab47e78e5a9d8802772b57":"utcnow_timestamp_string",
-"f8996a2073f44381a80ca3f9efd459a4":"write_json_file"
+"f8996a2073f44381a80ca3f9efd459a4":"write_json_file",
+"fbbc968c81ea43adac03e7f20e8085dd":"ExternalTextEntries"
 }
 }

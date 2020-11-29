@@ -8,7 +8,9 @@ import json
 import os
 import pygame
 import pygame.freetype
+import subprocess
 import sys
+import tempfile
 import uuid
 
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
@@ -175,9 +177,9 @@ class NoteWidget(object):
     def __init__(self, db, note_id):
         self.db = db
         self.note_id = note_id
+        self.data = None
         self.incoming = []
         self.outgoing = []
-        self.data = db.get_note_data(note_id)
         self.animation = Animation()
         self.rect = None
         self.target = None
@@ -220,9 +222,10 @@ class NoteWidget(object):
                 )
         return self.outgoing
 
-    def _make_card(self, full_width):
-        if self.full_width == full_width:
+    def _make_card(self, full_width, data):
+        if self.full_width == full_width and data is self.data:
             return
+        self.data = data
         self.full_width = full_width
         size = (full_width, int(full_width*3/5))
         border_size = 4
@@ -248,7 +251,7 @@ class NoteWidget(object):
     def update(self, rect, elapsed_ms, full_width, side, fade_from_rect, selected):
         self.selected = selected
         self.true_rect = rect
-        self._make_card(full_width)
+        self._make_card(full_width, self.db.get_note_data(self.note_id))
         target = self._get_target(rect, side)
         if fade_from_rect:
             x = target.copy()
@@ -463,6 +466,16 @@ class NoteDb(object):
         self._update()
         return note_id
 
+    def update_note(self, note_id, **params):
+        self.data = dict(
+            self.data,
+            notes=dict(
+                self.data["notes"],
+                **{note_id: dict(self.data["notes"][note_id], **params)}
+            )
+        )
+        self._update()
+
     def create_link(self, from_id, to_id):
         link_id = genid()
         self.data = dict(
@@ -482,6 +495,54 @@ class NoteDb(object):
     def _update(self):
         write_json_file(self.path, self.data)
 
+class ExternalTextEntries(object):
+
+    def __init__(self):
+        self.entries = []
+
+    def add(self, entry):
+        self.entries.append(entry)
+
+    def check(self):
+        self.entries = [
+            entry
+            for entry in self.entries
+            if entry.check()
+        ]
+
+class ExternalTextEntry(object):
+
+    def __init__(self, text):
+        self.text = text
+        self.f = tempfile.NamedTemporaryFile(suffix="-smartnotes-external-")
+        self.f.write(self.text.encode("utf-8"))
+        self.f.flush()
+        self.p = subprocess.Popen(["gvim", "--nofork", self.f.name])
+
+    def check(self):
+        self.f.seek(0)
+        text = self.f.read().decode("utf-8")
+        if text != self.text:
+            self.text = text
+            self._new_text()
+        if self.p.poll() is not None:
+            self.f.close()
+            return False
+        return True
+
+    def _new_text(self):
+        pass
+
+class EditNoteText(ExternalTextEntry):
+
+    def __init__(self, db, note_id=None):
+        self.db = db
+        self.note_id = note_id
+        ExternalTextEntry.__init__(self, db.get_note_data(self.note_id)["text"])
+
+    def _new_text(self):
+        self.db.update_note(self.note_id, text=self.text)
+
 def main():
     if len(sys.argv) < 2:
         sys.exit("Usage: smartnotes.py <file>")
@@ -496,6 +557,9 @@ def main():
         break
     debug_bar = DebugBar(clock)
     animation = Animation()
+    external_text_entries = ExternalTextEntries()
+    CHECK_EXTERNAL = pygame.USEREVENT
+    pygame.time.set_timer(CHECK_EXTERNAL, 1000)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -507,6 +571,26 @@ def main():
                 network.mouse_pos(event.pos)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 network.click(event.pos)
+            elif event.type == CHECK_EXTERNAL:
+                external_text_entries.check()
+            elif event.type == pygame.KEYDOWN and event.unicode == "e":
+                if network.selected_note:
+                    external_text_entries.add(
+                        EditNoteText(db, network.selected_note.note_id)
+                    )
+            elif event.type == pygame.KEYDOWN and event.unicode == "c":
+                if network.selected_note:
+                    child_note_id = db.create_note(text="Enter note text...")
+                    db.create_link(network.selected_note.note_id, child_note_id)
+                    external_text_entries.add(
+                        EditNoteText(db, child_note_id)
+                    )
+            elif event.type == pygame.KEYDOWN and event.unicode == "n":
+                note_id = db.create_note(text="Enter note text...")
+                network.open_note(note_id)
+                external_text_entries.add(
+                    EditNoteText(db, note_id)
+                )
         screen.fill((134, 169, 214))
         elapsed_ms = clock.get_time()
         rect = screen.get_rect()
