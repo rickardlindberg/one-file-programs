@@ -119,7 +119,7 @@ class HBox(Box):
     def move_rect(self, rect, delta):
         return rect.move(delta, 0)
 
-class RootWidget(VBox):
+class SmartNotesWidget(VBox):
 
     def __init__(self, path):
         VBox.__init__(self)
@@ -702,7 +702,7 @@ def main():
     if len(sys.argv) < 2:
         sys.exit("Usage: smartnotes.py <file>")
     pygame_main(
-        RootWidget,
+        SmartNotesWidget,
         sys.argv[1]
     )
 

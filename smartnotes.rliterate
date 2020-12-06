@@ -14,7 +14,15 @@
 ],
 "fragments":[
 {
-"text":"class RootWidget(VBox):\n\n    def __init__(self, path):\n        VBox.__init__(self)\n        self.db = ",
+"text":"class ",
+"type":"code"
+},
+{
+"id":"28992293e2f14729bfa7acc3ba2d153d",
+"type":"variable"
+},
+{
+"text":"(VBox):\n\n    def __init__(self, path):\n        VBox.__init__(self)\n        self.db = ",
 "type":"code"
 },
 {
@@ -1196,7 +1204,15 @@
 "type":"variable"
 },
 {
-"text":"(\n        RootWidget,\n        sys.argv[1]\n    )\n",
+"text":"(\n        ",
+"type":"code"
+},
+{
+"id":"28992293e2f14729bfa7acc3ba2d153d",
+"type":"variable"
+},
+{
+"text":",\n        sys.argv[1]\n    )\n",
 "type":"code"
 }
 ],
@@ -1244,6 +1260,7 @@
 "12a5523894264ebaaff391fa452cb51c":"safe_write",
 "1d6a87fbf9354dd7a07c9fcf3f92ffb4":"create_link",
 "2237aa8492f74e6da9484546734acc06":"read_json_file",
+"28992293e2f14729bfa7acc3ba2d153d":"SmartNotesWidget",
 "4b5405a3ae174b3e9bb6938c905bb18e":"get_incoming_links",
 "51e0d946025e49788fa31b8cfbab897a":"ExternalTextEntry",
 "550c4c8b55b444af9a0463ba8be1c5b9":"open_note",
