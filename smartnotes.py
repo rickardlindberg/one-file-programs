@@ -43,6 +43,12 @@ class Widget(object):
     def toggle_visible(self):
         self._visible = not self._visible
 
+    def quit(self):
+        self.post_event(pygame.QUIT)
+
+    def post_event(self, event_type, **kwargs):
+        pygame.event.post(pygame.event.Event(event_type, **kwargs))
+
 class Box(Widget):
 
     def __init__(self):
@@ -141,7 +147,7 @@ class RootWidget(VBox):
 
     def process_event(self, event):
         if event.type == pygame.KEYDOWN and event.unicode == "q":
-            pygame.event.post(pygame.event.Event(pygame.QUIT))
+            self.quit()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.debug_bar.toggle()
         elif event.type == pygame.MOUSEMOTION:
