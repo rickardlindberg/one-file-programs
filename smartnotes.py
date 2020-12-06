@@ -128,10 +128,10 @@ class RootWidget(VBox):
     def run(self):
         pygame.init()
         pygame.display.set_caption("Smart Notes")
+        self.network = self.add(NetworkWidget(self.db))
+        self.debug_bar = self.add(DebugBar())
         screen = pygame.display.set_mode((1280, 720))
         clock = pygame.time.Clock()
-        self.network = self.add(NetworkWidget(self.db))
-        self.debug_bar = self.add(DebugBar(clock))
         external_text_entries = ExternalTextEntries()
         pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
         while True:
@@ -532,9 +532,8 @@ class DebugBar(Widget):
 
     IDEAL_HEIGHT = 50
 
-    def __init__(self, clock):
+    def __init__(self):
         Widget.__init__(self, height=self.IDEAL_HEIGHT)
-        self.clock = clock
         self.animation = Animation()
         self.font = pygame.freetype.SysFont(
             pygame.freetype.get_default_font(),
@@ -551,8 +550,12 @@ class DebugBar(Widget):
     def update(self, rect, elapsed_ms):
         self.image = pygame.Surface(rect.size)
         self.image.fill((84, 106, 134))
+        if elapsed_ms == 0:
+            fps = 0
+        else:
+            fps = int(round(1000/elapsed_ms))
         text, text_rect = self.font.render(
-            f"elapsed_ms = {elapsed_ms} | fps = {int(round(self.clock.get_fps()))}"
+            f"elapsed_ms = {elapsed_ms} | fps = {fps}"
         )
         percent = self.animation.advance(elapsed_ms)
         if Widget.is_visible(self):

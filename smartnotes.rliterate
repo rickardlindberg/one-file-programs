@@ -22,7 +22,7 @@
 "type":"variable"
 },
 {
-"text":"(path)\n\n    def run(self):\n        pygame.init()\n        pygame.display.set_caption(\"Smart Notes\")\n        screen = pygame.display.set_mode((1280, 720))\n        clock = pygame.time.Clock()\n        self.network = self.add(",
+"text":"(path)\n\n    def run(self):\n        pygame.init()\n        pygame.display.set_caption(\"Smart Notes\")\n        self.network = self.add(",
 "type":"code"
 },
 {
@@ -30,7 +30,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db))\n        self.debug_bar = self.add(DebugBar(clock))\n        external_text_entries = ",
+"text":"(self.db))\n        self.debug_bar = self.add(DebugBar())\n        screen = pygame.display.set_mode((1280, 720))\n        clock = pygame.time.Clock()\n        external_text_entries = ",
 "type":"code"
 },
 {
@@ -549,7 +549,7 @@
 ],
 "fragments":[
 {
-"text":"class DebugBar(Widget):\n\n    IDEAL_HEIGHT = 50\n\n    def __init__(self, clock):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT)\n        self.clock = clock\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
+"text":"class DebugBar(Widget):\n\n    IDEAL_HEIGHT = 50\n\n    def __init__(self):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT)\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -581,7 +581,7 @@
 "type":"variable"
 },
 {
-"text":".size)\n        self.image.fill((84, 106, 134))\n        text, text_rect = self.font.render(\n            f\"",
+"text":".size)\n        self.image.fill((84, 106, 134))\n        if elapsed_ms == 0:\n            fps = 0\n        else:\n            fps = int(round(1000/elapsed_ms))\n        text, text_rect = self.font.render(\n            f\"",
 "type":"code"
 },
 {
@@ -597,7 +597,7 @@
 "type":"variable"
 },
 {
-"text":"} | fps = {int(round(self.clock.get_fps()))}\"\n        )\n        percent = self.animation.advance(",
+"text":"} | fps = {fps}\"\n        )\n        percent = self.animation.advance(",
 "type":"code"
 },
 {
