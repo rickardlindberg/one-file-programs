@@ -16,9 +16,17 @@ import uuid
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_ANIMATIONS = os.environ.get("DEBUG_ANIMATIONS") == "yes"
 
-class RootWidget(object):
+class Widget(object):
+
+    def __init__(self, width=-1, height=-1):
+        self.width = width
+        self.height = height
+        self.visible = True
+
+class RootWidget(Widget):
 
     def __init__(self, path):
+        Widget.__init__(self)
         self.db = NoteDb(path)
         self.alive = True
 
@@ -85,9 +93,10 @@ class RootWidget(object):
             pygame.display.flip()
             clock.tick(60)
 
-class NetworkWidget(object):
+class NetworkWidget(Widget):
 
     def __init__(self, db):
+        Widget.__init__(self)
         self.db = db
         self.pos = (-1, -1)
         self.notes = []
@@ -241,9 +250,10 @@ class NetworkWidget(object):
         for note in self.notes:
             note.draw(screen)
 
-class NoteWidget(object):
+class NoteWidget(Widget):
 
     def __init__(self, db, note_id):
+        Widget.__init__(self)
         self.db = db
         self.note_id = note_id
         self.data = None
@@ -366,9 +376,10 @@ class NoteWidget(object):
         if DEBUG_NOTE_BORDER:
             pygame.draw.rect(screen, (255, 0, 0), self.true_rect, 1)
 
-class LinkWidget(object):
+class LinkWidget(Widget):
 
     def __init__(self, db, link_id, start, end):
+        Widget.__init__(self)
         self.db = db
         self.link_id = link_id
         self.start = start
@@ -426,12 +437,11 @@ class LinkWidget(object):
     def draw(self, screen):
         screen.blit(self.image, self.pos)
 
-class DebugBar(object):
+class DebugBar(Widget):
 
     def __init__(self, clock):
-        self.height = 50
+        Widget.__init__(self, height=50)
         self.clock = clock
-        self.visible = True
         self.animation = Animation()
         self.font = pygame.freetype.SysFont(
             pygame.freetype.get_default_font(),

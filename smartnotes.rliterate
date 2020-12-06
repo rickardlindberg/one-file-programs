@@ -14,7 +14,7 @@
 ],
 "fragments":[
 {
-"text":"class RootWidget(object):\n\n    def __init__(self, path):\n        self.db = ",
+"text":"class RootWidget(Widget):\n\n    def __init__(self, path):\n        Widget.__init__(self)\n        self.db = ",
 "type":"code"
 },
 {
@@ -156,6 +156,22 @@
 ],
 "id":"b8766f8594d4401485c6292c0f2cbeec",
 "type":"code"
+},
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class Widget(object):\n\n    def __init__(self, width=-1, height=-1):\n        self.width = width\n        self.height = height\n        self.visible = True\n",
+"type":"code"
+}
+],
+"id":"6a99430bc43c4484a3b09cc6940e7182",
+"type":"code"
 }
 ],
 "title":"Root widget"
@@ -183,7 +199,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, db):\n        self.db = db\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def ",
+"text":"(Widget):\n\n    def __init__(self, db):\n        Widget.__init__(self)\n        self.db = db\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def ",
 "type":"code"
 },
 {
@@ -399,7 +415,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, db, note_id):\n        self.db = db\n        self.note_id = note_id\n        self.data = None\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n        self.full_width = None\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
+"text":"(Widget):\n\n    def __init__(self, db, note_id):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.data = None\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n        self.full_width = None\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -575,7 +591,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, db, link_id, start, end):\n        self.db = db\n        self.link_id = link_id\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n        self.start_pos = None\n        self.end_pos = None\n\n    def ",
+"text":"(Widget):\n\n    def __init__(self, db, link_id, start, end):\n        Widget.__init__(self)\n        self.db = db\n        self.link_id = link_id\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n        self.start_pos = None\n        self.end_pos = None\n\n    def ",
 "type":"code"
 },
 {
@@ -630,7 +646,7 @@
 ],
 "fragments":[
 {
-"text":"class DebugBar(object):\n\n    def __init__(self, clock):\n        self.height = 50\n        self.clock = clock\n        self.visible = True\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n\n    def toggle(self):\n        self.visible = not self.visible\n        self.animation.start(200)\n\n    def ",
+"text":"class DebugBar(Widget):\n\n    def __init__(self, clock):\n        Widget.__init__(self, height=50)\n        self.clock = clock\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n\n    def toggle(self):\n        self.visible = not self.visible\n        self.animation.start(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -1155,6 +1171,18 @@
 "fragments":[
 {
 "text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport io\nimport json\nimport os\nimport pygame\nimport pygame.freetype\nimport subprocess\nimport sys\nimport tempfile\nimport uuid\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\n\n",
+"type":"code"
+},
+{
+"blank_lines_before":1,
+"path":[
+"base classes"
+],
+"prefix":"",
+"type":"chunk"
+},
+{
+"text":"\n",
 "type":"code"
 },
 {
