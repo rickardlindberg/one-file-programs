@@ -19,9 +19,27 @@ DEBUG_ANIMATIONS = os.environ.get("DEBUG_ANIMATIONS") == "yes"
 class Widget(object):
 
     def __init__(self, width=-1, height=-1):
-        self.width = width
-        self.height = height
-        self.visible = True
+        self._width = width
+        self._height = height
+        self._visible = True
+
+    def resize(self, width=None, height=None):
+        if width is not None:
+            self._width = width
+        if height is not None:
+            self._height = height
+
+    def get_width(self):
+        return self._width
+
+    def get_height(self):
+        return self._height
+
+    def is_visible(self):
+        return self._visible
+
+    def toggle_visible(self):
+        self._visible = not self._visible
 
 class RootWidget(Widget):
 
@@ -40,7 +58,9 @@ class RootWidget(Widget):
             network.open_note(note_id)
             break
         debug_bar = DebugBar(clock)
-        animation = Animation()
+        vbox = VBox()
+        vbox.add(network)
+        vbox.add(debug_bar)
         external_text_entries = ExternalTextEntries()
         CHECK_EXTERNAL = pygame.USEREVENT
         pygame.time.set_timer(CHECK_EXTERNAL, 1000)
@@ -50,7 +70,6 @@ class RootWidget(Widget):
                     return
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     debug_bar.toggle()
-                    animation.start(200)
                 elif event.type == pygame.MOUSEMOTION:
                     network.mouse_pos(event.pos)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -75,23 +94,79 @@ class RootWidget(Widget):
                     external_text_entries.add(
                         EditNoteText(self.db, note_id)
                     )
+            vbox.update(screen.get_rect(), clock.get_time())
             screen.fill((134, 169, 214))
-            elapsed_ms = clock.get_time()
-            rect = screen.get_rect()
-            network_rect = rect.copy()
-            if debug_bar.visible:
-                network_rect.height -= debug_bar.height*animation.advance(elapsed_ms)
-            else:
-                network_rect.height -= debug_bar.height-debug_bar.height*animation.advance(elapsed_ms)
-            network.update(network_rect, elapsed_ms)
-            debug_bar_rect = rect.copy()
-            debug_bar_rect.height = debug_bar.height
-            debug_bar_rect.top = network_rect.bottom
-            debug_bar.update(debug_bar_rect, elapsed_ms)
-            network.draw(screen)
-            debug_bar.draw(screen)
+            vbox.draw(screen)
             pygame.display.flip()
             clock.tick(60)
+
+class Box(Widget):
+
+    def __init__(self):
+        Widget.__init__(self)
+        self.children = []
+
+    def add(self, child):
+        self.children.append(child)
+
+    def update(self, rect, elapsed_ms):
+        sizes = []
+        divide_indices = []
+        for child in self.visible_children():
+            if self.get_widget_size(child) == -1:
+                divide_indices.append(len(sizes))
+                sizes.append(0)
+            else:
+                sizes.append(self.get_widget_size(child))
+        if divide_indices:
+            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)
+            for divide_index in divide_indices:
+                sizes[divide_index] = divide_size
+        for child, size in zip(self.visible_children(), sizes):
+            rect = self.set_rect_size(rect, size)
+            child.update(rect, elapsed_ms)
+            rect = self.move_rect(rect, size)
+
+    def draw(self, screen):
+        for child in self.visible_children():
+            child.draw(screen)
+
+    def visible_children(self):
+        for child in self.children:
+            if child.is_visible():
+                yield child
+
+class VBox(Box):
+
+    def get_widget_size(self, widget):
+        return widget.get_height()
+
+    def get_rect_size(self, thing):
+        return thing.height
+
+    def set_rect_size(self, rect, size):
+        rect = rect.copy()
+        rect.height = size
+        return rect
+
+    def move_rect(self, rect, delta):
+        return rect.move(0, delta)
+
+class HBox(Box):
+
+    def get_widget_size(self, widget):
+        return widget.get_widget_size()
+
+    def get_rect_size(self, thing):
+        return thing.width
+
+    def set_rect_size(self, rect, size):
+        rect = rect.copy()
+        rect.width = size
+        return rect
+
+    def move_rect(self, rect, delta):
+        return rect.move(delta, 0)
 
 class NetworkWidget(Widget):
 
@@ -439,8 +514,10 @@ class LinkWidget(Widget):
 
 class DebugBar(Widget):
 
+    IDEAL_HEIGHT = 50
+
     def __init__(self, clock):
-        Widget.__init__(self, height=50)
+        Widget.__init__(self, height=self.IDEAL_HEIGHT)
         self.clock = clock
         self.animation = Animation()
         self.font = pygame.freetype.SysFont(
@@ -448,36 +525,37 @@ class DebugBar(Widget):
             18
         )
 
+    def is_visible(self):
+        return Widget.is_visible(self) or self.animation.active()
+
     def toggle(self):
-        self.visible = not self.visible
+        self.toggle_visible()
         self.animation.start(200)
 
     def update(self, rect, elapsed_ms):
-        if not self.visible and not self.animation.active():
-            return
         self.image = pygame.Surface(rect.size)
         self.image.fill((84, 106, 134))
         text, text_rect = self.font.render(
             f"elapsed_ms = {elapsed_ms} | fps = {int(round(self.clock.get_fps()))}"
         )
         percent = self.animation.advance(elapsed_ms)
-        if self.visible:
+        if Widget.is_visible(self):
             alpha = int(255 * percent)
+            self.resize(height=int(self.IDEAL_HEIGHT * percent))
         else:
             alpha = 255 - int(255 * percent)
+            self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))
         self.image.set_alpha(alpha)
         self.image.blit(
             text,
             (
                 self.image.get_width()-text_rect.width-10,
-                self.image.get_height()/2-text_rect.height/2
+                self.IDEAL_HEIGHT/2-text_rect.height/2
             )
         )
         self.rect = rect
 
     def draw(self, screen):
-        if not self.visible and not self.animation.active():
-            return
         screen.blit(self.image, self.rect)
 
 class Animation(object):

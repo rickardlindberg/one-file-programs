@@ -46,7 +46,7 @@
 "type":"variable"
 },
 {
-"text":"(note_id)\n            break\n        debug_bar = DebugBar(clock)\n        animation = Animation()\n        external_text_entries = ",
+"text":"(note_id)\n            break\n        debug_bar = DebugBar(clock)\n        vbox = VBox()\n        vbox.add(network)\n        vbox.add(debug_bar)\n        external_text_entries = ",
 "type":"code"
 },
 {
@@ -54,7 +54,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        CHECK_EXTERNAL = pygame.USEREVENT\n        pygame.time.set_timer(CHECK_EXTERNAL, 1000)\n        while self.alive:\n            for event in pygame.event.get():\n                if event.type == pygame.QUIT:\n                    return\n                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                    debug_bar.toggle()\n                    animation.start(200)\n                elif event.type == pygame.MOUSEMOTION:\n                    network.mouse_pos(event.pos)\n                elif event.type == pygame.MOUSEBUTTONDOWN:\n                    network.click(event.pos)\n                elif event.type == CHECK_EXTERNAL:\n                    external_text_entries.check()\n                elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n                    if network.selected_note:\n                        external_text_entries.add(\n                            EditNoteText(self.db, network.selected_note.note_id)\n                        )\n                elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n                    if network.selected_note:\n                        child_note_id = self.db.create_note(text=\"Enter note text...\")\n                        self.db.create_link(network.selected_note.note_id, child_note_id)\n                        external_text_entries.add(\n                            EditNoteText(self.db, child_note_id)\n                        )\n                elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n                    note_id = self.db.create_note(text=\"Enter note text...\")\n                    network.",
+"text":"()\n        CHECK_EXTERNAL = pygame.USEREVENT\n        pygame.time.set_timer(CHECK_EXTERNAL, 1000)\n        while self.alive:\n            for event in pygame.event.get():\n                if event.type == pygame.QUIT:\n                    return\n                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                    debug_bar.toggle()\n                elif event.type == pygame.MOUSEMOTION:\n                    network.mouse_pos(event.pos)\n                elif event.type == pygame.MOUSEBUTTONDOWN:\n                    network.click(event.pos)\n                elif event.type == CHECK_EXTERNAL:\n                    external_text_entries.check()\n                elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n                    if network.selected_note:\n                        external_text_entries.add(\n                            EditNoteText(self.db, network.selected_note.note_id)\n                        )\n                elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n                    if network.selected_note:\n                        child_note_id = self.db.create_note(text=\"Enter note text...\")\n                        self.db.create_link(network.selected_note.note_id, child_note_id)\n                        external_text_entries.add(\n                            EditNoteText(self.db, child_note_id)\n                        )\n                elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n                    note_id = self.db.create_note(text=\"Enter note text...\")\n                    network.",
 "type":"code"
 },
 {
@@ -62,87 +62,7 @@
 "type":"variable"
 },
 {
-"text":"(note_id)\n                    external_text_entries.add(\n                        EditNoteText(self.db, note_id)\n                    )\n            screen.fill((134, 169, 214))\n            ",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":" = clock.get_time()\n            rect = screen.get_rect()\n            network_rect = ",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":".copy()\n            if debug_bar.visible:\n                network_rect.height -= debug_bar.height*animation.advance(",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":")\n            else:\n                network_rect.height -= debug_bar.height-debug_bar.height*animation.advance(",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":")\n            network.",
-"type":"code"
-},
-{
-"id":"8cce3dd9f80645e6a8df699f872f1736",
-"type":"variable"
-},
-{
-"text":"(network_rect, ",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":")\n            debug_bar_rect = ",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":".copy()\n            debug_bar_rect.height = debug_bar.height\n            debug_bar_rect.top = network_rect.bottom\n            debug_bar.",
-"type":"code"
-},
-{
-"id":"8cce3dd9f80645e6a8df699f872f1736",
-"type":"variable"
-},
-{
-"text":"(debug_bar_rect, ",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":")\n            network.",
-"type":"code"
-},
-{
-"id":"acab4c17f89046f4a05b14a8c35ad89a",
-"type":"variable"
-},
-{
-"text":"(screen)\n            debug_bar.",
+"text":"(note_id)\n                    external_text_entries.add(\n                        EditNoteText(self.db, note_id)\n                    )\n            vbox.update(screen.get_rect(), clock.get_time())\n            screen.fill((134, 169, 214))\n            vbox.",
 "type":"code"
 },
 {
@@ -166,11 +86,27 @@
 ],
 "fragments":[
 {
-"text":"class Widget(object):\n\n    def __init__(self, width=-1, height=-1):\n        self.width = width\n        self.height = height\n        self.visible = True\n",
+"text":"class Widget(object):\n\n    def __init__(self, width=-1, height=-1):\n        self._width = width\n        self._height = height\n        self._visible = True\n\n    def resize(self, width=None, height=None):\n        if width is not None:\n            self._width = width\n        if height is not None:\n            self._height = height\n\n    def get_width(self):\n        return self._width\n\n    def get_height(self):\n        return self._height\n\n    def is_visible(self):\n        return self._visible\n\n    def toggle_visible(self):\n        self._visible = not self._visible\n",
 "type":"code"
 }
 ],
 "id":"6a99430bc43c4484a3b09cc6940e7182",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class Box(Widget):\n\n    def __init__(self):\n        Widget.__init__(self)\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n\nclass VBox(Box):\n\n    def get_widget_size(self, widget):\n        return widget.get_height()\n\n    def get_rect_size(self, thing):\n        return thing.height\n\n    def set_rect_size(self, rect, size):\n        rect = rect.copy()\n        rect.height = size\n        return rect\n\n    def move_rect(self, rect, delta):\n        return rect.move(0, delta)\n\nclass HBox(Box):\n\n    def get_widget_size(self, widget):\n        return widget.get_widget_size()\n\n    def get_rect_size(self, thing):\n        return thing.width\n\n    def set_rect_size(self, rect, size):\n        rect = rect.copy()\n        rect.width = size\n        return rect\n\n    def move_rect(self, rect, delta):\n        return rect.move(delta, 0)\n",
+"type":"code"
+}
+],
+"id":"d8af363fc7e34f2f9772f3874f6585c7",
 "type":"code"
 }
 ],
@@ -646,7 +582,7 @@
 ],
 "fragments":[
 {
-"text":"class DebugBar(Widget):\n\n    def __init__(self, clock):\n        Widget.__init__(self, height=50)\n        self.clock = clock\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n\n    def toggle(self):\n        self.visible = not self.visible\n        self.animation.start(200)\n\n    def ",
+"text":"class DebugBar(Widget):\n\n    IDEAL_HEIGHT = 50\n\n    def __init__(self, clock):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT)\n        self.clock = clock\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -670,7 +606,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        if not self.visible and not self.animation.active():\n            return\n        self.image = pygame.Surface(",
+"text":"):\n        self.image = pygame.Surface(",
 "type":"code"
 },
 {
@@ -702,7 +638,7 @@
 "type":"variable"
 },
 {
-"text":")\n        if self.visible:\n            alpha = int(255 * percent)\n        else:\n            alpha = 255 - int(255 * percent)\n        self.image.set_alpha(alpha)\n        self.image.blit(\n            text,\n            (\n                self.image.get_width()-text_rect.width-10,\n                self.image.get_height()/2-text_rect.height/2\n            )\n        )\n        self.rect = ",
+"text":")\n        if Widget.is_visible(self):\n            alpha = int(255 * percent)\n            self.resize(height=int(self.IDEAL_HEIGHT * percent))\n        else:\n            alpha = 255 - int(255 * percent)\n            self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))\n        self.image.set_alpha(alpha)\n        self.image.blit(\n            text,\n            (\n                self.image.get_width()-text_rect.width-10,\n                self.IDEAL_HEIGHT/2-text_rect.height/2\n            )\n        )\n        self.rect = ",
 "type":"code"
 },
 {
@@ -718,7 +654,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        if not self.visible and not self.animation.active():\n            return\n        screen.blit(self.image, self.rect)\n",
+"text":"(self, screen):\n        screen.blit(self.image, self.rect)\n",
 "type":"code"
 }
 ],
