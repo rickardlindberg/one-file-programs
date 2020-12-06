@@ -41,6 +41,42 @@ class Widget(object):
     def toggle_visible(self):
         self._visible = not self._visible
 
+class Box(Widget):
+
+    def __init__(self):
+        Widget.__init__(self)
+        self.children = []
+
+    def add(self, child):
+        self.children.append(child)
+
+    def update(self, rect, elapsed_ms):
+        sizes = []
+        divide_indices = []
+        for child in self.visible_children():
+            if self.get_widget_size(child) == -1:
+                divide_indices.append(len(sizes))
+                sizes.append(0)
+            else:
+                sizes.append(self.get_widget_size(child))
+        if divide_indices:
+            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)
+            for divide_index in divide_indices:
+                sizes[divide_index] = divide_size
+        for child, size in zip(self.visible_children(), sizes):
+            rect = self.set_rect_size(rect, size)
+            child.update(rect, elapsed_ms)
+            rect = self.move_rect(rect, size)
+
+    def draw(self, screen):
+        for child in self.visible_children():
+            child.draw(screen)
+
+    def visible_children(self):
+        for child in self.children:
+            if child.is_visible():
+                yield child
+
 class RootWidget(Widget):
 
     def __init__(self, path):
@@ -99,74 +135,6 @@ class RootWidget(Widget):
             vbox.draw(screen)
             pygame.display.flip()
             clock.tick(60)
-
-class Box(Widget):
-
-    def __init__(self):
-        Widget.__init__(self)
-        self.children = []
-
-    def add(self, child):
-        self.children.append(child)
-
-    def update(self, rect, elapsed_ms):
-        sizes = []
-        divide_indices = []
-        for child in self.visible_children():
-            if self.get_widget_size(child) == -1:
-                divide_indices.append(len(sizes))
-                sizes.append(0)
-            else:
-                sizes.append(self.get_widget_size(child))
-        if divide_indices:
-            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)
-            for divide_index in divide_indices:
-                sizes[divide_index] = divide_size
-        for child, size in zip(self.visible_children(), sizes):
-            rect = self.set_rect_size(rect, size)
-            child.update(rect, elapsed_ms)
-            rect = self.move_rect(rect, size)
-
-    def draw(self, screen):
-        for child in self.visible_children():
-            child.draw(screen)
-
-    def visible_children(self):
-        for child in self.children:
-            if child.is_visible():
-                yield child
-
-class VBox(Box):
-
-    def get_widget_size(self, widget):
-        return widget.get_height()
-
-    def get_rect_size(self, thing):
-        return thing.height
-
-    def set_rect_size(self, rect, size):
-        rect = rect.copy()
-        rect.height = size
-        return rect
-
-    def move_rect(self, rect, delta):
-        return rect.move(0, delta)
-
-class HBox(Box):
-
-    def get_widget_size(self, widget):
-        return widget.get_widget_size()
-
-    def get_rect_size(self, thing):
-        return thing.width
-
-    def set_rect_size(self, rect, size):
-        rect = rect.copy()
-        rect.width = size
-        return rect
-
-    def move_rect(self, rect, delta):
-        return rect.move(delta, 0)
 
 class NetworkWidget(Widget):
 
@@ -557,6 +525,38 @@ class DebugBar(Widget):
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+
+class VBox(Box):
+
+    def get_widget_size(self, widget):
+        return widget.get_height()
+
+    def get_rect_size(self, thing):
+        return thing.height
+
+    def set_rect_size(self, rect, size):
+        rect = rect.copy()
+        rect.height = size
+        return rect
+
+    def move_rect(self, rect, delta):
+        return rect.move(0, delta)
+
+class HBox(Box):
+
+    def get_widget_size(self, widget):
+        return widget.get_widget_size()
+
+    def get_rect_size(self, thing):
+        return thing.width
+
+    def set_rect_size(self, rect, size):
+        rect = rect.copy()
+        rect.width = size
+        return rect
+
+    def move_rect(self, rect, delta):
+        return rect.move(delta, 0)
 
 class Animation(object):
 

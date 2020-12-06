@@ -76,38 +76,6 @@
 ],
 "id":"b8766f8594d4401485c6292c0f2cbeec",
 "type":"code"
-},
-{
-"chunkpath":[
-"base classes"
-],
-"filepath":[
-"smartnotes.py"
-],
-"fragments":[
-{
-"text":"class Widget(object):\n\n    def __init__(self, width=-1, height=-1):\n        self._width = width\n        self._height = height\n        self._visible = True\n\n    def resize(self, width=None, height=None):\n        if width is not None:\n            self._width = width\n        if height is not None:\n            self._height = height\n\n    def get_width(self):\n        return self._width\n\n    def get_height(self):\n        return self._height\n\n    def is_visible(self):\n        return self._visible\n\n    def toggle_visible(self):\n        self._visible = not self._visible\n",
-"type":"code"
-}
-],
-"id":"6a99430bc43c4484a3b09cc6940e7182",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"smartnotes.py"
-],
-"fragments":[
-{
-"text":"class Box(Widget):\n\n    def __init__(self):\n        Widget.__init__(self)\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n\nclass VBox(Box):\n\n    def get_widget_size(self, widget):\n        return widget.get_height()\n\n    def get_rect_size(self, thing):\n        return thing.height\n\n    def set_rect_size(self, rect, size):\n        rect = rect.copy()\n        rect.height = size\n        return rect\n\n    def move_rect(self, rect, delta):\n        return rect.move(0, delta)\n\nclass HBox(Box):\n\n    def get_widget_size(self, widget):\n        return widget.get_widget_size()\n\n    def get_rect_size(self, thing):\n        return thing.width\n\n    def set_rect_size(self, rect, size):\n        rect = rect.copy()\n        rect.width = size\n        return rect\n\n    def move_rect(self, rect, delta):\n        return rect.move(delta, 0)\n",
-"type":"code"
-}
-],
-"id":"d8af363fc7e34f2f9772f3874f6585c7",
-"type":"code"
 }
 ],
 "title":"Root widget"
@@ -671,6 +639,77 @@
 },
 {
 "children":[
+{
+"children":[],
+"id":"3adf7f96c87244d7abbafa2a9509fb17",
+"paragraphs":[
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class Widget(object):\n\n    def __init__(self, width=-1, height=-1):\n        self._width = width\n        self._height = height\n        self._visible = True\n\n    def resize(self, width=None, height=None):\n        if width is not None:\n            self._width = width\n        if height is not None:\n            self._height = height\n\n    def get_width(self):\n        return self._width\n\n    def get_height(self):\n        return self._height\n\n    def is_visible(self):\n        return self._visible\n\n    def toggle_visible(self):\n        self._visible = not self._visible\n",
+"type":"code"
+}
+],
+"id":"6a99430bc43c4484a3b09cc6940e7182",
+"type":"code"
+},
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class Box(Widget):\n\n    def __init__(self):\n        Widget.__init__(self)\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n",
+"type":"code"
+}
+],
+"id":"d8af363fc7e34f2f9772f3874f6585c7",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class VBox(Box):\n\n    def get_widget_size(self, widget):\n        return widget.get_height()\n\n    def get_rect_size(self, thing):\n        return thing.height\n\n    def set_rect_size(self, rect, size):\n        rect = rect.copy()\n        rect.height = size\n        return rect\n\n    def move_rect(self, rect, delta):\n        return rect.move(0, delta)\n",
+"type":"code"
+}
+],
+"id":"a10267c87a54407db9f02e7960f68a0f",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class HBox(Box):\n\n    def get_widget_size(self, widget):\n        return widget.get_widget_size()\n\n    def get_rect_size(self, thing):\n        return thing.width\n\n    def set_rect_size(self, rect, size):\n        rect = rect.copy()\n        rect.width = size\n        return rect\n\n    def move_rect(self, rect, delta):\n        return rect.move(delta, 0)\n",
+"type":"code"
+}
+],
+"id":"dfea85776242420eb2e8a4382d41d711",
+"type":"code"
+}
+],
+"title":"Widget Framework"
+},
 {
 "children":[],
 "id":"11abaf23c6a34a8396a6c09893730e3e",
