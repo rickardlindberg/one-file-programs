@@ -16,7 +16,8 @@ import uuid
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_ANIMATIONS = os.environ.get("DEBUG_ANIMATIONS") == "yes"
 
-USER_EVENT_CHECK_EXTERNAL = pygame.USEREVENT
+USER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT
+USER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1
 
 class Widget(object):
 
@@ -131,12 +132,16 @@ class RootWidget(VBox):
         clock = pygame.time.Clock()
         self.network = self.add(NetworkWidget(self.db))
         self.debug_bar = self.add(DebugBar(clock))
-        self.external_text_entries = ExternalTextEntries()
+        external_text_entries = ExternalTextEntries()
         pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
+                elif event.type == USER_EVENT_CHECK_EXTERNAL:
+                    external_text_entries.check()
+                elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:
+                    external_text_entries.add(event.entry)
                 else:
                     self.process_event(event)
             self.update(screen.get_rect(), clock.get_time())
@@ -154,25 +159,26 @@ class RootWidget(VBox):
             self.network.mouse_pos(event.pos)
         elif event.type == pygame.MOUSEBUTTONDOWN:
             self.network.click(event.pos)
-        elif event.type == USER_EVENT_CHECK_EXTERNAL:
-            self.external_text_entries.check()
         elif event.type == pygame.KEYDOWN and event.unicode == "e":
             if self.network.selected_note:
-                self.external_text_entries.add(
-                    EditNoteText(self.db, self.network.selected_note.note_id)
+                self.post_event(
+                    USER_EVENT_EXTERNAL_TEXT_ENTRY,
+                    entry=EditNoteText(self.db, self.network.selected_note.note_id)
                 )
         elif event.type == pygame.KEYDOWN and event.unicode == "c":
             if self.network.selected_note:
                 child_note_id = self.db.create_note(text="Enter note text...")
                 self.db.create_link(self.network.selected_note.note_id, child_note_id)
-                self.external_text_entries.add(
-                    EditNoteText(self.db, child_note_id)
+                self.post_event(
+                    USER_EVENT_EXTERNAL_TEXT_ENTRY,
+                    entry=EditNoteText(self.db, child_note_id)
                 )
         elif event.type == pygame.KEYDOWN and event.unicode == "n":
             note_id = self.db.create_note(text="Enter note text...")
             self.network.open_note(note_id)
-            self.external_text_entries.add(
-                EditNoteText(self.db, note_id)
+            self.post_event(
+                USER_EVENT_EXTERNAL_TEXT_ENTRY,
+                entry=EditNoteText(self.db, note_id)
             )
 
 class NetworkWidget(Widget):
