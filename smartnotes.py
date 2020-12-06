@@ -16,6 +16,8 @@ import uuid
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_ANIMATIONS = os.environ.get("DEBUG_ANIMATIONS") == "yes"
 
+USER_EVENT_CHECK_EXTERNAL = pygame.USEREVENT
+
 class Widget(object):
 
     def __init__(self, width=-1, height=-1):
@@ -77,8 +79,6 @@ class Box(Widget):
         for child in self.children:
             if child.is_visible():
                 yield child
-
-USER_EVENT_CHECK_EXTERNAL = pygame.USEREVENT
 
 class RootWidget(Widget):
 

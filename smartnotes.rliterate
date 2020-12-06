@@ -14,7 +14,7 @@
 ],
 "fragments":[
 {
-"text":"USER_EVENT_CHECK_EXTERNAL = pygame.USEREVENT\n\nclass RootWidget(Widget):\n\n    def __init__(self, path):\n        Widget.__init__(self)\n        self.db = ",
+"text":"class RootWidget(Widget):\n\n    def __init__(self, path):\n        Widget.__init__(self)\n        self.db = ",
 "type":"code"
 },
 {
@@ -1152,7 +1152,7 @@
 ],
 "fragments":[
 {
-"text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport io\nimport json\nimport os\nimport pygame\nimport pygame.freetype\nimport subprocess\nimport sys\nimport tempfile\nimport uuid\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\n\n",
+"text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport io\nimport json\nimport os\nimport pygame\nimport pygame.freetype\nimport subprocess\nimport sys\nimport tempfile\nimport uuid\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\n\nUSER_EVENT_CHECK_EXTERNAL = pygame.USEREVENT\n\n",
 "type":"code"
 },
 {
