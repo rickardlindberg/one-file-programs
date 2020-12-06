@@ -2,6 +2,165 @@
 "root_page":{
 "children":[
 {
+"children":[],
+"id":"b17eddb07f8b4136b13f4ff0ee638bc0",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class RootWidget(object):\n\n    def __init__(self, path):\n        self.db = ",
+"type":"code"
+},
+{
+"id":"03a7c6b0000146f5ba3d059fd0936900",
+"type":"variable"
+},
+{
+"text":"(path)\n        self.alive = True\n\n    def run(self):\n        pygame.init()\n        pygame.display.set_caption(\"Smart Notes\")\n        screen = pygame.display.set_mode((1280, 720))\n        clock = pygame.time.Clock()\n        network = ",
+"type":"code"
+},
+{
+"id":"937919ed2e2c41cca33d85a681729a69",
+"type":"variable"
+},
+{
+"text":"(self.db)\n        for note_id, note_data in self.db.",
+"type":"code"
+},
+{
+"id":"a342079796cc418b9f52363ab1ca3cf3",
+"type":"variable"
+},
+{
+"text":"():\n            network.",
+"type":"code"
+},
+{
+"id":"550c4c8b55b444af9a0463ba8be1c5b9",
+"type":"variable"
+},
+{
+"text":"(note_id)\n            break\n        debug_bar = DebugBar(clock)\n        animation = Animation()\n        external_text_entries = ",
+"type":"code"
+},
+{
+"id":"fbbc968c81ea43adac03e7f20e8085dd",
+"type":"variable"
+},
+{
+"text":"()\n        CHECK_EXTERNAL = pygame.USEREVENT\n        pygame.time.set_timer(CHECK_EXTERNAL, 1000)\n        while self.alive:\n            for event in pygame.event.get():\n                if event.type == pygame.QUIT:\n                    return\n                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                    debug_bar.toggle()\n                    animation.start(200)\n                elif event.type == pygame.MOUSEMOTION:\n                    network.mouse_pos(event.pos)\n                elif event.type == pygame.MOUSEBUTTONDOWN:\n                    network.click(event.pos)\n                elif event.type == CHECK_EXTERNAL:\n                    external_text_entries.check()\n                elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n                    if network.selected_note:\n                        external_text_entries.add(\n                            EditNoteText(self.db, network.selected_note.note_id)\n                        )\n                elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n                    if network.selected_note:\n                        child_note_id = self.db.create_note(text=\"Enter note text...\")\n                        self.db.create_link(network.selected_note.note_id, child_note_id)\n                        external_text_entries.add(\n                            EditNoteText(self.db, child_note_id)\n                        )\n                elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n                    note_id = self.db.create_note(text=\"Enter note text...\")\n                    network.",
+"type":"code"
+},
+{
+"id":"550c4c8b55b444af9a0463ba8be1c5b9",
+"type":"variable"
+},
+{
+"text":"(note_id)\n                    external_text_entries.add(\n                        EditNoteText(self.db, note_id)\n                    )\n            screen.fill((134, 169, 214))\n            ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":" = clock.get_time()\n            rect = screen.get_rect()\n            network_rect = ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":".copy()\n            if debug_bar.visible:\n                network_rect.height -= debug_bar.height*animation.advance(",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n            else:\n                network_rect.height -= debug_bar.height-debug_bar.height*animation.advance(",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n            network.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(network_rect, ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n            debug_bar_rect = ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":".copy()\n            debug_bar_rect.height = debug_bar.height\n            debug_bar_rect.top = network_rect.bottom\n            debug_bar.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(debug_bar_rect, ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n            network.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n            debug_bar.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n            pygame.display.flip()\n            clock.tick(60)\n",
+"type":"code"
+}
+],
+"id":"b8766f8594d4401485c6292c0f2cbeec",
+"type":"code"
+}
+],
+"title":"Root widget"
+},
+{
 "children":[
 {
 "children":[],
@@ -1035,147 +1194,11 @@
 ],
 "fragments":[
 {
-"text":"def main():\n    if len(sys.argv) < 2:\n        sys.exit(\"Usage: smartnotes.py <file>\")\n    db = ",
-"type":"code"
-},
-{
-"id":"03a7c6b0000146f5ba3d059fd0936900",
-"type":"variable"
-},
-{
-"text":"(sys.argv[1])\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    network = ",
-"type":"code"
-},
-{
-"id":"937919ed2e2c41cca33d85a681729a69",
-"type":"variable"
-},
-{
-"text":"(db)\n    for note_id, note_data in db.",
-"type":"code"
-},
-{
-"id":"a342079796cc418b9f52363ab1ca3cf3",
-"type":"variable"
-},
-{
-"text":"():\n        network.",
-"type":"code"
-},
-{
-"id":"550c4c8b55b444af9a0463ba8be1c5b9",
-"type":"variable"
-},
-{
-"text":"(note_id)\n        break\n    debug_bar = DebugBar(clock)\n    animation = Animation()\n    external_text_entries = ",
-"type":"code"
-},
-{
-"id":"fbbc968c81ea43adac03e7f20e8085dd",
-"type":"variable"
-},
-{
-"text":"()\n    CHECK_EXTERNAL = pygame.USEREVENT\n    pygame.time.set_timer(CHECK_EXTERNAL, 1000)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                debug_bar.toggle()\n                animation.start(200)\n            elif event.type == pygame.MOUSEMOTION:\n                network.mouse_pos(event.pos)\n            elif event.type == pygame.MOUSEBUTTONDOWN:\n                network.click(event.pos)\n            elif event.type == CHECK_EXTERNAL:\n                external_text_entries.check()\n            elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n                if network.selected_note:\n                    external_text_entries.add(\n                        EditNoteText(db, network.selected_note.note_id)\n                    )\n            elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n                if network.selected_note:\n                    child_note_id = db.create_note(text=\"Enter note text...\")\n                    db.create_link(network.selected_note.note_id, child_note_id)\n                    external_text_entries.add(\n                        EditNoteText(db, child_note_id)\n                    )\n            elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n                note_id = db.create_note(text=\"Enter note text...\")\n                network.",
-"type":"code"
-},
-{
-"id":"550c4c8b55b444af9a0463ba8be1c5b9",
-"type":"variable"
-},
-{
-"text":"(note_id)\n                external_text_entries.add(\n                    EditNoteText(db, note_id)\n                )\n        screen.fill((134, 169, 214))\n        ",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":" = clock.get_time()\n        rect = screen.get_rect()\n        network_rect = ",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":".copy()\n        if debug_bar.visible:\n            network_rect.height -= debug_bar.height*animation.advance(",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":")\n        else:\n            network_rect.height -= debug_bar.height-debug_bar.height*animation.advance(",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":")\n        network.",
-"type":"code"
-},
-{
-"id":"8cce3dd9f80645e6a8df699f872f1736",
-"type":"variable"
-},
-{
-"text":"(network_rect, ",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":")\n        debug_bar_rect = ",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":".copy()\n        debug_bar_rect.height = debug_bar.height\n        debug_bar_rect.top = network_rect.bottom\n        debug_bar.",
-"type":"code"
-},
-{
-"id":"8cce3dd9f80645e6a8df699f872f1736",
-"type":"variable"
-},
-{
-"text":"(debug_bar_rect, ",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":")\n        network.",
-"type":"code"
-},
-{
-"id":"acab4c17f89046f4a05b14a8c35ad89a",
-"type":"variable"
-},
-{
-"text":"(screen)\n        debug_bar.",
-"type":"code"
-},
-{
-"id":"acab4c17f89046f4a05b14a8c35ad89a",
-"type":"variable"
-},
-{
-"text":"(screen)\n        pygame.display.flip()\n        clock.tick(60)\n",
+"text":"def main():\n    if len(sys.argv) < 2:\n        sys.exit(\"Usage: smartnotes.py <file>\")\n    RootWidget(sys.argv[1]).run()\n",
 "type":"code"
 }
 ],
-"id":"b8766f8594d4401485c6292c0f2cbeec",
+"id":"22321ef3348041b5a10a3b2509f5d917",
 "type":"code"
 }
 ],

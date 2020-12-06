@@ -16,6 +16,75 @@ import uuid
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_ANIMATIONS = os.environ.get("DEBUG_ANIMATIONS") == "yes"
 
+class RootWidget(object):
+
+    def __init__(self, path):
+        self.db = NoteDb(path)
+        self.alive = True
+
+    def run(self):
+        pygame.init()
+        pygame.display.set_caption("Smart Notes")
+        screen = pygame.display.set_mode((1280, 720))
+        clock = pygame.time.Clock()
+        network = NetworkWidget(self.db)
+        for note_id, note_data in self.db.get_notes():
+            network.open_note(note_id)
+            break
+        debug_bar = DebugBar(clock)
+        animation = Animation()
+        external_text_entries = ExternalTextEntries()
+        CHECK_EXTERNAL = pygame.USEREVENT
+        pygame.time.set_timer(CHECK_EXTERNAL, 1000)
+        while self.alive:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    debug_bar.toggle()
+                    animation.start(200)
+                elif event.type == pygame.MOUSEMOTION:
+                    network.mouse_pos(event.pos)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    network.click(event.pos)
+                elif event.type == CHECK_EXTERNAL:
+                    external_text_entries.check()
+                elif event.type == pygame.KEYDOWN and event.unicode == "e":
+                    if network.selected_note:
+                        external_text_entries.add(
+                            EditNoteText(self.db, network.selected_note.note_id)
+                        )
+                elif event.type == pygame.KEYDOWN and event.unicode == "c":
+                    if network.selected_note:
+                        child_note_id = self.db.create_note(text="Enter note text...")
+                        self.db.create_link(network.selected_note.note_id, child_note_id)
+                        external_text_entries.add(
+                            EditNoteText(self.db, child_note_id)
+                        )
+                elif event.type == pygame.KEYDOWN and event.unicode == "n":
+                    note_id = self.db.create_note(text="Enter note text...")
+                    network.open_note(note_id)
+                    external_text_entries.add(
+                        EditNoteText(self.db, note_id)
+                    )
+            screen.fill((134, 169, 214))
+            elapsed_ms = clock.get_time()
+            rect = screen.get_rect()
+            network_rect = rect.copy()
+            if debug_bar.visible:
+                network_rect.height -= debug_bar.height*animation.advance(elapsed_ms)
+            else:
+                network_rect.height -= debug_bar.height-debug_bar.height*animation.advance(elapsed_ms)
+            network.update(network_rect, elapsed_ms)
+            debug_bar_rect = rect.copy()
+            debug_bar_rect.height = debug_bar.height
+            debug_bar_rect.top = network_rect.bottom
+            debug_bar.update(debug_bar_rect, elapsed_ms)
+            network.draw(screen)
+            debug_bar.draw(screen)
+            pygame.display.flip()
+            clock.tick(60)
+
 class NetworkWidget(object):
 
     def __init__(self, db):
@@ -546,68 +615,7 @@ class EditNoteText(ExternalTextEntry):
 def main():
     if len(sys.argv) < 2:
         sys.exit("Usage: smartnotes.py <file>")
-    db = NoteDb(sys.argv[1])
-    pygame.init()
-    pygame.display.set_caption("Smart Notes")
-    screen = pygame.display.set_mode((1280, 720))
-    clock = pygame.time.Clock()
-    network = NetworkWidget(db)
-    for note_id, note_data in db.get_notes():
-        network.open_note(note_id)
-        break
-    debug_bar = DebugBar(clock)
-    animation = Animation()
-    external_text_entries = ExternalTextEntries()
-    CHECK_EXTERNAL = pygame.USEREVENT
-    pygame.time.set_timer(CHECK_EXTERNAL, 1000)
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                debug_bar.toggle()
-                animation.start(200)
-            elif event.type == pygame.MOUSEMOTION:
-                network.mouse_pos(event.pos)
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                network.click(event.pos)
-            elif event.type == CHECK_EXTERNAL:
-                external_text_entries.check()
-            elif event.type == pygame.KEYDOWN and event.unicode == "e":
-                if network.selected_note:
-                    external_text_entries.add(
-                        EditNoteText(db, network.selected_note.note_id)
-                    )
-            elif event.type == pygame.KEYDOWN and event.unicode == "c":
-                if network.selected_note:
-                    child_note_id = db.create_note(text="Enter note text...")
-                    db.create_link(network.selected_note.note_id, child_note_id)
-                    external_text_entries.add(
-                        EditNoteText(db, child_note_id)
-                    )
-            elif event.type == pygame.KEYDOWN and event.unicode == "n":
-                note_id = db.create_note(text="Enter note text...")
-                network.open_note(note_id)
-                external_text_entries.add(
-                    EditNoteText(db, note_id)
-                )
-        screen.fill((134, 169, 214))
-        elapsed_ms = clock.get_time()
-        rect = screen.get_rect()
-        network_rect = rect.copy()
-        if debug_bar.visible:
-            network_rect.height -= debug_bar.height*animation.advance(elapsed_ms)
-        else:
-            network_rect.height -= debug_bar.height-debug_bar.height*animation.advance(elapsed_ms)
-        network.update(network_rect, elapsed_ms)
-        debug_bar_rect = rect.copy()
-        debug_bar_rect.height = debug_bar.height
-        debug_bar_rect.top = network_rect.bottom
-        debug_bar.update(debug_bar_rect, elapsed_ms)
-        network.draw(screen)
-        debug_bar.draw(screen)
-        pygame.display.flip()
-        clock.tick(60)
+    RootWidget(sys.argv[1]).run()
 
 def draw_cairo(width, height, fn):
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
