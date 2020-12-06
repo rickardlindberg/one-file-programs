@@ -124,31 +124,8 @@ class RootWidget(VBox):
     def __init__(self, path):
         VBox.__init__(self)
         self.db = NoteDb(path)
-
-    def run(self):
-        pygame.init()
-        pygame.display.set_caption("Smart Notes")
         self.network = self.add(NetworkWidget(self.db))
         self.debug_bar = self.add(DebugBar())
-        screen = pygame.display.set_mode((1280, 720))
-        clock = pygame.time.Clock()
-        external_text_entries = ExternalTextEntries()
-        pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return
-                elif event.type == USER_EVENT_CHECK_EXTERNAL:
-                    external_text_entries.check()
-                elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:
-                    external_text_entries.add(event.entry)
-                else:
-                    self.process_event(event)
-            self.update(screen.get_rect(), clock.get_time())
-            screen.fill((134, 169, 214))
-            self.draw(screen)
-            pygame.display.flip()
-            clock.tick(60)
 
     def process_event(self, event):
         if event.type == pygame.KEYDOWN and event.unicode == "q":
@@ -724,7 +701,34 @@ class EditNoteText(ExternalTextEntry):
 def main():
     if len(sys.argv) < 2:
         sys.exit("Usage: smartnotes.py <file>")
-    RootWidget(sys.argv[1]).run()
+    pygame_main(
+        RootWidget,
+        sys.argv[1]
+    )
+
+def pygame_main(root_widget_cls, *args, **kwargs):
+    pygame.init()
+    pygame.display.set_caption("Smart Notes")
+    root_widget = root_widget_cls(*args, **kwargs)
+    screen = pygame.display.set_mode((1280, 720))
+    clock = pygame.time.Clock()
+    external_text_entries = ExternalTextEntries()
+    pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+            elif event.type == USER_EVENT_CHECK_EXTERNAL:
+                external_text_entries.check()
+            elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:
+                external_text_entries.add(event.entry)
+            else:
+                root_widget.process_event(event)
+        root_widget.update(screen.get_rect(), clock.get_time())
+        screen.fill((134, 169, 214))
+        root_widget.draw(screen)
+        pygame.display.flip()
+        clock.tick(60)
 
 def draw_cairo(width, height, fn):
     surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
