@@ -201,7 +201,7 @@
 "type":"variable"
 },
 {
-"text":", side)\n        if fade_from_rect:\n            x = target.copy()\n            x.center = fade_from_rect.center\n            self.rect = self.target = self.previous = x\n        if self.rect is None:\n            self.rect = self.target = self.previous = target\n        if target != self.target:\n            if self.animation.active():\n                self.rect = self.target\n            self.target = target\n            self.previous = self.rect\n            self.animation.start(3000 if DEBUG_ANIMATIONS else 300)\n        if self.animation.active():\n            x_diff = self.target.width - self.previous.width\n            y_diff = self.target.height - self.previous.height\n            percent = self.animation.advance(",
+"text":", side)\n        if fade_from_rect:\n            x = target.copy()\n            x.center = fade_from_rect.center\n            self.rect = self.target = self.previous = x\n        if self.rect is None:\n            self.rect = self.target = self.previous = target\n        if target != self.target:\n            if self.animation.active():\n                self.rect = self.target\n            self.target = target\n            self.previous = self.rect\n            self.animation.start(300)\n        if self.animation.active():\n            x_diff = self.target.width - self.previous.width\n            y_diff = self.target.height - self.previous.height\n            percent = self.animation.advance(",
 "type":"code"
 },
 {
@@ -738,7 +738,7 @@
 ],
 "fragments":[
 {
-"text":"class Animation(object):\n\n    def __init__(self):\n        self.duration_ms = 1\n        self.progress = 1\n        self.last_consumed = True\n\n    def start(self, duration_ms):\n        self.duration_ms = duration_ms\n        self.progress = 0\n        self.last_consumed = False\n\n    def advance(self, elapsed_ms):\n        percent = float(self.progress) / float(self.duration_ms)\n        if self.progress == self.duration_ms:\n            self.last_consumed = True\n        else:\n            self.progress = min(self.duration_ms, self.progress+elapsed_ms)\n        return percent\n\n    def active(self):\n        return self.progress < self.duration_ms or not self.last_consumed\n",
+"text":"class Animation(object):\n\n    def __init__(self):\n        self.duration_ms = 1\n        self.progress = 1\n        self.last_consumed = True\n\n    def start(self, duration_ms):\n        if DEBUG_ANIMATIONS:\n            duration_ms = duration_ms * 10\n        self.duration_ms = duration_ms\n        self.progress = 0\n        self.last_consumed = False\n\n    def advance(self, elapsed_ms):\n        percent = float(self.progress) / float(self.duration_ms)\n        if self.progress == self.duration_ms:\n            self.last_consumed = True\n        else:\n            self.progress = min(self.duration_ms, self.progress+elapsed_ms)\n        return percent\n\n    def active(self):\n        return self.progress < self.duration_ms or not self.last_consumed\n",
 "type":"code"
 }
 ],

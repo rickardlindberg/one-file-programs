@@ -386,7 +386,7 @@ class NoteWidget(Widget):
                 self.rect = self.target
             self.target = target
             self.previous = self.rect
-            self.animation.start(3000 if DEBUG_ANIMATIONS else 300)
+            self.animation.start(300)
         if self.animation.active():
             x_diff = self.target.width - self.previous.width
             y_diff = self.target.height - self.previous.height
@@ -566,6 +566,8 @@ class Animation(object):
         self.last_consumed = True
 
     def start(self, duration_ms):
+        if DEBUG_ANIMATIONS:
+            duration_ms = duration_ms * 10
         self.duration_ms = duration_ms
         self.progress = 0
         self.last_consumed = False
