@@ -549,7 +549,7 @@
 ],
 "fragments":[
 {
-"text":"class DebugBar(Widget):\n\n    IDEAL_HEIGHT = 50\n\n    def __init__(self):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT)\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
+"text":"class DebugBar(Widget):\n\n    IDEAL_HEIGHT = 50\n\n    def __init__(self):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT)\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n        self.average_elapsed = 0\n        self.tot_elapsed_time = 0\n        self.frame_count = 0\n        self.fps = 0\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -573,7 +573,15 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.image = pygame.Surface(",
+"text":"):\n        self.tot_elapsed_time += ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":"\n        self.frame_count += 1\n        if self.tot_elapsed_time > 1000:\n            self.average_elapsed = int(round(self.tot_elapsed_time / self.frame_count))\n            self.fps = self.frame_count\n            self.frame_count = 0\n            self.tot_elapsed_time -= 1000\n        self.image = pygame.Surface(",
 "type":"code"
 },
 {
@@ -581,23 +589,7 @@
 "type":"variable"
 },
 {
-"text":".size)\n        self.image.fill((84, 106, 134))\n        if elapsed_ms == 0:\n            fps = 0\n        else:\n            fps = int(round(1000/elapsed_ms))\n        text, text_rect = self.font.render(\n            f\"",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":" = {",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":"} | fps = {fps}\"\n        )\n        percent = self.animation.advance(",
+"text":".size)\n        self.image.fill((84, 106, 134))\n        text, text_rect = self.font.render(\n            f\"elapsed_ms = {self.average_elapsed} | fps = {self.fps}\"\n        )\n        percent = self.animation.advance(",
 "type":"code"
 },
 {

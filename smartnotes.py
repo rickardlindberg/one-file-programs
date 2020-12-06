@@ -516,6 +516,10 @@ class DebugBar(Widget):
             pygame.freetype.get_default_font(),
             18
         )
+        self.average_elapsed = 0
+        self.tot_elapsed_time = 0
+        self.frame_count = 0
+        self.fps = 0
 
     def is_visible(self):
         return Widget.is_visible(self) or self.animation.active()
@@ -525,14 +529,17 @@ class DebugBar(Widget):
         self.animation.start(200)
 
     def update(self, rect, elapsed_ms):
+        self.tot_elapsed_time += elapsed_ms
+        self.frame_count += 1
+        if self.tot_elapsed_time > 1000:
+            self.average_elapsed = int(round(self.tot_elapsed_time / self.frame_count))
+            self.fps = self.frame_count
+            self.frame_count = 0
+            self.tot_elapsed_time -= 1000
         self.image = pygame.Surface(rect.size)
         self.image.fill((84, 106, 134))
-        if elapsed_ms == 0:
-            fps = 0
-        else:
-            fps = int(round(1000/elapsed_ms))
         text, text_rect = self.font.render(
-            f"elapsed_ms = {elapsed_ms} | fps = {fps}"
+            f"elapsed_ms = {self.average_elapsed} | fps = {self.fps}"
         )
         percent = self.animation.advance(elapsed_ms)
         if Widget.is_visible(self):
