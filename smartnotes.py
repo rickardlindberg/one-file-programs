@@ -117,7 +117,6 @@ class RootWidget(VBox):
     def __init__(self, path):
         VBox.__init__(self)
         self.db = NoteDb(path)
-        self.alive = True
 
     def run(self):
         pygame.init()
@@ -128,9 +127,12 @@ class RootWidget(VBox):
         self.debug_bar = self.add(DebugBar(clock))
         self.external_text_entries = ExternalTextEntries()
         pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
-        while self.alive:
+        while True:
             for event in pygame.event.get():
-                self.process_event(event)
+                if event.type == pygame.QUIT:
+                    return
+                else:
+                    self.process_event(event)
             self.update(screen.get_rect(), clock.get_time())
             screen.fill((134, 169, 214))
             self.draw(screen)
@@ -138,8 +140,8 @@ class RootWidget(VBox):
             clock.tick(60)
 
     def process_event(self, event):
-        if event.type == pygame.QUIT:
-            self.alive = False
+        if event.type == pygame.KEYDOWN and event.unicode == "q":
+            pygame.event.post(pygame.event.Event(pygame.QUIT))
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.debug_bar.toggle()
         elif event.type == pygame.MOUSEMOTION:
