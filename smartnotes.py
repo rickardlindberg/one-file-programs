@@ -80,63 +80,92 @@ class Box(Widget):
             if child.is_visible():
                 yield child
 
-class RootWidget(Widget):
+class VBox(Box):
+
+    def get_widget_size(self, widget):
+        return widget.get_height()
+
+    def get_rect_size(self, thing):
+        return thing.height
+
+    def set_rect_size(self, rect, size):
+        rect = rect.copy()
+        rect.height = size
+        return rect
+
+    def move_rect(self, rect, delta):
+        return rect.move(0, delta)
+
+class HBox(Box):
+
+    def get_widget_size(self, widget):
+        return widget.get_widget_size()
+
+    def get_rect_size(self, thing):
+        return thing.width
+
+    def set_rect_size(self, rect, size):
+        rect = rect.copy()
+        rect.width = size
+        return rect
+
+    def move_rect(self, rect, delta):
+        return rect.move(delta, 0)
+
+class RootWidget(VBox):
 
     def __init__(self, path):
-        Widget.__init__(self)
+        VBox.__init__(self)
         self.db = NoteDb(path)
+        self.alive = True
 
     def run(self):
         pygame.init()
         pygame.display.set_caption("Smart Notes")
         screen = pygame.display.set_mode((1280, 720))
         clock = pygame.time.Clock()
-        self.vbox = VBox()
-        self.network = self.vbox.add(NetworkWidget(self.db))
-        self.debug_bar = self.vbox.add(DebugBar(clock))
+        self.network = self.add(NetworkWidget(self.db))
+        self.debug_bar = self.add(DebugBar(clock))
         self.external_text_entries = ExternalTextEntries()
         pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
-        while True:
+        while self.alive:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    self.debug_bar.toggle()
-                elif event.type == pygame.MOUSEMOTION:
-                    self.network.mouse_pos(event.pos)
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.network.click(event.pos)
-                elif event.type == USER_EVENT_CHECK_EXTERNAL:
-                    self.external_text_entries.check()
-                elif event.type == pygame.KEYDOWN and event.unicode == "e":
-                    if self.network.selected_note:
-                        self.external_text_entries.add(
-                            EditNoteText(self.db, self.network.selected_note.note_id)
-                        )
-                elif event.type == pygame.KEYDOWN and event.unicode == "c":
-                    if self.network.selected_note:
-                        child_note_id = self.db.create_note(text="Enter note text...")
-                        self.db.create_link(self.network.selected_note.note_id, child_note_id)
-                        self.external_text_entries.add(
-                            EditNoteText(self.db, child_note_id)
-                        )
-                elif event.type == pygame.KEYDOWN and event.unicode == "n":
-                    note_id = self.db.create_note(text="Enter note text...")
-                    self.network.open_note(note_id)
-                    self.external_text_entries.add(
-                        EditNoteText(self.db, note_id)
-                    )
+                self.process_event(event)
             self.update(screen.get_rect(), clock.get_time())
             screen.fill((134, 169, 214))
             self.draw(screen)
             pygame.display.flip()
             clock.tick(60)
 
-    def update(self, rect, elapsed_ms):
-        self.vbox.update(rect, elapsed_ms)
-
-    def draw(self, screen):
-        self.vbox.draw(screen)
+    def process_event(self, event):
+        if event.type == pygame.QUIT:
+            self.alive = False
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.debug_bar.toggle()
+        elif event.type == pygame.MOUSEMOTION:
+            self.network.mouse_pos(event.pos)
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            self.network.click(event.pos)
+        elif event.type == USER_EVENT_CHECK_EXTERNAL:
+            self.external_text_entries.check()
+        elif event.type == pygame.KEYDOWN and event.unicode == "e":
+            if self.network.selected_note:
+                self.external_text_entries.add(
+                    EditNoteText(self.db, self.network.selected_note.note_id)
+                )
+        elif event.type == pygame.KEYDOWN and event.unicode == "c":
+            if self.network.selected_note:
+                child_note_id = self.db.create_note(text="Enter note text...")
+                self.db.create_link(self.network.selected_note.note_id, child_note_id)
+                self.external_text_entries.add(
+                    EditNoteText(self.db, child_note_id)
+                )
+        elif event.type == pygame.KEYDOWN and event.unicode == "n":
+            note_id = self.db.create_note(text="Enter note text...")
+            self.network.open_note(note_id)
+            self.external_text_entries.add(
+                EditNoteText(self.db, note_id)
+            )
 
 class NetworkWidget(Widget):
 
@@ -530,38 +559,6 @@ class DebugBar(Widget):
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
-
-class VBox(Box):
-
-    def get_widget_size(self, widget):
-        return widget.get_height()
-
-    def get_rect_size(self, thing):
-        return thing.height
-
-    def set_rect_size(self, rect, size):
-        rect = rect.copy()
-        rect.height = size
-        return rect
-
-    def move_rect(self, rect, delta):
-        return rect.move(0, delta)
-
-class HBox(Box):
-
-    def get_widget_size(self, widget):
-        return widget.get_widget_size()
-
-    def get_rect_size(self, thing):
-        return thing.width
-
-    def set_rect_size(self, rect, size):
-        rect = rect.copy()
-        rect.width = size
-        return rect
-
-    def move_rect(self, rect, delta):
-        return rect.move(delta, 0)
 
 class Animation(object):
 

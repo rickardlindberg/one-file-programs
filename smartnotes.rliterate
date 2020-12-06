@@ -14,7 +14,7 @@
 ],
 "fragments":[
 {
-"text":"class RootWidget(Widget):\n\n    def __init__(self, path):\n        Widget.__init__(self)\n        self.db = ",
+"text":"class RootWidget(VBox):\n\n    def __init__(self, path):\n        VBox.__init__(self)\n        self.db = ",
 "type":"code"
 },
 {
@@ -22,7 +22,7 @@
 "type":"variable"
 },
 {
-"text":"(path)\n\n    def run(self):\n        pygame.init()\n        pygame.display.set_caption(\"Smart Notes\")\n        screen = pygame.display.set_mode((1280, 720))\n        clock = pygame.time.Clock()\n        self.vbox = VBox()\n        self.network = self.vbox.add(",
+"text":"(path)\n        self.alive = True\n\n    def run(self):\n        pygame.init()\n        pygame.display.set_caption(\"Smart Notes\")\n        screen = pygame.display.set_mode((1280, 720))\n        clock = pygame.time.Clock()\n        self.network = self.add(",
 "type":"code"
 },
 {
@@ -30,7 +30,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db))\n        self.debug_bar = self.vbox.add(DebugBar(clock))\n        self.external_text_entries = ",
+"text":"(self.db))\n        self.debug_bar = self.add(DebugBar(clock))\n        self.external_text_entries = ",
 "type":"code"
 },
 {
@@ -38,7 +38,7 @@
 "type":"variable"
 },
 {
-"text":"()\n        pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)\n        while True:\n            for event in pygame.event.get():\n                if event.type == pygame.QUIT:\n                    return\n                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n                    self.debug_bar.toggle()\n                elif event.type == pygame.MOUSEMOTION:\n                    self.network.mouse_pos(event.pos)\n                elif event.type == pygame.MOUSEBUTTONDOWN:\n                    self.network.click(event.pos)\n                elif event.type == USER_EVENT_CHECK_EXTERNAL:\n                    self.external_text_entries.check()\n                elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n                    if self.network.selected_note:\n                        self.external_text_entries.add(\n                            EditNoteText(self.db, self.network.selected_note.note_id)\n                        )\n                elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n                    if self.network.selected_note:\n                        child_note_id = self.db.create_note(text=\"Enter note text...\")\n                        self.db.create_link(self.network.selected_note.note_id, child_note_id)\n                        self.external_text_entries.add(\n                            EditNoteText(self.db, child_note_id)\n                        )\n                elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n                    note_id = self.db.create_note(text=\"Enter note text...\")\n                    self.network.",
+"text":"()\n        pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)\n        while self.alive:\n            for event in pygame.event.get():\n                self.process_event(event)\n            self.update(screen.get_rect(), clock.get_time())\n            screen.fill((134, 169, 214))\n            self.draw(screen)\n            pygame.display.flip()\n            clock.tick(60)\n\n    def process_event(self, event):\n        if event.type == pygame.QUIT:\n            self.alive = False\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        elif event.type == pygame.MOUSEMOTION:\n            self.network.mouse_pos(event.pos)\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            self.network.click(event.pos)\n        elif event.type == USER_EVENT_CHECK_EXTERNAL:\n            self.external_text_entries.check()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n            if self.network.selected_note:\n                self.external_text_entries.add(\n                    EditNoteText(self.db, self.network.selected_note.note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n            if self.network.selected_note:\n                child_note_id = self.db.create_note(text=\"Enter note text...\")\n                self.db.create_link(self.network.selected_note.note_id, child_note_id)\n                self.external_text_entries.add(\n                    EditNoteText(self.db, child_note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n            note_id = self.db.create_note(text=\"Enter note text...\")\n            self.network.",
 "type":"code"
 },
 {
@@ -46,15 +46,7 @@
 "type":"variable"
 },
 {
-"text":"(note_id)\n                    self.external_text_entries.add(\n                        EditNoteText(self.db, note_id)\n                    )\n            self.update(screen.get_rect(), clock.get_time())\n            screen.fill((134, 169, 214))\n            self.draw(screen)\n            pygame.display.flip()\n            clock.tick(60)\n\n    def update(self, rect, elapsed_ms):\n        self.vbox.update(rect, elapsed_ms)\n\n    def draw(self, screen):\n        self.vbox.",
-"type":"code"
-},
-{
-"id":"acab4c17f89046f4a05b14a8c35ad89a",
-"type":"variable"
-},
-{
-"text":"(screen)\n",
+"text":"(note_id)\n            self.external_text_entries.add(\n                EditNoteText(self.db, note_id)\n            )\n",
 "type":"code"
 }
 ],
@@ -684,7 +676,7 @@
 },
 {
 "chunkpath":[
-"classes"
+"base classes"
 ],
 "filepath":[
 "smartnotes.py"
@@ -700,7 +692,7 @@
 },
 {
 "chunkpath":[
-"classes"
+"base classes"
 ],
 "filepath":[
 "smartnotes.py"
