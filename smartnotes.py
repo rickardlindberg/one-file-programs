@@ -49,6 +49,7 @@ class Box(Widget):
 
     def add(self, child):
         self.children.append(child)
+        return child
 
     def update(self, rect, elapsed_ms):
         sizes = []
@@ -89,14 +90,9 @@ class RootWidget(Widget):
         pygame.display.set_caption("Smart Notes")
         screen = pygame.display.set_mode((1280, 720))
         clock = pygame.time.Clock()
-        network = NetworkWidget(self.db)
-        for note_id, note_data in self.db.get_notes():
-            network.open_note(note_id)
-            break
-        debug_bar = DebugBar(clock)
         vbox = VBox()
-        vbox.add(network)
-        vbox.add(debug_bar)
+        network = vbox.add(NetworkWidget(self.db))
+        debug_bar = vbox.add(DebugBar(clock))
         external_text_entries = ExternalTextEntries()
         CHECK_EXTERNAL = pygame.USEREVENT
         pygame.time.set_timer(CHECK_EXTERNAL, 1000)
@@ -145,6 +141,9 @@ class NetworkWidget(Widget):
         self.notes = []
         self.selected_note = None
         self.root_note = None
+        for note_id, note_data in self.db.get_notes():
+            self.open_note(note_id)
+            break
 
     def mouse_pos(self, pos):
         self.pos = pos

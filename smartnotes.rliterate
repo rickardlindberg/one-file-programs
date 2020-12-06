@@ -22,7 +22,7 @@
 "type":"variable"
 },
 {
-"text":"(path)\n        self.alive = True\n\n    def run(self):\n        pygame.init()\n        pygame.display.set_caption(\"Smart Notes\")\n        screen = pygame.display.set_mode((1280, 720))\n        clock = pygame.time.Clock()\n        network = ",
+"text":"(path)\n        self.alive = True\n\n    def run(self):\n        pygame.init()\n        pygame.display.set_caption(\"Smart Notes\")\n        screen = pygame.display.set_mode((1280, 720))\n        clock = pygame.time.Clock()\n        vbox = VBox()\n        network = vbox.add(",
 "type":"code"
 },
 {
@@ -30,23 +30,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db)\n        for note_id, note_data in self.db.",
-"type":"code"
-},
-{
-"id":"a342079796cc418b9f52363ab1ca3cf3",
-"type":"variable"
-},
-{
-"text":"():\n            network.",
-"type":"code"
-},
-{
-"id":"550c4c8b55b444af9a0463ba8be1c5b9",
-"type":"variable"
-},
-{
-"text":"(note_id)\n            break\n        debug_bar = DebugBar(clock)\n        vbox = VBox()\n        vbox.add(network)\n        vbox.add(debug_bar)\n        external_text_entries = ",
+"text":"(self.db))\n        debug_bar = vbox.add(DebugBar(clock))\n        external_text_entries = ",
 "type":"code"
 },
 {
@@ -350,7 +334,15 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, db):\n        Widget.__init__(self)\n        self.db = db\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def ",
+"text":"(Widget):\n\n    def __init__(self, db):\n        Widget.__init__(self)\n        self.db = db\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n        for note_id, note_data in self.db.get_notes():\n            self.",
+"type":"code"
+},
+{
+"id":"550c4c8b55b444af9a0463ba8be1c5b9",
+"type":"variable"
+},
+{
+"text":"(note_id)\n            break\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def ",
 "type":"code"
 },
 {
@@ -683,7 +675,7 @@
 ],
 "fragments":[
 {
-"text":"class Box(Widget):\n\n    def __init__(self):\n        Widget.__init__(self)\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n",
+"text":"class Box(Widget):\n\n    def __init__(self):\n        Widget.__init__(self)\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n        return child\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n",
 "type":"code"
 }
 ],
