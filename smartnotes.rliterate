@@ -38,15 +38,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db))\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.unicode == \"q\":\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        elif event.type == pygame.MOUSEMOTION:\n            self.network.mouse_pos(event.pos)\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            self.network.click(event.pos)\n        elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n            if self.network.selected_note:\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, self.network.selected_note.note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n            if self.network.selected_note:\n                child_note_id = self.db.create_note(text=\"Enter note text...\")\n                self.db.create_link(self.network.selected_note.note_id, child_note_id)\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, child_note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n            note_id = self.db.create_note(text=\"Enter note text...\")\n            self.network.",
-"type":"code"
-},
-{
-"id":"550c4c8b55b444af9a0463ba8be1c5b9",
-"type":"variable"
-},
-{
-"text":"(note_id)\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=EditNoteText(self.db, note_id)\n            )\n",
+"text":"(self.db))\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.unicode == \"q\":\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n",
 "type":"code"
 }
 ],
@@ -334,7 +326,15 @@
 "type":"variable"
 },
 {
-"text":"(note_id)\n            break\n\n    def mouse_pos(self, pos):\n        self.pos = pos\n\n    def click(self, pos):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(pos):\n                self.make_root(note)\n                return\n\n    def ",
+"text":"(note_id)\n            break\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            self.pos = event.pos\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            for note in reversed(self.notes):\n                if note.rect.collidepoint(event.pos):\n                    self.make_root(note)\n                    return\n        elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n            if self.selected_note:\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, self.selected_note.note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n            if self.selected_note:\n                child_note_id = self.db.create_note(text=\"Enter note text...\")\n                self.db.create_link(self.selected_note.note_id, child_note_id)\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, child_note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n            note_id = self.db.create_note(text=\"Enter note text...\")\n            self.",
+"type":"code"
+},
+{
+"id":"550c4c8b55b444af9a0463ba8be1c5b9",
+"type":"variable"
+},
+{
+"text":"(note_id)\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=EditNoteText(self.db, note_id)\n            )\n\n    def ",
 "type":"code"
 },
 {
@@ -643,7 +643,7 @@
 ],
 "fragments":[
 {
-"text":"class Widget(object):\n\n    def __init__(self, width=-1, height=-1, visible=True):\n        self._width = width\n        self._height = height\n        self._visible = visible\n\n    def resize(self, width=None, height=None):\n        if width is not None:\n            self._width = width\n        if height is not None:\n            self._height = height\n\n    def get_width(self):\n        return self._width\n\n    def get_height(self):\n        return self._height\n\n    def is_visible(self):\n        return self._visible\n\n    def toggle_visible(self):\n        self._visible = not self._visible\n\n    def quit(self):\n        self.post_event(pygame.QUIT)\n\n    def post_event(self, event_type, **kwargs):\n        pygame.event.post(pygame.event.Event(event_type, **kwargs))\n",
+"text":"class Widget(object):\n\n    def __init__(self, width=-1, height=-1, visible=True):\n        self._width = width\n        self._height = height\n        self._visible = visible\n\n    def resize(self, width=None, height=None):\n        if width is not None:\n            self._width = width\n        if height is not None:\n            self._height = height\n\n    def get_width(self):\n        return self._width\n\n    def get_height(self):\n        return self._height\n\n    def is_visible(self):\n        return self._visible\n\n    def toggle_visible(self):\n        self._visible = not self._visible\n\n    def quit(self):\n        self.post_event(pygame.QUIT)\n\n    def post_event(self, event_type, **kwargs):\n        pygame.event.post(pygame.event.Event(event_type, **kwargs))\n\n    def process_event(self, event):\n        pass\n",
 "type":"code"
 }
 ],
@@ -659,7 +659,7 @@
 ],
 "fragments":[
 {
-"text":"class Box(Widget):\n\n    def __init__(self):\n        Widget.__init__(self)\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n        return child\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n",
+"text":"class Box(Widget):\n\n    def __init__(self):\n        Widget.__init__(self)\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n        return child\n\n    def process_event(self, event):\n        for child in self.visible_children():\n            child.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n",
 "type":"code"
 }
 ],

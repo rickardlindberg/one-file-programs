@@ -51,6 +51,9 @@ class Widget(object):
     def post_event(self, event_type, **kwargs):
         pygame.event.post(pygame.event.Event(event_type, **kwargs))
 
+    def process_event(self, event):
+        pass
+
 class Box(Widget):
 
     def __init__(self):
@@ -60,6 +63,10 @@ class Box(Widget):
     def add(self, child):
         self.children.append(child)
         return child
+
+    def process_event(self, event):
+        for child in self.visible_children():
+            child.process_event(event)
 
     def update(self, rect, elapsed_ms):
         sizes = []
@@ -133,31 +140,8 @@ class SmartNotesWidget(VBox):
             self.quit()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.debug_bar.toggle()
-        elif event.type == pygame.MOUSEMOTION:
-            self.network.mouse_pos(event.pos)
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            self.network.click(event.pos)
-        elif event.type == pygame.KEYDOWN and event.unicode == "e":
-            if self.network.selected_note:
-                self.post_event(
-                    USER_EVENT_EXTERNAL_TEXT_ENTRY,
-                    entry=EditNoteText(self.db, self.network.selected_note.note_id)
-                )
-        elif event.type == pygame.KEYDOWN and event.unicode == "c":
-            if self.network.selected_note:
-                child_note_id = self.db.create_note(text="Enter note text...")
-                self.db.create_link(self.network.selected_note.note_id, child_note_id)
-                self.post_event(
-                    USER_EVENT_EXTERNAL_TEXT_ENTRY,
-                    entry=EditNoteText(self.db, child_note_id)
-                )
-        elif event.type == pygame.KEYDOWN and event.unicode == "n":
-            note_id = self.db.create_note(text="Enter note text...")
-            self.network.open_note(note_id)
-            self.post_event(
-                USER_EVENT_EXTERNAL_TEXT_ENTRY,
-                entry=EditNoteText(self.db, note_id)
-            )
+        else:
+            VBox.process_event(self, event)
 
 class NetworkWidget(Widget):
 
@@ -172,14 +156,35 @@ class NetworkWidget(Widget):
             self.open_note(note_id)
             break
 
-    def mouse_pos(self, pos):
-        self.pos = pos
-
-    def click(self, pos):
-        for note in reversed(self.notes):
-            if note.rect.collidepoint(pos):
-                self.make_root(note)
-                return
+    def process_event(self, event):
+        if event.type == pygame.MOUSEMOTION:
+            self.pos = event.pos
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            for note in reversed(self.notes):
+                if note.rect.collidepoint(event.pos):
+                    self.make_root(note)
+                    return
+        elif event.type == pygame.KEYDOWN and event.unicode == "e":
+            if self.selected_note:
+                self.post_event(
+                    USER_EVENT_EXTERNAL_TEXT_ENTRY,
+                    entry=EditNoteText(self.db, self.selected_note.note_id)
+                )
+        elif event.type == pygame.KEYDOWN and event.unicode == "c":
+            if self.selected_note:
+                child_note_id = self.db.create_note(text="Enter note text...")
+                self.db.create_link(self.selected_note.note_id, child_note_id)
+                self.post_event(
+                    USER_EVENT_EXTERNAL_TEXT_ENTRY,
+                    entry=EditNoteText(self.db, child_note_id)
+                )
+        elif event.type == pygame.KEYDOWN and event.unicode == "n":
+            note_id = self.db.create_note(text="Enter note text...")
+            self.open_note(note_id)
+            self.post_event(
+                USER_EVENT_EXTERNAL_TEXT_ENTRY,
+                entry=EditNoteText(self.db, note_id)
+            )
 
     def open_note(self, note_id):
         self.make_root(NoteWidget(self.db, note_id))
