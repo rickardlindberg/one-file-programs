@@ -30,7 +30,7 @@
 "type":"variable"
 },
 {
-"text":"(path)\n        self.network = self.add(",
+"text":"(path)\n        self.search_bar = self.add(SearchBar(self.db))\n        self.network = self.add(",
 "type":"code"
 },
 {
@@ -38,7 +38,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db))\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.unicode == \"q\":\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n",
+"text":"(self.db))\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.unicode == \"q\":\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"/\":\n            self.search_bar.toggle()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n",
 "type":"code"
 }
 ],
@@ -50,6 +50,85 @@
 },
 {
 "children":[
+{
+"children":[],
+"id":"adaef2134a284e998e6969dd65013fdf",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)\n        self.db = db\n        self.animation = Animation()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(self, ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":"):\n        self.image = pygame.Surface(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":".size)\n        self.image.fill((84, 106, 134))\n        percent = self.animation.advance(",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n        if Widget.is_visible(self):\n            alpha = int(255 * percent)\n            self.resize(height=int(self.IDEAL_HEIGHT * percent))\n        else:\n            alpha = 255 - int(255 * percent)\n            self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))\n        self.image.set_alpha(alpha)\n        self.rect = ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":"\n\n    def ",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(self, screen):\n        screen.blit(self.image, self.rect)\n",
+"type":"code"
+}
+],
+"id":"6c37a4f747b84ad493d88f40beedcc16",
+"type":"code"
+}
+],
+"title":"Search Bar"
+},
 {
 "children":[
 {

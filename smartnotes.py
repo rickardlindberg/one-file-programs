@@ -132,16 +132,51 @@ class SmartNotesWidget(VBox):
     def __init__(self, path):
         VBox.__init__(self)
         self.db = NoteDb(path)
+        self.search_bar = self.add(SearchBar(self.db))
         self.network = self.add(NetworkWidget(self.db))
         self.debug_bar = self.add(DebugBar())
 
     def process_event(self, event):
         if event.type == pygame.KEYDOWN and event.unicode == "q":
             self.quit()
+        elif event.type == pygame.KEYDOWN and event.unicode == "/":
+            self.search_bar.toggle()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.debug_bar.toggle()
         else:
             VBox.process_event(self, event)
+
+class SearchBar(Widget):
+
+    IDEAL_HEIGHT = 150
+
+    def __init__(self, db):
+        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)
+        self.db = db
+        self.animation = Animation()
+
+    def is_visible(self):
+        return Widget.is_visible(self) or self.animation.active()
+
+    def toggle(self):
+        self.toggle_visible()
+        self.animation.start(200)
+
+    def update(self, rect, elapsed_ms):
+        self.image = pygame.Surface(rect.size)
+        self.image.fill((84, 106, 134))
+        percent = self.animation.advance(elapsed_ms)
+        if Widget.is_visible(self):
+            alpha = int(255 * percent)
+            self.resize(height=int(self.IDEAL_HEIGHT * percent))
+        else:
+            alpha = 255 - int(255 * percent)
+            self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))
+        self.image.set_alpha(alpha)
+        self.rect = rect
+
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
 
 class NetworkWidget(Widget):
 
