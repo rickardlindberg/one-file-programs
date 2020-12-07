@@ -549,7 +549,7 @@
 ],
 "fragments":[
 {
-"text":"class DebugBar(Widget):\n\n    IDEAL_HEIGHT = 50\n\n    def __init__(self):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT)\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n        self.average_elapsed = 0\n        self.tot_elapsed_time = 0\n        self.frame_count = 0\n        self.fps = 0\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
+"text":"class DebugBar(Widget):\n\n    IDEAL_HEIGHT = 50\n\n    def __init__(self):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=DEBUG)\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n        self.average_elapsed = 0\n        self.tot_elapsed_time = 0\n        self.frame_count = 0\n        self.fps = 0\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -643,7 +643,7 @@
 ],
 "fragments":[
 {
-"text":"class Widget(object):\n\n    def __init__(self, width=-1, height=-1):\n        self._width = width\n        self._height = height\n        self._visible = True\n\n    def resize(self, width=None, height=None):\n        if width is not None:\n            self._width = width\n        if height is not None:\n            self._height = height\n\n    def get_width(self):\n        return self._width\n\n    def get_height(self):\n        return self._height\n\n    def is_visible(self):\n        return self._visible\n\n    def toggle_visible(self):\n        self._visible = not self._visible\n\n    def quit(self):\n        self.post_event(pygame.QUIT)\n\n    def post_event(self, event_type, **kwargs):\n        pygame.event.post(pygame.event.Event(event_type, **kwargs))\n",
+"text":"class Widget(object):\n\n    def __init__(self, width=-1, height=-1, visible=True):\n        self._width = width\n        self._height = height\n        self._visible = visible\n\n    def resize(self, width=None, height=None):\n        if width is not None:\n            self._width = width\n        if height is not None:\n            self._height = height\n\n    def get_width(self):\n        return self._width\n\n    def get_height(self):\n        return self._height\n\n    def is_visible(self):\n        return self._visible\n\n    def toggle_visible(self):\n        self._visible = not self._visible\n\n    def quit(self):\n        self.post_event(pygame.QUIT)\n\n    def post_event(self, event_type, **kwargs):\n        pygame.event.post(pygame.event.Event(event_type, **kwargs))\n",
 "type":"code"
 }
 ],
@@ -1136,7 +1136,7 @@
 ],
 "fragments":[
 {
-"text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport io\nimport json\nimport os\nimport pygame\nimport pygame.freetype\nimport subprocess\nimport sys\nimport tempfile\nimport uuid\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\n\nUSER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT\nUSER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1\n\n",
+"text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport io\nimport json\nimport os\nimport pygame\nimport pygame.freetype\nimport subprocess\nimport sys\nimport tempfile\nimport uuid\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\nDEBUG = DEBUG_NOTE_BORDER or DEBUG_ANIMATIONS\n\nUSER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT\nUSER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1\n\n",
 "type":"code"
 },
 {

@@ -15,16 +15,17 @@ import uuid
 
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_ANIMATIONS = os.environ.get("DEBUG_ANIMATIONS") == "yes"
+DEBUG = DEBUG_NOTE_BORDER or DEBUG_ANIMATIONS
 
 USER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT
 USER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1
 
 class Widget(object):
 
-    def __init__(self, width=-1, height=-1):
+    def __init__(self, width=-1, height=-1, visible=True):
         self._width = width
         self._height = height
-        self._visible = True
+        self._visible = visible
 
     def resize(self, width=None, height=None):
         if width is not None:
@@ -510,7 +511,7 @@ class DebugBar(Widget):
     IDEAL_HEIGHT = 50
 
     def __init__(self):
-        Widget.__init__(self, height=self.IDEAL_HEIGHT)
+        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=DEBUG)
         self.animation = Animation()
         self.font = pygame.freetype.SysFont(
             pygame.freetype.get_default_font(),
