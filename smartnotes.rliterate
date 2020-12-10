@@ -964,7 +964,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return self.data[\"notes\"].items()\n\n    def ",
+"text":"(self):\n        return sorted(\n            self.data[\"notes\"].items(),\n            key=lambda item: item[1][\"timestamp_created\"],\n            reverse=True\n        )\n\n    def ",
 "type":"code"
 },
 {

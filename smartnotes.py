@@ -684,7 +684,11 @@ class NoteDb(object):
         })
 
     def get_notes(self):
-        return self.data["notes"].items()
+        return sorted(
+            self.data["notes"].items(),
+            key=lambda item: item[1]["timestamp_created"],
+            reverse=True
+        )
 
     def get_note_data(self, note_id):
         return self.data["notes"][note_id]
