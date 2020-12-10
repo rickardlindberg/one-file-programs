@@ -51,7 +51,79 @@
 {
 "children":[
 {
+"children":[
+{
 "children":[],
+"id":"1603a24a45284d6aa9f14ffe6d0b7764",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class SearchNote(Widget):\n\n    def __init__(self, db, note_id, note_data):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.note_data = note_data\n\n    def ",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(self, ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":"):\n        self.image = pygame.Surface(",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":".size)\n        self.image.fill((200, 200, 200))\n        self.rect = ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":"\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            20\n        )\n        text, rect = font.render(self.note_data[\"text\"])\n        self.image.blit(text, rect.move(\n            pygame.math.Vector2((self.rect.width/2, self.rect.height/2))-pygame.math.Vector2(rect.center)\n        ))\n\n    def ",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(self, screen):\n        screen.blit(self.image, self.rect)\n",
+"type":"code"
+}
+],
+"id":"88e8cf358531425892075ad8aeed935c",
+"type":"code"
+}
+],
+"title":"SearchNote"
+}
+],
 "id":"adaef2134a284e998e6969dd65013fdf",
 "paragraphs":[
 {
@@ -63,7 +135,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)\n        self.db = db\n        self.animation = Animation()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
+"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)\n        self.db = db\n        self.animation = Animation()\n        self.notes = []\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -111,7 +183,23 @@
 "type":"variable"
 },
 {
-"text":"\n\n    def ",
+"text":"\n        self.notes = []\n        rect = self.rect.inflate(-10, -10)\n        rect.height = self.IDEAL_HEIGHT - 20\n        single_width = rect.width/5\n        rect.x += 5\n        rect.width = single_width - 10\n        rect.bottom = self.rect.bottom - 10\n        for note_id, note_data in self.db.get_notes():\n            note = SearchNote(\n                self.db,\n                note_id,\n                note_data\n            )\n            note.",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(rect, ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":")\n            self.notes.append(note)\n            rect = rect.copy()\n            rect.x += single_width\n            if len(self.notes) >= 5:\n                break\n\n    def ",
 "type":"code"
 },
 {
@@ -119,7 +207,15 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        screen.blit(self.image, self.rect)\n",
+"text":"(self, screen):\n        screen.blit(self.image, self.rect)\n        for note in self.notes:\n            note.",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(screen)\n",
 "type":"code"
 }
 ],

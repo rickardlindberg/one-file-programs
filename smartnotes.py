@@ -154,6 +154,7 @@ class SearchBar(Widget):
         Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)
         self.db = db
         self.animation = Animation()
+        self.notes = []
 
     def is_visible(self):
         return Widget.is_visible(self) or self.animation.active()
@@ -174,6 +175,51 @@ class SearchBar(Widget):
             self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))
         self.image.set_alpha(alpha)
         self.rect = rect
+        self.notes = []
+        rect = self.rect.inflate(-10, -10)
+        rect.height = self.IDEAL_HEIGHT - 20
+        single_width = rect.width/5
+        rect.x += 5
+        rect.width = single_width - 10
+        rect.bottom = self.rect.bottom - 10
+        for note_id, note_data in self.db.get_notes():
+            note = SearchNote(
+                self.db,
+                note_id,
+                note_data
+            )
+            note.update(rect, elapsed_ms)
+            self.notes.append(note)
+            rect = rect.copy()
+            rect.x += single_width
+            if len(self.notes) >= 5:
+                break
+
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
+        for note in self.notes:
+            note.draw(screen)
+
+class SearchNote(Widget):
+
+    def __init__(self, db, note_id, note_data):
+        Widget.__init__(self)
+        self.db = db
+        self.note_id = note_id
+        self.note_data = note_data
+
+    def update(self, rect, elapsed_ms):
+        self.image = pygame.Surface(rect.size)
+        self.image.fill((200, 200, 200))
+        self.rect = rect
+        font = pygame.freetype.Font(
+            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
+            20
+        )
+        text, rect = font.render(self.note_data["text"])
+        self.image.blit(text, rect.move(
+            pygame.math.Vector2((self.rect.width/2, self.rect.height/2))-pygame.math.Vector2(rect.center)
+        ))
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
