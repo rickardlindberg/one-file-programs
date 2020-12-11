@@ -135,7 +135,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db, network):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)\n        self.db = db\n        self.network = network\n        self.animation = Animation()\n        self.notes = []\n\n    def process_event(self, event):\n        for note in self.notes:\n            note.process_event(event)\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
+"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db, network):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)\n        self.db = db\n        self.network = network\n        self.animation = Animation()\n        self.search_expression = \"\"\n        self.notes = []\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.unicode:\n            self.search_expression += event.unicode\n            return\n        for note in self.notes:\n            note.process_event(event)\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n        self.search_expression = \"\"\n\n    def ",
 "type":"code"
 },
 {
@@ -183,7 +183,7 @@
 "type":"variable"
 },
 {
-"text":"\n        self.notes = []\n        rect = self.rect.inflate(-10, -10)\n        rect.height = self.IDEAL_HEIGHT - 20\n        single_width = rect.width/5\n        rect.x += 5\n        rect.width = single_width - 10\n        rect.bottom = self.rect.bottom - 10\n        for note_id, note_data in self.db.get_notes():\n            note = SearchNote(\n                self.db,\n                note_id,\n                note_data,\n                self.network\n            )\n            note.",
+"text":"\n        self.notes = []\n        rect = self.rect.inflate(-10, -10)\n        rect.height = self.IDEAL_HEIGHT - 40\n        single_width = rect.width/5\n        rect.x += 5\n        rect.width = single_width - 10\n        rect.bottom = self.rect.bottom - 10\n        for note_id, note_data in self.db.get_notes(self.search_expression):\n            note = SearchNote(\n                self.db,\n                note_id,\n                note_data,\n                self.network\n            )\n            note.",
 "type":"code"
 },
 {
@@ -207,7 +207,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        screen.blit(self.image, self.rect)\n        for note in self.notes:\n            note.",
+"text":"(self, screen):\n        screen.blit(self.image, self.rect)\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            12\n        )\n        text, rect = font.render(\"Expression: {}\".format(self.search_expression))\n        screen.blit(text, self.rect)\n        for note in self.notes:\n            note.",
 "type":"code"
 },
 {
@@ -964,7 +964,7 @@
 "type":"variable"
 },
 {
-"text":"(self):\n        return sorted(\n            self.data[\"notes\"].items(),\n            key=lambda item: item[1][\"timestamp_created\"],\n            reverse=True\n        )\n\n    def ",
+"text":"(self, expression=\"\"):\n        return sorted(\n            (\n                item\n                for item in self.data[\"notes\"].items()\n                if expression in item[1][\"text\"]\n            ),\n            key=lambda item: item[1][\"timestamp_created\"],\n            reverse=True\n        )\n\n    def ",
 "type":"code"
 },
 {

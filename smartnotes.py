@@ -156,9 +156,13 @@ class SearchBar(Widget):
         self.db = db
         self.network = network
         self.animation = Animation()
+        self.search_expression = ""
         self.notes = []
 
     def process_event(self, event):
+        if event.type == pygame.KEYDOWN and event.unicode:
+            self.search_expression += event.unicode
+            return
         for note in self.notes:
             note.process_event(event)
 
@@ -168,6 +172,7 @@ class SearchBar(Widget):
     def toggle(self):
         self.toggle_visible()
         self.animation.start(200)
+        self.search_expression = ""
 
     def update(self, rect, elapsed_ms):
         self.image = pygame.Surface(rect.size)
@@ -183,12 +188,12 @@ class SearchBar(Widget):
         self.rect = rect
         self.notes = []
         rect = self.rect.inflate(-10, -10)
-        rect.height = self.IDEAL_HEIGHT - 20
+        rect.height = self.IDEAL_HEIGHT - 40
         single_width = rect.width/5
         rect.x += 5
         rect.width = single_width - 10
         rect.bottom = self.rect.bottom - 10
-        for note_id, note_data in self.db.get_notes():
+        for note_id, note_data in self.db.get_notes(self.search_expression):
             note = SearchNote(
                 self.db,
                 note_id,
@@ -204,6 +209,12 @@ class SearchBar(Widget):
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+        font = pygame.freetype.Font(
+            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
+            12
+        )
+        text, rect = font.render("Expression: {}".format(self.search_expression))
+        screen.blit(text, self.rect)
         for note in self.notes:
             note.draw(screen)
 
@@ -696,9 +707,13 @@ class NoteDb(object):
             "links": {},
         })
 
-    def get_notes(self):
+    def get_notes(self, expression=""):
         return sorted(
-            self.data["notes"].items(),
+            (
+                item
+                for item in self.data["notes"].items()
+                if expression in item[1]["text"]
+            ),
             key=lambda item: item[1]["timestamp_created"],
             reverse=True
         )
