@@ -211,16 +211,13 @@ class SearchBar(Widget):
             self.search_expression = ""
 
     def update(self, rect, elapsed_ms):
-        self.image = pygame.Surface(rect.size)
-        self.image.fill((84, 106, 134))
         percent = self.animation.advance(elapsed_ms)
         if Widget.is_visible(self):
-            alpha = int(255 * percent)
+            self.alpha = int(255 * percent)
             self.resize(height=int(self.IDEAL_HEIGHT * percent))
         else:
-            alpha = 255 - int(255 * percent)
+            self.alpha = 255 - int(255 * percent)
             self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))
-        self.image.set_alpha(alpha)
         self.rect = rect
         self.notes = []
         rect = self.rect.inflate(-10, -10)
@@ -244,7 +241,11 @@ class SearchBar(Widget):
                 break
 
     def draw(self, screen):
-        screen.blit(self.image, self.rect)
+        PygameDrawingInterface(screen).fill_rect(
+            self.rect,
+            color=(84, 106, 134),
+            alpha=self.alpha
+        )
         font = pygame.freetype.Font(
             "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
             12
@@ -737,6 +738,17 @@ class Animation(object):
 
     def active(self):
         return self.progress < self.duration_ms or not self.last_consumed
+
+class PygameDrawingInterface(object):
+
+    def __init__(self, screen):
+        self.screen = screen
+
+    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):
+        image = pygame.Surface(rect.size)
+        image.fill(color)
+        image.set_alpha(alpha)
+        self.screen.blit(image, rect)
 
 class NoteDb(object):
 
