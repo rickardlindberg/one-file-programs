@@ -136,14 +136,15 @@ class SmartNotesWidget(VBox):
             self.db,
             lambda note_id: self.network.open_note(note_id)
         ))
-        self.network = self.add(NetworkWidget(self.db))
+        self.network = self.add(NetworkWidget(
+            self.db,
+            lambda: self.search_bar.toggle()
+        ))
         self.debug_bar = self.add(DebugBar())
 
     def process_event(self, event):
         if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:
             self.quit()
-        elif event.type == pygame.KEYDOWN and event.unicode == "/":
-            self.search_bar.toggle()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.debug_bar.toggle()
         else:
@@ -252,9 +253,10 @@ class SearchNote(Widget):
 
 class NetworkWidget(Widget):
 
-    def __init__(self, db):
+    def __init__(self, db, request_search_callback):
         Widget.__init__(self)
         self.db = db
+        self.request_search_callback = request_search_callback
         self.pos = (-1, -1)
         self.notes = []
         self.selected_note = None
@@ -271,6 +273,8 @@ class NetworkWidget(Widget):
                 if note.rect.collidepoint(event.pos):
                     self.make_root(note)
                     return
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH:
+            self.request_search_callback()
         elif event.type == pygame.KEYDOWN and event.unicode == "e":
             if self.selected_note:
                 self.post_event(

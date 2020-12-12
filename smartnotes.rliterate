@@ -38,7 +38,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db))\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"/\":\n            self.search_bar.toggle()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n",
+"text":"(\n            self.db,\n            lambda: self.search_bar.toggle()\n        ))\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n",
 "type":"code"
 }
 ],
@@ -493,7 +493,7 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, db):\n        Widget.__init__(self)\n        self.db = db\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n        for note_id, note_data in self.db.get_notes():\n            self.",
+"text":"(Widget):\n\n    def __init__(self, db, request_search_callback):\n        Widget.__init__(self)\n        self.db = db\n        self.request_search_callback = request_search_callback\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n        for note_id, note_data in self.db.get_notes():\n            self.",
 "type":"code"
 },
 {
@@ -501,7 +501,7 @@
 "type":"variable"
 },
 {
-"text":"(note_id)\n            break\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            self.pos = event.pos\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            for note in reversed(self.notes):\n                if note.rect.collidepoint(event.pos):\n                    self.make_root(note)\n                    return\n        elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n            if self.selected_note:\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, self.selected_note.note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n            if self.selected_note:\n                child_note_id = self.db.create_note(text=\"Enter note text...\")\n                self.db.create_link(self.selected_note.note_id, child_note_id)\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, child_note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n            note_id = self.db.create_note(text=\"Enter note text...\")\n            self.",
+"text":"(note_id)\n            break\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            self.pos = event.pos\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            for note in reversed(self.notes):\n                if note.rect.collidepoint(event.pos):\n                    self.make_root(note)\n                    return\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH:\n            self.request_search_callback()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n            if self.selected_note:\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, self.selected_note.note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n            if self.selected_note:\n                child_note_id = self.db.create_note(text=\"Enter note text...\")\n                self.db.create_link(self.selected_note.note_id, child_note_id)\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, child_note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n            note_id = self.db.create_note(text=\"Enter note text...\")\n            self.",
 "type":"code"
 },
 {
