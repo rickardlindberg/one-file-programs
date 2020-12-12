@@ -142,12 +142,12 @@ class SmartNotesWidget(VBox):
         self.db = NoteDb(path)
         self.search_bar = self.add(SearchBar(
             self.db,
-            open_callback=self._open_callback,
-            dismiss_callback=self._dismiss_callback
+            open_callback=self._on_search_note_open,
+            dismiss_callback=self._on_search_dismiss
         ))
         self.network = self.add(NetworkWidget(
             self.db,
-            request_search_callback=self._request_search_callback
+            request_search_callback=self._on_search_request
         ))
         self.debug_bar = self.add(DebugBar())
         self.network.focus()
@@ -160,16 +160,15 @@ class SmartNotesWidget(VBox):
         else:
             VBox.process_event(self, event)
 
-    def _open_callback(self, note_id):
+    def _on_search_note_open(self, note_id):
         self.network.open_note(note_id)
 
-    def _dismiss_callback(self):
+    def _on_search_dismiss(self):
         self.search_bar.hide()
         self.network.focus()
 
-    def _request_search_callback(self):
-        self.search_bar.show()
-        self.search_bar.focus()
+    def _on_search_request(self):
+        self.search_bar.start_search()
 
 class SearchBar(Widget):
 
@@ -198,11 +197,12 @@ class SearchBar(Widget):
     def is_visible(self):
         return Widget.is_visible(self) or self.animation.active()
 
-    def show(self):
+    def start_search(self):
         if not self.is_visible():
             self.toggle_visible()
             self.animation.start(200)
             self.search_expression = ""
+        self.focus()
 
     def hide(self):
         if self.is_visible():
