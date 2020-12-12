@@ -89,7 +89,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.image = pygame.Surface(",
+"text":"):\n        self.rect = ",
 "type":"code"
 },
 {
@@ -97,15 +97,7 @@
 "type":"variable"
 },
 {
-"text":".size)\n        self.image.fill((200, 200, 200))\n        self.rect = ",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":"\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            20\n        )\n        text, rect = font.render(self.note_data[\"text\"])\n        self.image.blit(text, rect.move(\n            pygame.math.Vector2((self.rect.width/2, self.rect.height/2))-pygame.math.Vector2(rect.center)\n        ))\n\n    def ",
+"text":"\n\n    def ",
 "type":"code"
 },
 {
@@ -113,7 +105,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        screen.blit(self.image, self.rect)\n",
+"text":"(self, screen):\n        PygameDrawingInterface(screen).fill_rect(\n            self.rect,\n            color=(200, 200, 200)\n        )\n        PygameDrawingInterface(screen).render_text(\n            self.note_data[\"text\"],\n            self.rect\n        )\n",
 "type":"code"
 }
 ],

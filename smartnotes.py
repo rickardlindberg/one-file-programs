@@ -276,20 +276,17 @@ class SearchNote(Widget):
                 self.open_callback(self.note_id)
 
     def update(self, rect, elapsed_ms):
-        self.image = pygame.Surface(rect.size)
-        self.image.fill((200, 200, 200))
         self.rect = rect
-        font = pygame.freetype.Font(
-            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
-            20
-        )
-        text, rect = font.render(self.note_data["text"])
-        self.image.blit(text, rect.move(
-            pygame.math.Vector2((self.rect.width/2, self.rect.height/2))-pygame.math.Vector2(rect.center)
-        ))
 
     def draw(self, screen):
-        screen.blit(self.image, self.rect)
+        PygameDrawingInterface(screen).fill_rect(
+            self.rect,
+            color=(200, 200, 200)
+        )
+        PygameDrawingInterface(screen).render_text(
+            self.note_data["text"],
+            self.rect
+        )
 
 class NetworkWidget(Widget):
 
