@@ -138,7 +138,7 @@ class SmartNotesWidget(VBox):
         ))
         self.network = self.add(NetworkWidget(
             self.db,
-            lambda: self.search_bar.toggle()
+            lambda: self.search_bar.show()
         ))
         self.debug_bar = self.add(DebugBar())
 
@@ -163,19 +163,28 @@ class SearchBar(Widget):
         self.notes = []
 
     def process_event(self, event):
-        if event.type == pygame.KEYDOWN and event.unicode:
+        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
+            self.hide()
+        elif event.type == pygame.KEYDOWN and event.unicode:
             self.search_expression += event.unicode
-            return
-        for note in self.notes:
-            note.process_event(event)
+        else:
+            for note in self.notes:
+                note.process_event(event)
 
     def is_visible(self):
         return Widget.is_visible(self) or self.animation.active()
 
-    def toggle(self):
-        self.toggle_visible()
-        self.animation.start(200)
-        self.search_expression = ""
+    def show(self):
+        if not self.is_visible():
+            self.toggle_visible()
+            self.animation.start(200)
+            self.search_expression = ""
+
+    def hide(self):
+        if self.is_visible():
+            self.toggle_visible()
+            self.animation.start(200)
+            self.search_expression = ""
 
     def update(self, rect, elapsed_ms):
         self.image = pygame.Surface(rect.size)
