@@ -30,7 +30,7 @@
 "type":"variable"
 },
 {
-"text":"(path)\n        self.search_bar = self.add(SearchBar(\n            self.db,\n            lambda note_id: self.network.open_note(note_id),\n            lambda: self.search_bar.hide()\n        ))\n        self.network = self.add(",
+"text":"(path)\n        self.search_bar = self.add(SearchBar(\n            self.db,\n            open_callback=lambda note_id: self.network.open_note(note_id),\n            dismiss_callback=lambda: self.search_bar.hide()\n        ))\n        self.network = self.add(",
 "type":"code"
 },
 {
@@ -38,7 +38,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            self.db,\n            lambda: self.search_bar.show()\n        ))\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n",
+"text":"(\n            self.db,\n            request_search_callback=lambda: self.search_bar.show()\n        ))\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n",
 "type":"code"
 }
 ],

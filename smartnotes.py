@@ -134,12 +134,12 @@ class SmartNotesWidget(VBox):
         self.db = NoteDb(path)
         self.search_bar = self.add(SearchBar(
             self.db,
-            lambda note_id: self.network.open_note(note_id),
-            lambda: self.search_bar.hide()
+            open_callback=lambda note_id: self.network.open_note(note_id),
+            dismiss_callback=lambda: self.search_bar.hide()
         ))
         self.network = self.add(NetworkWidget(
             self.db,
-            lambda: self.search_bar.show()
+            request_search_callback=lambda: self.search_bar.show()
         ))
         self.debug_bar = self.add(DebugBar())
 
