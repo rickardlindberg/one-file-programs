@@ -22,10 +22,18 @@ USER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1
 
 class Widget(object):
 
+    _focused_widget = None
+
     def __init__(self, width=-1, height=-1, visible=True):
         self._width = width
         self._height = height
         self._visible = visible
+
+    def has_focus(self):
+        return Widget._focused_widget is self
+
+    def focus(self):
+        Widget._focused_widget = self
 
     def resize(self, width=None, height=None):
         if width is not None:
@@ -134,14 +142,15 @@ class SmartNotesWidget(VBox):
         self.db = NoteDb(path)
         self.search_bar = self.add(SearchBar(
             self.db,
-            open_callback=lambda note_id: self.network.open_note(note_id),
-            dismiss_callback=lambda: self.search_bar.hide()
+            open_callback=self._open_callback,
+            dismiss_callback=self._dismiss_callback
         ))
         self.network = self.add(NetworkWidget(
             self.db,
-            request_search_callback=lambda: self.search_bar.show()
+            request_search_callback=self._request_search_callback
         ))
         self.debug_bar = self.add(DebugBar())
+        self.network.focus()
 
     def process_event(self, event):
         if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:
@@ -150,6 +159,17 @@ class SmartNotesWidget(VBox):
             self.debug_bar.toggle()
         else:
             VBox.process_event(self, event)
+
+    def _open_callback(self, note_id):
+        self.network.open_note(note_id)
+
+    def _dismiss_callback(self):
+        self.search_bar.hide()
+        self.network.focus()
+
+    def _request_search_callback(self):
+        self.search_bar.show()
+        self.search_bar.focus()
 
 class SearchBar(Widget):
 
@@ -165,6 +185,8 @@ class SearchBar(Widget):
         self.notes = []
 
     def process_event(self, event):
+        if event.type == pygame.KEYDOWN and not self.has_focus():
+            return
         if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
             self.dismiss_callback()
         elif event.type == pygame.KEYDOWN and event.unicode:
@@ -277,6 +299,8 @@ class NetworkWidget(Widget):
             break
 
     def process_event(self, event):
+        if event.type == pygame.KEYDOWN and not self.has_focus():
+            return
         if event.type == pygame.MOUSEMOTION:
             self.pos = event.pos
         elif event.type == pygame.MOUSEBUTTONDOWN:
