@@ -30,7 +30,7 @@
 "type":"variable"
 },
 {
-"text":"(path)\n        self.search_bar = self.add(SearchBar(\n            self.db,\n            lambda note_id: self.network.open_note(note_id)\n        ))\n        self.network = self.add(",
+"text":"(path)\n        self.search_bar = self.add(SearchBar(\n            self.db,\n            lambda note_id: self.network.open_note(note_id),\n            lambda: self.search_bar.hide()\n        ))\n        self.network = self.add(",
 "type":"code"
 },
 {
@@ -135,7 +135,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db, open_callback):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)\n        self.db = db\n        self.open_callback = open_callback\n        self.animation = Animation()\n        self.search_expression = \"\"\n        self.notes = []\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:\n            self.hide()\n        elif event.type == pygame.KEYDOWN and event.unicode:\n            self.search_expression += event.unicode\n        else:\n            for note in self.notes:\n                note.process_event(event)\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def show(self):\n        if not self.is_visible():\n            self.toggle_visible()\n            self.animation.start(200)\n            self.search_expression = \"\"\n\n    def hide(self):\n        if self.is_visible():\n            self.toggle_visible()\n            self.animation.start(200)\n            self.search_expression = \"\"\n\n    def ",
+"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db, open_callback, dismiss_callback):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)\n        self.db = db\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.search_expression = \"\"\n        self.notes = []\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:\n            self.dismiss_callback()\n        elif event.type == pygame.KEYDOWN and event.unicode:\n            self.search_expression += event.unicode\n        else:\n            for note in self.notes:\n                note.process_event(event)\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def show(self):\n        if not self.is_visible():\n            self.toggle_visible()\n            self.animation.start(200)\n            self.search_expression = \"\"\n\n    def hide(self):\n        if self.is_visible():\n            self.toggle_visible()\n            self.animation.start(200)\n            self.search_expression = \"\"\n\n    def ",
 "type":"code"
 },
 {

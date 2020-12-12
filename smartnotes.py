@@ -134,7 +134,8 @@ class SmartNotesWidget(VBox):
         self.db = NoteDb(path)
         self.search_bar = self.add(SearchBar(
             self.db,
-            lambda note_id: self.network.open_note(note_id)
+            lambda note_id: self.network.open_note(note_id),
+            lambda: self.search_bar.hide()
         ))
         self.network = self.add(NetworkWidget(
             self.db,
@@ -154,17 +155,18 @@ class SearchBar(Widget):
 
     IDEAL_HEIGHT = 150
 
-    def __init__(self, db, open_callback):
+    def __init__(self, db, open_callback, dismiss_callback):
         Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)
         self.db = db
         self.open_callback = open_callback
+        self.dismiss_callback = dismiss_callback
         self.animation = Animation()
         self.search_expression = ""
         self.notes = []
 
     def process_event(self, event):
         if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
-            self.hide()
+            self.dismiss_callback()
         elif event.type == pygame.KEYDOWN and event.unicode:
             self.search_expression += event.unicode
         else:
