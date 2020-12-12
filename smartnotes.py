@@ -254,12 +254,10 @@ class SearchBar(Widget):
             color=(84, 106, 134),
             alpha=self.alpha
         )
-        font = pygame.freetype.Font(
-            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
-            12
+        PygameDrawingInterface(screen).render_text(
+            "Expression: {}".format(self.search_expression),
+            self.rect
         )
-        text, rect = font.render("Expression: {}".format(self.search_expression))
-        screen.blit(text, self.rect)
         for note in self.notes:
             note.draw(screen)
 
@@ -757,6 +755,15 @@ class PygameDrawingInterface(object):
         image.fill(color)
         image.set_alpha(alpha)
         self.screen.blit(image, rect)
+
+    def render_text(self, text, pos):
+        font = pygame.freetype.Font(
+            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
+            12
+        )
+        text, rect = font.render(text)
+        self.screen.blit(text, pos)
+
 
 class NoteDb(object):
 
