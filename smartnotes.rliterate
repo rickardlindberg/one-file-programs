@@ -30,7 +30,7 @@
 "type":"variable"
 },
 {
-"text":"(path)\n        network = ",
+"text":"(path)\n        self.search_bar = self.add(SearchBar(\n            self.db,\n            lambda note_id: self.network.open_note(note_id)\n        ))\n        self.network = self.add(",
 "type":"code"
 },
 {
@@ -38,7 +38,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db)\n        self.search_bar = self.add(SearchBar(self.db, network))\n        self.network = self.add(network)\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.unicode == \"q\":\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"/\":\n            self.search_bar.toggle()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n",
+"text":"(self.db))\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.unicode == \"q\":\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"/\":\n            self.search_bar.toggle()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n",
 "type":"code"
 }
 ],
@@ -65,7 +65,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchNote(Widget):\n\n    def __init__(self, db, note_id, note_data, network):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.note_data = note_data\n        self.network = network\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.network.open_note(self.note_id)\n\n    def ",
+"text":"class SearchNote(Widget):\n\n    def __init__(self, db, note_id, note_data, open_callback):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.note_data = note_data\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def ",
 "type":"code"
 },
 {
@@ -135,7 +135,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db, network):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)\n        self.db = db\n        self.network = network\n        self.animation = Animation()\n        self.search_expression = \"\"\n        self.notes = []\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.unicode:\n            self.search_expression += event.unicode\n            return\n        for note in self.notes:\n            note.process_event(event)\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n        self.search_expression = \"\"\n\n    def ",
+"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db, open_callback):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)\n        self.db = db\n        self.open_callback = open_callback\n        self.animation = Animation()\n        self.search_expression = \"\"\n        self.notes = []\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.unicode:\n            self.search_expression += event.unicode\n            return\n        for note in self.notes:\n            note.process_event(event)\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n        self.search_expression = \"\"\n\n    def ",
 "type":"code"
 },
 {
@@ -183,7 +183,7 @@
 "type":"variable"
 },
 {
-"text":"\n        self.notes = []\n        rect = self.rect.inflate(-10, -10)\n        rect.height = self.IDEAL_HEIGHT - 40\n        single_width = rect.width/5\n        rect.x += 5\n        rect.width = single_width - 10\n        rect.bottom = self.rect.bottom - 10\n        for note_id, note_data in self.db.get_notes(self.search_expression):\n            note = SearchNote(\n                self.db,\n                note_id,\n                note_data,\n                self.network\n            )\n            note.",
+"text":"\n        self.notes = []\n        rect = self.rect.inflate(-10, -10)\n        rect.height = self.IDEAL_HEIGHT - 40\n        single_width = rect.width/5\n        rect.x += 5\n        rect.width = single_width - 10\n        rect.bottom = self.rect.bottom - 10\n        for note_id, note_data in self.db.get_notes(self.search_expression):\n            note = SearchNote(\n                self.db,\n                note_id,\n                note_data,\n                self.open_callback\n            )\n            note.",
 "type":"code"
 },
 {

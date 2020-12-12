@@ -132,9 +132,11 @@ class SmartNotesWidget(VBox):
     def __init__(self, path):
         VBox.__init__(self)
         self.db = NoteDb(path)
-        network = NetworkWidget(self.db)
-        self.search_bar = self.add(SearchBar(self.db, network))
-        self.network = self.add(network)
+        self.search_bar = self.add(SearchBar(
+            self.db,
+            lambda note_id: self.network.open_note(note_id)
+        ))
+        self.network = self.add(NetworkWidget(self.db))
         self.debug_bar = self.add(DebugBar())
 
     def process_event(self, event):
@@ -151,10 +153,10 @@ class SearchBar(Widget):
 
     IDEAL_HEIGHT = 150
 
-    def __init__(self, db, network):
+    def __init__(self, db, open_callback):
         Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)
         self.db = db
-        self.network = network
+        self.open_callback = open_callback
         self.animation = Animation()
         self.search_expression = ""
         self.notes = []
@@ -198,7 +200,7 @@ class SearchBar(Widget):
                 self.db,
                 note_id,
                 note_data,
-                self.network
+                self.open_callback
             )
             note.update(rect, elapsed_ms)
             self.notes.append(note)
@@ -220,17 +222,17 @@ class SearchBar(Widget):
 
 class SearchNote(Widget):
 
-    def __init__(self, db, note_id, note_data, network):
+    def __init__(self, db, note_id, note_data, open_callback):
         Widget.__init__(self)
         self.db = db
         self.note_id = note_id
         self.note_data = note_data
-        self.network = network
+        self.open_callback = open_callback
 
     def process_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
-                self.network.open_note(self.note_id)
+                self.open_callback(self.note_id)
 
     def update(self, rect, elapsed_ms):
         self.image = pygame.Surface(rect.size)
