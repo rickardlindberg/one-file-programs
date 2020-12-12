@@ -38,7 +38,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db))\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.unicode == \"q\":\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"/\":\n            self.search_bar.toggle()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n",
+"text":"(self.db))\n        self.debug_bar = self.add(DebugBar())\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"/\":\n            self.search_bar.toggle()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n",
 "type":"code"
 }
 ],

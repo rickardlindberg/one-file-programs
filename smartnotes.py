@@ -140,7 +140,7 @@ class SmartNotesWidget(VBox):
         self.debug_bar = self.add(DebugBar())
 
     def process_event(self, event):
-        if event.type == pygame.KEYDOWN and event.unicode == "q":
+        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:
             self.quit()
         elif event.type == pygame.KEYDOWN and event.unicode == "/":
             self.search_bar.toggle()
