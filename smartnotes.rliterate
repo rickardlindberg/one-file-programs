@@ -38,7 +38,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            self.db,\n            request_search_callback=self._on_search_request\n        ))\n        self.debug_bar = self.add(DebugBar())\n        self.network.focus()\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n\n    def _on_search_note_open(self, note_id):\n        self.network.open_note(note_id)\n\n    def _on_search_dismiss(self):\n        self.search_bar.hide()\n        self.network.focus()\n\n    def _on_search_request(self):\n        self.search_bar.start_search()\n",
+"text":"(\n            self.db,\n            request_search_callback=self._on_search_request\n        ))\n        self.debug_bar = self.add(DebugBar())\n        self.network.focus()\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n\n    def _on_search_note_open(self, note_id):\n        self.network.open_note(note_id)\n\n    def _on_search_dismiss(self):\n        self.search_bar.hide()\n        self.network.focus()\n\n    def _on_search_request(self):\n        self.search_bar.start_search()\n\n    def update(self, rect, elapsed_ms):\n        self.rect = rect\n        VBox.update(self, rect, elapsed_ms)\n\n    def draw(self, screen):\n        PygameDrawingInterface(screen).fill_rect(self.rect, color=(134, 169, 214))\n        VBox.draw(self, screen)\n",
 "type":"code"
 }
 ],
@@ -1434,7 +1434,7 @@
 "type":"variable"
 },
 {
-"text":"()\n    pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == USER_EVENT_CHECK_EXTERNAL:\n                external_text_entries.check()\n            elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:\n                external_text_entries.add(event.entry)\n            else:\n                root_widget.process_event(event)\n        root_widget.update(screen.get_rect(), clock.get_time())\n        screen.fill((134, 169, 214))\n        root_widget.draw(screen)\n        pygame.display.flip()\n        clock.tick(60)\n",
+"text":"()\n    pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == USER_EVENT_CHECK_EXTERNAL:\n                external_text_entries.check()\n            elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:\n                external_text_entries.add(event.entry)\n            else:\n                root_widget.process_event(event)\n        root_widget.update(screen.get_rect(), clock.get_time())\n        root_widget.draw(screen)\n        pygame.display.flip()\n        clock.tick(60)\n",
 "type":"code"
 }
 ],

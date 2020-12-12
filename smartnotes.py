@@ -170,6 +170,14 @@ class SmartNotesWidget(VBox):
     def _on_search_request(self):
         self.search_bar.start_search()
 
+    def update(self, rect, elapsed_ms):
+        self.rect = rect
+        VBox.update(self, rect, elapsed_ms)
+
+    def draw(self, screen):
+        PygameDrawingInterface(screen).fill_rect(self.rect, color=(134, 169, 214))
+        VBox.draw(self, screen)
+
 class SearchBar(Widget):
 
     IDEAL_HEIGHT = 150
@@ -904,7 +912,6 @@ def pygame_main(root_widget_cls, *args, **kwargs):
             else:
                 root_widget.process_event(event)
         root_widget.update(screen.get_rect(), clock.get_time())
-        screen.fill((134, 169, 214))
         root_widget.draw(screen)
         pygame.display.flip()
         clock.tick(60)
