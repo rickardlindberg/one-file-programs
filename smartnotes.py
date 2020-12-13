@@ -479,9 +479,10 @@ class NetworkWidget(Widget):
         return stripe
 
     def draw(self, screen):
+        canvas = PygameDrawingInterface(screen)
         if DEBUG_NOTE_BORDER:
             for rect in self.stripe_rects:
-                pygame.draw.rect(screen, (255, 255, 0), rect, 2)
+                canvas.draw_rect(rect, (255, 255, 0), 2)
         for link in self.links:
             link.draw(screen)
         for note in self.notes:
@@ -774,6 +775,9 @@ class PygameDrawingInterface(object):
         image.fill(color)
         self.blit(image, rect, alpha=alpha)
 
+    def draw_rect(self, rect, color, width):
+        pygame.draw.rect(self.screen, color, rect, width)
+
     def render_text(self, text, pos):
         font = pygame.freetype.Font(
             "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
@@ -781,7 +785,6 @@ class PygameDrawingInterface(object):
         )
         text, rect = font.render(text)
         self.screen.blit(text, pos)
-
 
 class NoteDb(object):
 

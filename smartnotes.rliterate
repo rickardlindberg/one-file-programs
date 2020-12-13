@@ -677,7 +677,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        if DEBUG_NOTE_BORDER:\n            for rect in self.stripe_rects:\n                pygame.draw.rect(screen, (255, 255, 0), rect, 2)\n        for link in self.links:\n            link.",
+"text":"(self, screen):\n        canvas = PygameDrawingInterface(screen)\n        if DEBUG_NOTE_BORDER:\n            for rect in self.stripe_rects:\n                canvas.draw_rect(rect, (255, 255, 0), 2)\n        for link in self.links:\n            link.",
 "type":"code"
 },
 {
@@ -927,7 +927,7 @@
 ],
 "fragments":[
 {
-"text":"class PygameDrawingInterface(object):\n\n    def __init__(self, screen):\n        self.screen = screen\n\n    def create_image(self, rect, fn):\n        image = pygame.Surface(rect.size)\n        fn(PygameDrawingInterface(image))\n        return image\n\n    def blit(self, image, pos, alpha=255):\n        image.set_alpha(alpha)\n        self.screen.blit(image, pos)\n\n    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):\n        image = pygame.Surface(rect.size)\n        image.fill(color)\n        self.blit(image, rect, alpha=alpha)\n\n    def render_text(self, text, pos):\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            12\n        )\n        text, rect = font.render(text)\n        self.screen.blit(text, pos)\n\n",
+"text":"class PygameDrawingInterface(object):\n\n    def __init__(self, screen):\n        self.screen = screen\n\n    def create_image(self, rect, fn):\n        image = pygame.Surface(rect.size)\n        fn(PygameDrawingInterface(image))\n        return image\n\n    def blit(self, image, pos, alpha=255):\n        image.set_alpha(alpha)\n        self.screen.blit(image, pos)\n\n    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):\n        image = pygame.Surface(rect.size)\n        image.fill(color)\n        self.blit(image, rect, alpha=alpha)\n\n    def draw_rect(self, rect, color, width):\n        pygame.draw.rect(self.screen, color, rect, width)\n\n    def render_text(self, text, pos):\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            12\n        )\n        text, rect = font.render(text)\n        self.screen.blit(text, pos)\n",
 "type":"code"
 }
 ],
