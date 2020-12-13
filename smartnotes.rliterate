@@ -105,7 +105,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        PygameDrawingInterface(screen).fill_rect(\n            self.rect,\n            color=(200, 200, 200)\n        )\n        PygameDrawingInterface(screen).render_text(\n            self.note_data[\"text\"],\n            self.rect\n        )\n",
+"text":"(self, canvas):\n        canvas.blit(\n            canvas.create_image(self.rect, self._draw_note_image),\n            self.rect\n        )\n\n    def _draw_note_image(self, canvas):\n        canvas.fill_rect(\n            pygame.rect.Rect((0, 0), self.rect.size),\n            color=(200, 200, 200)\n        )\n        canvas.render_text(\n            self.note_data[\"text\"],\n            pygame.rect.Rect((0, 0), self.rect.size)\n        )\n",
 "type":"code"
 }
 ],
@@ -191,7 +191,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        PygameDrawingInterface(screen).fill_rect(\n            self.",
+"text":"(self, screen):\n        canvas = PygameDrawingInterface(screen)\n        canvas.blit(\n            canvas.create_image(self.rect, self._draw_search_bar_image),\n            self.rect,\n            alpha=self.alpha\n        )\n\n    def _draw_search_bar_image(self, canvas):\n        canvas.fill_rect(\n            self.",
 "type":"code"
 },
 {
@@ -199,7 +199,7 @@
 "type":"variable"
 },
 {
-"text":",\n            color=(84, 106, 134),\n            alpha=self.alpha\n        )\n        PygameDrawingInterface(screen).render_text(\n            \"Expression: {}\".format(self.search_expression),\n            self.rect\n        )\n        for note in self.notes:\n            note.",
+"text":",\n            color=(84, 106, 134)\n        )\n        canvas.render_text(\n            \"Expression: {}\".format(self.search_expression),\n            self.rect\n        )\n        for note in self.notes:\n            note.",
 "type":"code"
 },
 {
@@ -207,7 +207,7 @@
 "type":"variable"
 },
 {
-"text":"(screen)\n",
+"text":"(canvas)\n",
 "type":"code"
 }
 ],
@@ -927,7 +927,7 @@
 ],
 "fragments":[
 {
-"text":"class PygameDrawingInterface(object):\n\n    def __init__(self, screen):\n        self.screen = screen\n\n    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):\n        image = pygame.Surface(rect.size)\n        image.fill(color)\n        image.set_alpha(alpha)\n        self.screen.blit(image, rect)\n\n    def render_text(self, text, pos):\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            12\n        )\n        text, rect = font.render(text)\n        self.screen.blit(text, pos)\n\n",
+"text":"class PygameDrawingInterface(object):\n\n    def __init__(self, screen):\n        self.screen = screen\n\n    def create_image(self, rect, fn):\n        image = pygame.Surface(rect.size)\n        fn(PygameDrawingInterface(image))\n        return image\n\n    def blit(self, image, pos, alpha=255):\n        image.set_alpha(alpha)\n        self.screen.blit(image, pos)\n\n    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):\n        image = pygame.Surface(rect.size)\n        image.fill(color)\n        self.blit(image, rect, alpha=alpha)\n\n    def render_text(self, text, pos):\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            12\n        )\n        text, rect = font.render(text)\n        self.screen.blit(text, pos)\n\n",
 "type":"code"
 }
 ],

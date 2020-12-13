@@ -249,17 +249,24 @@ class SearchBar(Widget):
                 break
 
     def draw(self, screen):
-        PygameDrawingInterface(screen).fill_rect(
+        canvas = PygameDrawingInterface(screen)
+        canvas.blit(
+            canvas.create_image(self.rect, self._draw_search_bar_image),
             self.rect,
-            color=(84, 106, 134),
             alpha=self.alpha
         )
-        PygameDrawingInterface(screen).render_text(
+
+    def _draw_search_bar_image(self, canvas):
+        canvas.fill_rect(
+            self.rect,
+            color=(84, 106, 134)
+        )
+        canvas.render_text(
             "Expression: {}".format(self.search_expression),
             self.rect
         )
         for note in self.notes:
-            note.draw(screen)
+            note.draw(canvas)
 
 class SearchNote(Widget):
 
@@ -278,14 +285,20 @@ class SearchNote(Widget):
     def update(self, rect, elapsed_ms):
         self.rect = rect
 
-    def draw(self, screen):
-        PygameDrawingInterface(screen).fill_rect(
-            self.rect,
+    def draw(self, canvas):
+        canvas.blit(
+            canvas.create_image(self.rect, self._draw_note_image),
+            self.rect
+        )
+
+    def _draw_note_image(self, canvas):
+        canvas.fill_rect(
+            pygame.rect.Rect((0, 0), self.rect.size),
             color=(200, 200, 200)
         )
-        PygameDrawingInterface(screen).render_text(
+        canvas.render_text(
             self.note_data["text"],
-            self.rect
+            pygame.rect.Rect((0, 0), self.rect.size)
         )
 
 class NetworkWidget(Widget):
@@ -747,11 +760,19 @@ class PygameDrawingInterface(object):
     def __init__(self, screen):
         self.screen = screen
 
+    def create_image(self, rect, fn):
+        image = pygame.Surface(rect.size)
+        fn(PygameDrawingInterface(image))
+        return image
+
+    def blit(self, image, pos, alpha=255):
+        image.set_alpha(alpha)
+        self.screen.blit(image, pos)
+
     def fill_rect(self, rect, color=(0, 0, 0), alpha=255):
         image = pygame.Surface(rect.size)
         image.fill(color)
-        image.set_alpha(alpha)
-        self.screen.blit(image, rect)
+        self.blit(image, rect, alpha=alpha)
 
     def render_text(self, text, pos):
         font = pygame.freetype.Font(
