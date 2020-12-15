@@ -539,34 +539,13 @@ class NoteWidget(Widget):
                 )
         return self.outgoing
 
-    def _make_card(self, full_width, data):
-        self.data = data
-        self.full_width = full_width
-        size = (full_width, int(full_width*3/5))
-        border_size = 4
-        self.card = pygame.Surface(size, pygame.SRCALPHA)
-        border = pygame.Rect((0, 0), size)
-        border.width -= border_size
-        border.height -= border_size
-        border.x += border_size
-        border.y += border_size
-        pygame.draw.rect(self.card, (50, 50, 50, 150), border)
-        border.x -= border_size
-        border.y -= border_size
-        pygame.draw.rect(self.card, (250, 250, 250), border)
-        font = pygame.freetype.Font(
-            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
-            20
-        )
-        text, rect = font.render(self.data["text"])
-        self.card.blit(text, rect.move(
-            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)
-        ))
-
     def update(self, rect, elapsed_ms, full_width, side, fade_from_rect, selected):
         self.selected = selected
         self.true_rect = rect
-        self._make_card(full_width, self.db.get_note_data(self.note_id))
+        self.data = self.db.get_note_data(self.note_id)
+        self.full_width = full_width
+        self.card_full_size = (full_width, int(full_width*3/5))
+        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)
         target = self._get_target(rect, side)
         if fade_from_rect:
             x = target.copy()
@@ -592,7 +571,7 @@ class NoteWidget(Widget):
             )
 
     def _get_target(self, rect, side):
-        target = self.card.get_rect()
+        target = self.card_full_rect
         target = target.fit(rect)
         if side == "left":
             target.midright = rect.midright
@@ -603,6 +582,7 @@ class NoteWidget(Widget):
         return target
 
     def draw(self, screen):
+        self._draw_card()
         screen.blit(
             pygame.transform.smoothscale(self.card, self.rect.size),
             self.rect
@@ -611,6 +591,27 @@ class NoteWidget(Widget):
             pygame.draw.rect(screen, (255, 0, 0), self.rect.inflate(-6, -6), 2)
         if DEBUG_NOTE_BORDER:
             pygame.draw.rect(screen, (255, 0, 0), self.true_rect, 1)
+
+    def _draw_card(self):
+        self.card = pygame.Surface(self.card_full_size, pygame.SRCALPHA)
+        border_size = 4
+        border = self.card_full_rect.copy()
+        border.width -= border_size
+        border.height -= border_size
+        border.x += border_size
+        border.y += border_size
+        pygame.draw.rect(self.card, (50, 50, 50, 150), border)
+        border.x -= border_size
+        border.y -= border_size
+        pygame.draw.rect(self.card, (250, 250, 250), border)
+        font = pygame.freetype.Font(
+            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
+            20
+        )
+        text, rect = font.render(self.data["text"])
+        self.card.blit(text, rect.move(
+            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)
+        ))
 
 class LinkWidget(Widget):
 

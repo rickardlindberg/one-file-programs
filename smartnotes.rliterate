@@ -288,7 +288,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, link_data[\"to\"])\n                )\n        return self.outgoing\n\n    def _make_card(self, full_width, data):\n        self.data = data\n        self.full_width = full_width\n        size = (full_width, int(full_width*3/5))\n        border_size = 4\n        self.card = pygame.Surface(size, pygame.SRCALPHA)\n        border = pygame.Rect((0, 0), size)\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        pygame.draw.rect(self.card, (50, 50, 50, 150), border)\n        border.x -= border_size\n        border.y -= border_size\n        pygame.draw.rect(self.card, (250, 250, 250), border)\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            20\n        )\n        text, rect = font.render(self.data[\"text\"])\n        self.card.blit(text, rect.move(\n            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)\n        ))\n\n    def ",
+"text":"(self.db, link_data[\"to\"])\n                )\n        return self.outgoing\n\n    def ",
 "type":"code"
 },
 {
@@ -320,7 +320,7 @@
 "type":"variable"
 },
 {
-"text":"\n        self._make_card(full_width, self.db.",
+"text":"\n        self.data = self.db.",
 "type":"code"
 },
 {
@@ -328,7 +328,7 @@
 "type":"variable"
 },
 {
-"text":"(self.note_id))\n        target = self._get_target(",
+"text":"(self.note_id)\n        self.full_width = full_width\n        self.card_full_size = (full_width, int(full_width*3/5))\n        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)\n        target = self._get_target(",
 "type":"code"
 },
 {
@@ -352,7 +352,7 @@
 "type":"variable"
 },
 {
-"text":", side):\n        target = self.card.get_rect()\n        target = target.fit(",
+"text":", side):\n        target = self.card_full_rect\n        target = target.fit(",
 "type":"code"
 },
 {
@@ -392,7 +392,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        screen.blit(\n            pygame.transform.smoothscale(self.card, self.rect.size),\n            self.rect\n        )\n        if self.selected:\n            pygame.draw.rect(screen, (255, 0, 0), self.rect.inflate(-6, -6), 2)\n        if DEBUG_NOTE_BORDER:\n            pygame.draw.rect(screen, (255, 0, 0), self.true_rect, 1)\n",
+"text":"(self, screen):\n        self._draw_card()\n        screen.blit(\n            pygame.transform.smoothscale(self.card, self.rect.size),\n            self.rect\n        )\n        if self.selected:\n            pygame.draw.rect(screen, (255, 0, 0), self.rect.inflate(-6, -6), 2)\n        if DEBUG_NOTE_BORDER:\n            pygame.draw.rect(screen, (255, 0, 0), self.true_rect, 1)\n\n    def _draw_card(self):\n        self.card = pygame.Surface(self.card_full_size, pygame.SRCALPHA)\n        border_size = 4\n        border = self.card_full_rect.copy()\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        pygame.draw.rect(self.card, (50, 50, 50, 150), border)\n        border.x -= border_size\n        border.y -= border_size\n        pygame.draw.rect(self.card, (250, 250, 250), border)\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            20\n        )\n        text, rect = font.render(self.data[\"text\"])\n        self.card.blit(text, rect.move(\n            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)\n        ))\n",
 "type":"code"
 }
 ],
