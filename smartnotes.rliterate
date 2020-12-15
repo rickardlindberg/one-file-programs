@@ -716,7 +716,7 @@
 ],
 "fragments":[
 {
-"text":"class DebugBar(Widget):\n\n    IDEAL_HEIGHT = 50\n\n    def __init__(self):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=DEBUG)\n        self.animation = Animation()\n        self.font = pygame.freetype.SysFont(\n            pygame.freetype.get_default_font(),\n            18\n        )\n        self.average_elapsed = 0\n        self.tot_elapsed_time = 0\n        self.frame_count = 0\n        self.fps = 0\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
+"text":"class DebugBar(Widget):\n\n    IDEAL_HEIGHT = 50\n\n    def __init__(self):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=DEBUG)\n        self.animation = Animation()\n        self.average_elapsed = 0\n        self.tot_elapsed_time = 0\n        self.frame_count = 0\n        self.fps = 0\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.start(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -748,15 +748,7 @@
 "type":"variable"
 },
 {
-"text":"\n        self.frame_count += 1\n        if self.tot_elapsed_time > 1000:\n            self.average_elapsed = int(round(self.tot_elapsed_time / self.frame_count))\n            self.fps = self.frame_count\n            self.frame_count = 0\n            self.tot_elapsed_time -= 1000\n        self.image = pygame.Surface(",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":".size)\n        self.image.fill((84, 106, 134))\n        text, text_rect = self.font.render(\n            f\"elapsed_ms = {self.average_elapsed} | fps = {self.fps}\"\n        )\n        percent = self.animation.advance(",
+"text":"\n        self.frame_count += 1\n        if self.tot_elapsed_time > 1000:\n            self.average_elapsed = int(round(self.tot_elapsed_time / self.frame_count))\n            self.fps = self.frame_count\n            self.frame_count = 0\n            self.tot_elapsed_time -= 1000\n        percent = self.animation.advance(",
 "type":"code"
 },
 {
@@ -764,7 +756,7 @@
 "type":"variable"
 },
 {
-"text":")\n        if Widget.is_visible(self):\n            alpha = int(255 * percent)\n            self.resize(height=int(self.IDEAL_HEIGHT * percent))\n        else:\n            alpha = 255 - int(255 * percent)\n            self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))\n        self.image.set_alpha(alpha)\n        self.image.blit(\n            text,\n            (\n                self.image.get_width()-text_rect.width-10,\n                self.IDEAL_HEIGHT/2-text_rect.height/2\n            )\n        )\n        self.rect = ",
+"text":")\n        if Widget.is_visible(self):\n            self.alpha = int(255 * percent)\n            self.resize(height=int(self.IDEAL_HEIGHT * percent))\n        else:\n            self.alpha = 255 - int(255 * percent)\n            self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))\n        self.rect = ",
 "type":"code"
 },
 {
@@ -780,7 +772,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        screen.blit(self.image, self.rect)\n",
+"text":"(self, screen):\n        canvas = PygameDrawingInterface(screen)\n        canvas.blit(\n            canvas.create_image(self.rect, self._draw_bar),\n            self.rect,\n            alpha=self.alpha\n        )\n\n    def _draw_bar(self, canvas):\n        canvas.fill_rect(pygame.Rect((0, 0), self.rect.size), color=(84, 106, 134))\n        canvas.render_text(\n            f\"elapsed_ms = {self.average_elapsed} | fps = {self.fps}\",\n            (0, 0)\n        )\n",
 "type":"code"
 }
 ],

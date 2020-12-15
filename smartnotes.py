@@ -685,10 +685,6 @@ class DebugBar(Widget):
     def __init__(self):
         Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=DEBUG)
         self.animation = Animation()
-        self.font = pygame.freetype.SysFont(
-            pygame.freetype.get_default_font(),
-            18
-        )
         self.average_elapsed = 0
         self.tot_elapsed_time = 0
         self.frame_count = 0
@@ -709,30 +705,29 @@ class DebugBar(Widget):
             self.fps = self.frame_count
             self.frame_count = 0
             self.tot_elapsed_time -= 1000
-        self.image = pygame.Surface(rect.size)
-        self.image.fill((84, 106, 134))
-        text, text_rect = self.font.render(
-            f"elapsed_ms = {self.average_elapsed} | fps = {self.fps}"
-        )
         percent = self.animation.advance(elapsed_ms)
         if Widget.is_visible(self):
-            alpha = int(255 * percent)
+            self.alpha = int(255 * percent)
             self.resize(height=int(self.IDEAL_HEIGHT * percent))
         else:
-            alpha = 255 - int(255 * percent)
+            self.alpha = 255 - int(255 * percent)
             self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))
-        self.image.set_alpha(alpha)
-        self.image.blit(
-            text,
-            (
-                self.image.get_width()-text_rect.width-10,
-                self.IDEAL_HEIGHT/2-text_rect.height/2
-            )
-        )
         self.rect = rect
 
     def draw(self, screen):
-        screen.blit(self.image, self.rect)
+        canvas = PygameDrawingInterface(screen)
+        canvas.blit(
+            canvas.create_image(self.rect, self._draw_bar),
+            self.rect,
+            alpha=self.alpha
+        )
+
+    def _draw_bar(self, canvas):
+        canvas.fill_rect(pygame.Rect((0, 0), self.rect.size), color=(84, 106, 134))
+        canvas.render_text(
+            f"elapsed_ms = {self.average_elapsed} | fps = {self.fps}",
+            (0, 0)
+        )
 
 class Animation(object):
 
