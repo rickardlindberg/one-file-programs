@@ -582,36 +582,32 @@ class NoteWidget(Widget):
         return target
 
     def draw(self, screen):
-        self._draw_card()
-        screen.blit(
-            pygame.transform.smoothscale(self.card, self.rect.size),
-            self.rect
+        canvas = PygameDrawingInterface(screen)
+        canvas.blit(
+            canvas.create_image(self.card_full_rect, self._draw_card),
+            self.rect,
+            scale_to_fit=self.rect.size
         )
         if self.selected:
-            pygame.draw.rect(screen, (255, 0, 0), self.rect.inflate(-6, -6), 2)
+            canvas.draw_rect(self.rect.inflate(-6, -6), (255, 0, 0), 2)
         if DEBUG_NOTE_BORDER:
-            pygame.draw.rect(screen, (255, 0, 0), self.true_rect, 1)
+            canvas.draw_rect(self.true_rect, (255, 0, 0), 1)
 
-    def _draw_card(self):
-        self.card = pygame.Surface(self.card_full_size, pygame.SRCALPHA)
+    def _draw_card(self, canvas):
         border_size = 4
         border = self.card_full_rect.copy()
         border.width -= border_size
         border.height -= border_size
         border.x += border_size
         border.y += border_size
-        pygame.draw.rect(self.card, (50, 50, 50, 150), border)
+        canvas.fill_rect(border, color=(50, 50, 50, 150))
         border.x -= border_size
         border.y -= border_size
-        pygame.draw.rect(self.card, (250, 250, 250), border)
-        font = pygame.freetype.Font(
-            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
-            20
+        canvas.fill_rect(border, color=(250, 250, 250))
+        canvas.render_text(
+            self.data["text"],
+            border
         )
-        text, rect = font.render(self.data["text"])
-        self.card.blit(text, rect.move(
-            pygame.math.Vector2(self.card.get_rect().center)-pygame.math.Vector2(rect.center)
-        ))
 
 class LinkWidget(Widget):
 
@@ -761,16 +757,18 @@ class PygameDrawingInterface(object):
         self.screen = screen
 
     def create_image(self, rect, fn):
-        image = pygame.Surface(rect.size)
+        image = pygame.Surface(rect.size, pygame.SRCALPHA)
         fn(PygameDrawingInterface(image))
         return image
 
-    def blit(self, image, pos, alpha=255):
+    def blit(self, image, pos, alpha=255, scale_to_fit=None):
         image.set_alpha(alpha)
+        if scale_to_fit is not None:
+            image = pygame.transform.smoothscale(image, scale_to_fit)
         self.screen.blit(image, pos)
 
     def fill_rect(self, rect, color=(0, 0, 0), alpha=255):
-        image = pygame.Surface(rect.size)
+        image = pygame.Surface(rect.size, pygame.SRCALPHA)
         image.fill(color)
         self.blit(image, rect, alpha=alpha)
 
