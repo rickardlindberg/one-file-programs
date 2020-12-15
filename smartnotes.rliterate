@@ -447,7 +447,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        def draw(ctx, width, height):\n            if start.x < end.x:\n                startx = 0\n                endx = width\n                c1x = 0.6*width\n                c2x = 0.4*width\n            else:\n                startx = width\n                endx = 0\n                c1x = 0.4*width\n                c2x = 0.6*width\n            if start.y < end.y:\n                starty = PADDING\n                endy = height-PADDING\n                c1y = 0.0*(height-PADDING)+PADDING\n                c2y = 1.0*(height-PADDING)+PADDING\n            else:\n                starty = height-PADDING\n                endy = PADDING\n                c1y = 1.0*(height-PADDING)+PADDING\n                c2y = 0.0*(height-PADDING)+PADDING\n            ctx.move_to(startx, starty)\n            ctx.line_to(startx+0.02*(endx-startx), starty)\n            ctx.curve_to(c1x, c1y, c2x, c2y, endx-0.02*(endx-startx), endy)\n            ctx.line_to(endx, endy)\n            ctx.set_source_rgb(0.45, 0.5, 0.7)\n            ctx.set_line_width(1.5)\n            ctx.stroke()\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        if start != self.start_pos or end != self.end_pos:\n            self.start_pos = start\n            self.end_pos = end\n            PADDING = 3\n            self.image = draw_cairo(\n                max(1, int(abs(start.x-end.x))),\n                max(1, int(abs(start.y-end.y)))+2*PADDING,\n                draw\n            )\n            self.pos = (\n                min(start.x, end.x),\n                min(start.y, end.y)-PADDING,\n            )\n\n    def ",
+"text":"):\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        if start != self.start_pos or end != self.end_pos:\n            self.start_pos = start\n            self.end_pos = end\n            self.padding = 3\n            self.need_redraw = True\n        else:\n            self.need_redraw = False\n\n    def ",
 "type":"code"
 },
 {
@@ -455,7 +455,7 @@
 "type":"variable"
 },
 {
-"text":"(self, screen):\n        screen.blit(self.image, self.pos)\n",
+"text":"(self, screen):\n        canvas = PygameDrawingInterface(screen)\n        if self.need_redraw:\n            self.width = max(1, int(abs(self.start_pos.x-self.end_pos.x)))\n            self.height = max(1, int(abs(self.start_pos.y-self.end_pos.y)))+2*self.padding\n            self.image = canvas.create_image(\n                pygame.Rect(0, 0, self.width, self.height),\n                self._draw_line,\n                with_cairo=True\n            )\n            self.pos = (\n                min(self.start_pos.x, self.end_pos.x),\n                min(self.start_pos.y, self.end_pos.y)-self.padding,\n            )\n        canvas.blit(self.image, self.pos)\n\n    def _draw_line(self, canvas):\n        if self.start_pos.x < self.end_pos.x:\n            startx = 0\n            endx = self.width\n            c1x = 0.6*self.width\n            c2x = 0.4*self.width\n        else:\n            startx = self.width\n            endx = 0\n            c1x = 0.4*self.width\n            c2x = 0.6*self.width\n        if self.start_pos.y < self.end_pos.y:\n            starty = self.padding\n            endy = self.height-self.padding\n            c1y = 0.0*(self.height-self.padding)+self.padding\n            c2y = 1.0*(self.height-self.padding)+self.padding\n        else:\n            starty = self.height-self.padding\n            endy = self.padding\n            c1y = 1.0*(self.height-self.padding)+self.padding\n            c2y = 0.0*(self.height-self.padding)+self.padding\n        canvas.move_to(startx, starty)\n        canvas.line_to(startx+0.02*(endx-startx), starty)\n        canvas.curve_to(c1x, c1y, c2x, c2y, endx-0.02*(endx-startx), endy)\n        canvas.line_to(endx, endy)\n        canvas.set_source_rgb(0.45, 0.5, 0.7)\n        canvas.set_line_width(1.5)\n        canvas.stroke()\n",
 "type":"code"
 }
 ],
@@ -904,27 +904,11 @@
 ],
 "fragments":[
 {
-"text":"class PygameDrawingInterface(object):\n\n    def __init__(self, screen):\n        self.screen = screen\n\n    def create_image(self, rect, fn):\n        image = pygame.Surface(rect.size, pygame.SRCALPHA)\n        fn(PygameDrawingInterface(image))\n        return image\n\n    def blit(self, image, pos, alpha=255, scale_to_fit=None):\n        image.set_alpha(alpha)\n        if scale_to_fit is not None:\n            image = pygame.transform.smoothscale(image, scale_to_fit)\n        self.screen.blit(image, pos)\n\n    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):\n        image = pygame.Surface(rect.size, pygame.SRCALPHA)\n        image.fill(color)\n        self.blit(image, rect, alpha=alpha)\n\n    def draw_rect(self, rect, color, width):\n        pygame.draw.rect(self.screen, color, rect, width)\n\n    def render_text(self, text, pos):\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            12\n        )\n        text, rect = font.render(text)\n        self.screen.blit(text, pos)\n",
+"text":"class PygameDrawingInterface(object):\n\n    def __init__(self, screen):\n        self.screen = screen\n\n    def create_image(self, rect, fn, with_cairo=False):\n        if with_cairo:\n            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, rect.width, rect.height)\n            ctx = cairo.Context(surface)\n            fn(ctx)\n            buf = io.BytesIO()\n            surface.write_to_png(buf)\n            buf.seek(0)\n            return pygame.image.load(buf).convert_alpha()\n            #surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)\n            #ctx = cairo.Context(surface)\n            #fn(ctx, width, height)\n            #buf = surface.get_data()\n            #image = pygame.image.frombuffer(buf, (width, height), \"ARGB\")\n            #return image\n        else:\n            image = pygame.Surface(rect.size, pygame.SRCALPHA)\n            fn(PygameDrawingInterface(image))\n            return image\n\n    def blit(self, image, pos, alpha=255, scale_to_fit=None):\n        image.set_alpha(alpha)\n        if scale_to_fit is not None:\n            image = pygame.transform.smoothscale(image, scale_to_fit)\n        self.screen.blit(image, pos)\n\n    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):\n        image = pygame.Surface(rect.size, pygame.SRCALPHA)\n        image.fill(color)\n        self.blit(image, rect, alpha=alpha)\n\n    def draw_rect(self, rect, color, width):\n        pygame.draw.rect(self.screen, color, rect, width)\n\n    def render_text(self, text, pos):\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            12\n        )\n        text, rect = font.render(text)\n        self.screen.blit(text, pos)\n",
 "type":"code"
 }
 ],
 "id":"e12e9efd48504b95acab8b98f7c2ee82",
-"type":"code"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"smartnotes.py"
-],
-"fragments":[
-{
-"text":"def draw_cairo(width, height, fn):\n    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)\n    ctx = cairo.Context(surface)\n    fn(ctx, width, height)\n    buf = io.BytesIO()\n    surface.write_to_png(buf)\n    buf.seek(0)\n    return pygame.image.load(buf).convert_alpha()\n    #surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)\n    #ctx = cairo.Context(surface)\n    #fn(ctx, width, height)\n    #buf = surface.get_data()\n    #image = pygame.image.frombuffer(buf, (width, height), \"ARGB\")\n    #return image\n",
-"type":"code"
-}
-],
-"id":"41a0aaa0ccd143e983455fb3e85f2451",
 "type":"code"
 }
 ],

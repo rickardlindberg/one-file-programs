@@ -623,52 +623,60 @@ class LinkWidget(Widget):
         self.end_pos = None
 
     def update(self, rect, elapsed_ms):
-        def draw(ctx, width, height):
-            if start.x < end.x:
-                startx = 0
-                endx = width
-                c1x = 0.6*width
-                c2x = 0.4*width
-            else:
-                startx = width
-                endx = 0
-                c1x = 0.4*width
-                c2x = 0.6*width
-            if start.y < end.y:
-                starty = PADDING
-                endy = height-PADDING
-                c1y = 0.0*(height-PADDING)+PADDING
-                c2y = 1.0*(height-PADDING)+PADDING
-            else:
-                starty = height-PADDING
-                endy = PADDING
-                c1y = 1.0*(height-PADDING)+PADDING
-                c2y = 0.0*(height-PADDING)+PADDING
-            ctx.move_to(startx, starty)
-            ctx.line_to(startx+0.02*(endx-startx), starty)
-            ctx.curve_to(c1x, c1y, c2x, c2y, endx-0.02*(endx-startx), endy)
-            ctx.line_to(endx, endy)
-            ctx.set_source_rgb(0.45, 0.5, 0.7)
-            ctx.set_line_width(1.5)
-            ctx.stroke()
         start = pygame.math.Vector2(self.start.rect.midright)
         end = pygame.math.Vector2(self.end.rect.midleft)
         if start != self.start_pos or end != self.end_pos:
             self.start_pos = start
             self.end_pos = end
-            PADDING = 3
-            self.image = draw_cairo(
-                max(1, int(abs(start.x-end.x))),
-                max(1, int(abs(start.y-end.y)))+2*PADDING,
-                draw
-            )
-            self.pos = (
-                min(start.x, end.x),
-                min(start.y, end.y)-PADDING,
-            )
+            self.padding = 3
+            self.need_redraw = True
+        else:
+            self.need_redraw = False
 
     def draw(self, screen):
-        screen.blit(self.image, self.pos)
+        canvas = PygameDrawingInterface(screen)
+        if self.need_redraw:
+            self.width = max(1, int(abs(self.start_pos.x-self.end_pos.x)))
+            self.height = max(1, int(abs(self.start_pos.y-self.end_pos.y)))+2*self.padding
+            self.image = canvas.create_image(
+                pygame.Rect(0, 0, self.width, self.height),
+                self._draw_line,
+                with_cairo=True
+            )
+            self.pos = (
+                min(self.start_pos.x, self.end_pos.x),
+                min(self.start_pos.y, self.end_pos.y)-self.padding,
+            )
+        canvas.blit(self.image, self.pos)
+
+    def _draw_line(self, canvas):
+        if self.start_pos.x < self.end_pos.x:
+            startx = 0
+            endx = self.width
+            c1x = 0.6*self.width
+            c2x = 0.4*self.width
+        else:
+            startx = self.width
+            endx = 0
+            c1x = 0.4*self.width
+            c2x = 0.6*self.width
+        if self.start_pos.y < self.end_pos.y:
+            starty = self.padding
+            endy = self.height-self.padding
+            c1y = 0.0*(self.height-self.padding)+self.padding
+            c2y = 1.0*(self.height-self.padding)+self.padding
+        else:
+            starty = self.height-self.padding
+            endy = self.padding
+            c1y = 1.0*(self.height-self.padding)+self.padding
+            c2y = 0.0*(self.height-self.padding)+self.padding
+        canvas.move_to(startx, starty)
+        canvas.line_to(startx+0.02*(endx-startx), starty)
+        canvas.curve_to(c1x, c1y, c2x, c2y, endx-0.02*(endx-startx), endy)
+        canvas.line_to(endx, endy)
+        canvas.set_source_rgb(0.45, 0.5, 0.7)
+        canvas.set_line_width(1.5)
+        canvas.stroke()
 
 class DebugBar(Widget):
 
@@ -756,10 +764,25 @@ class PygameDrawingInterface(object):
     def __init__(self, screen):
         self.screen = screen
 
-    def create_image(self, rect, fn):
-        image = pygame.Surface(rect.size, pygame.SRCALPHA)
-        fn(PygameDrawingInterface(image))
-        return image
+    def create_image(self, rect, fn, with_cairo=False):
+        if with_cairo:
+            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, rect.width, rect.height)
+            ctx = cairo.Context(surface)
+            fn(ctx)
+            buf = io.BytesIO()
+            surface.write_to_png(buf)
+            buf.seek(0)
+            return pygame.image.load(buf).convert_alpha()
+            #surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
+            #ctx = cairo.Context(surface)
+            #fn(ctx, width, height)
+            #buf = surface.get_data()
+            #image = pygame.image.frombuffer(buf, (width, height), "ARGB")
+            #return image
+        else:
+            image = pygame.Surface(rect.size, pygame.SRCALPHA)
+            fn(PygameDrawingInterface(image))
+            return image
 
     def blit(self, image, pos, alpha=255, scale_to_fit=None):
         image.set_alpha(alpha)
@@ -940,21 +963,6 @@ def pygame_main(root_widget_cls, *args, **kwargs):
         root_widget.draw(screen)
         pygame.display.flip()
         clock.tick(60)
-
-def draw_cairo(width, height, fn):
-    surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
-    ctx = cairo.Context(surface)
-    fn(ctx, width, height)
-    buf = io.BytesIO()
-    surface.write_to_png(buf)
-    buf.seek(0)
-    return pygame.image.load(buf).convert_alpha()
-    #surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
-    #ctx = cairo.Context(surface)
-    #fn(ctx, width, height)
-    #buf = surface.get_data()
-    #image = pygame.image.frombuffer(buf, (width, height), "ARGB")
-    #return image
 
 def read_json_file(path, default_value):
     if os.path.exists(path):
