@@ -248,8 +248,7 @@ class SearchBar(Widget):
             if len(self.notes) >= 5:
                 break
 
-    def draw(self, screen):
-        canvas = PygameDrawingInterface(screen)
+    def draw(self, canvas):
         canvas.blit(
             canvas.create_image(self.rect, self._draw_search_bar_image),
             self.rect,
@@ -478,15 +477,14 @@ class NetworkWidget(Widget):
         stripe.centerx = rect.centerx
         return stripe
 
-    def draw(self, screen):
-        canvas = PygameDrawingInterface(screen)
+    def draw(self, canvas):
         if DEBUG_NOTE_BORDER:
             for rect in self.stripe_rects:
                 canvas.draw_rect(rect, (255, 255, 0), 2)
         for link in self.links:
-            link.draw(screen)
+            link.draw(canvas)
         for note in self.notes:
-            note.draw(screen)
+            note.draw(canvas)
 
 class NoteWidget(Widget):
 
@@ -581,8 +579,7 @@ class NoteWidget(Widget):
             target.center = rect.center
         return target
 
-    def draw(self, screen):
-        canvas = PygameDrawingInterface(screen)
+    def draw(self, canvas):
         canvas.blit(
             canvas.create_image(self.card_full_rect, self._draw_card),
             self.rect,
@@ -633,8 +630,7 @@ class LinkWidget(Widget):
         else:
             self.need_redraw = False
 
-    def draw(self, screen):
-        canvas = PygameDrawingInterface(screen)
+    def draw(self, canvas):
         if self.need_redraw:
             self.width = max(1, int(abs(self.start_pos.x-self.end_pos.x)))
             self.height = max(1, int(abs(self.start_pos.y-self.end_pos.y)))+2*self.padding
@@ -714,8 +710,7 @@ class DebugBar(Widget):
             self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))
         self.rect = rect
 
-    def draw(self, screen):
-        canvas = PygameDrawingInterface(screen)
+    def draw(self, canvas):
         canvas.blit(
             canvas.create_image(self.rect, self._draw_bar),
             self.rect,
@@ -955,7 +950,7 @@ def pygame_main(root_widget_cls, *args, **kwargs):
             else:
                 root_widget.process_event(event)
         root_widget.update(screen.get_rect(), clock.get_time())
-        root_widget.draw(screen)
+        root_widget.draw(PygameDrawingInterface(screen))
         pygame.display.flip()
         clock.tick(60)
 
