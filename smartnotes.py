@@ -540,8 +540,6 @@ class NoteWidget(Widget):
         return self.outgoing
 
     def _make_card(self, full_width, data):
-        if self.full_width == full_width and data is self.data:
-            return
         self.data = data
         self.full_width = full_width
         size = (full_width, int(full_width*3/5))
