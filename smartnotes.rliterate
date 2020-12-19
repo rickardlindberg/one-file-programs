@@ -896,22 +896,6 @@
 ],
 "fragments":[
 {
-"text":"class PygameDrawingInterface(object):\n\n    def __init__(self, screen):\n        self.screen = screen\n\n    def create_image(self, rect, fn, with_cairo=False):\n        if with_cairo:\n            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, rect.width, rect.height)\n            ctx = cairo.Context(surface)\n            fn(ctx)\n            buf = io.BytesIO()\n            surface.write_to_png(buf)\n            buf.seek(0)\n            return pygame.image.load(buf).convert_alpha()\n            #surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)\n            #ctx = cairo.Context(surface)\n            #fn(ctx, width, height)\n            #buf = surface.get_data()\n            #image = pygame.image.frombuffer(buf, (width, height), \"ARGB\")\n            #return image\n        else:\n            image = pygame.Surface(rect.size, pygame.SRCALPHA)\n            fn(PygameDrawingInterface(image))\n            return image\n\n    def blit(self, image, pos, alpha=255, scale_to_fit=None):\n        image.set_alpha(alpha)\n        if scale_to_fit is not None:\n            image = pygame.transform.smoothscale(image, scale_to_fit)\n        self.screen.blit(image, pos)\n\n    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):\n        image = pygame.Surface(rect.size, pygame.SRCALPHA)\n        image.fill(color)\n        self.blit(image, rect, alpha=alpha)\n\n    def draw_rect(self, rect, color, width):\n        pygame.draw.rect(self.screen, color, rect, width)\n\n    def render_text(self, text, pos):\n        font = pygame.freetype.Font(\n            \"/usr/share/fonts/dejavu/DejaVuSerif.ttf\",\n            12\n        )\n        text, rect = font.render(text)\n        self.screen.blit(text, pos)\n",
-"type":"code"
-}
-],
-"id":"e12e9efd48504b95acab8b98f7c2ee82",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"smartnotes.py"
-],
-"fragments":[
-{
 "text":"class CairoDrawingInterface(object):\n\n    def __init__(self, surface):\n        self.ctx = cairo.Context(surface)\n\n    def create_image(self, rect, fn, with_cairo=False):\n        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, rect.width, rect.height)\n        fn(CairoDrawingInterface(surface))\n        return surface\n\n    def blit(self, image, pos, alpha=255, scale_to_fit=None):\n        self.ctx.save()\n        self.ctx.translate(pos[0], pos[1])\n        if scale_to_fit:\n            self.ctx.scale(\n                scale_to_fit[0] / image.get_width(),\n                scale_to_fit[1] / image.get_height()\n            )\n        self.ctx.set_source_surface(image, 0, 0)\n        self.ctx.paint_with_alpha(alpha/255)\n        self.ctx.restore()\n\n    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):\n        if len(color) == 3 and alpha != 255:\n            self._set_color(*color, alpha/255)\n        else:\n            self._set_color(color)\n        self.ctx.rectangle(rect.x, rect.y, rect.width, rect.height)\n        self.ctx.fill()\n\n    def draw_rect(self, rect, color, width):\n        self._set_color(color)\n        self.ctx.rectangle(rect.x, rect.y, rect.width, rect.height)\n        self.ctx.set_line_width(width)\n        self.ctx.stroke()\n\n    def _set_color(self, color):\n        if len(color) == 4:\n            self.ctx.set_source_rgba(color[0]/255, color[1]/255, color[2]/255, color[3]/255)\n        else:\n            self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)\n\n    def render_text(self, text, pos):\n        self.ctx.set_source_rgb(0, 0, 0)\n        self.ctx.move_to(pos[0]+20, pos[1]+20)\n        self.ctx.show_text(text)\n\n    def move_to(self, x, y):\n        self.ctx.move_to(x, y)\n\n    def line_to(self, x, y):\n        self.ctx.line_to(x, y)\n\n    def curve_to(self, *args):\n        self.ctx.curve_to(*args)\n\n    def set_source_rgb(self, *args):\n        self.ctx.set_source_rgb(*args)\n\n    def set_line_width(self, *args):\n        self.ctx.set_line_width(*args)\n\n    def stroke(self, *args):\n        self.ctx.stroke(*args)\n",
 "type":"code"
 }

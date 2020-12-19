@@ -749,53 +749,6 @@ class Animation(object):
     def active(self):
         return self.progress < self.duration_ms or not self.last_consumed
 
-class PygameDrawingInterface(object):
-
-    def __init__(self, screen):
-        self.screen = screen
-
-    def create_image(self, rect, fn, with_cairo=False):
-        if with_cairo:
-            surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, rect.width, rect.height)
-            ctx = cairo.Context(surface)
-            fn(ctx)
-            buf = io.BytesIO()
-            surface.write_to_png(buf)
-            buf.seek(0)
-            return pygame.image.load(buf).convert_alpha()
-            #surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
-            #ctx = cairo.Context(surface)
-            #fn(ctx, width, height)
-            #buf = surface.get_data()
-            #image = pygame.image.frombuffer(buf, (width, height), "ARGB")
-            #return image
-        else:
-            image = pygame.Surface(rect.size, pygame.SRCALPHA)
-            fn(PygameDrawingInterface(image))
-            return image
-
-    def blit(self, image, pos, alpha=255, scale_to_fit=None):
-        image.set_alpha(alpha)
-        if scale_to_fit is not None:
-            image = pygame.transform.smoothscale(image, scale_to_fit)
-        self.screen.blit(image, pos)
-
-    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):
-        image = pygame.Surface(rect.size, pygame.SRCALPHA)
-        image.fill(color)
-        self.blit(image, rect, alpha=alpha)
-
-    def draw_rect(self, rect, color, width):
-        pygame.draw.rect(self.screen, color, rect, width)
-
-    def render_text(self, text, pos):
-        font = pygame.freetype.Font(
-            "/usr/share/fonts/dejavu/DejaVuSerif.ttf",
-            12
-        )
-        text, rect = font.render(text)
-        self.screen.blit(text, pos)
-
 class CairoDrawingInterface(object):
 
     def __init__(self, surface):
