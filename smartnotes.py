@@ -250,7 +250,7 @@ class SearchBar(Widget):
 
     def draw(self, canvas):
         canvas.blit(
-            canvas.create_image(self.rect, self._draw_search_bar_image),
+            canvas.create_image(self.rect.size, self._draw_search_bar_image),
             self.rect,
             alpha=self.alpha
         )
@@ -286,7 +286,7 @@ class SearchNote(Widget):
 
     def draw(self, canvas):
         canvas.blit(
-            canvas.create_image(self.rect, self._draw_note_image),
+            canvas.create_image(self.rect.size, self._draw_note_image),
             self.rect
         )
 
@@ -581,7 +581,7 @@ class NoteWidget(Widget):
 
     def draw(self, canvas):
         canvas.blit(
-            canvas.create_image(self.card_full_rect, self._draw_card),
+            canvas.create_image(self.card_full_rect.size, self._draw_card),
             self.rect,
             scale_to_fit=self.rect.size
         )
@@ -635,9 +635,8 @@ class LinkWidget(Widget):
             self.width = max(1, int(abs(self.start_pos.x-self.end_pos.x)))
             self.height = max(1, int(abs(self.start_pos.y-self.end_pos.y)))+2*self.padding
             self.image = canvas.create_image(
-                pygame.Rect(0, 0, self.width, self.height),
-                self._draw_line,
-                with_cairo=True
+                (self.width, self.height),
+                self._draw_line
             )
             self.pos = (
                 min(self.start_pos.x, self.end_pos.x),
@@ -712,7 +711,7 @@ class DebugBar(Widget):
 
     def draw(self, canvas):
         canvas.blit(
-            canvas.create_image(self.rect, self._draw_bar),
+            canvas.create_image(self.rect.size, self._draw_bar),
             self.rect,
             alpha=self.alpha
         )
@@ -754,8 +753,8 @@ class CairoCanvas(object):
     def __init__(self, surface):
         self.ctx = cairo.Context(surface)
 
-    def create_image(self, rect, fn, with_cairo=False):
-        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, rect.width, rect.height)
+    def create_image(self, size, fn):
+        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, size[0], size[1])
         fn(CairoCanvas(surface))
         return surface
 
@@ -771,11 +770,8 @@ class CairoCanvas(object):
         self.ctx.paint_with_alpha(alpha/255)
         self.ctx.restore()
 
-    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):
-        if len(color) == 3 and alpha != 255:
-            self._set_color(*color, alpha/255)
-        else:
-            self._set_color(color)
+    def fill_rect(self, rect, color=(0, 0, 0)):
+        self._set_color(color)
         self.ctx.rectangle(rect.x, rect.y, rect.width, rect.height)
         self.ctx.fill()
 
