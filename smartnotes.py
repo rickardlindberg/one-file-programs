@@ -174,9 +174,9 @@ class SmartNotesWidget(VBox):
         self.rect = rect
         VBox.update(self, rect, elapsed_ms)
 
-    def draw(self, screen):
-        PygameDrawingInterface(screen).fill_rect(self.rect, color=(134, 169, 214))
-        VBox.draw(self, screen)
+    def draw(self, canvas):
+        canvas.fill_rect(self.rect, color=(134, 169, 214))
+        VBox.draw(self, canvas)
 
 class SearchBar(Widget):
 
