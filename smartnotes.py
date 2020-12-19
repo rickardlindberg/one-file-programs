@@ -184,6 +184,7 @@ class SearchBar(Widget):
 
     def __init__(self, db, open_callback, dismiss_callback):
         Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)
+        self.resize(height=0)
         self.db = db
         self.open_callback = open_callback
         self.dismiss_callback = dismiss_callback
@@ -206,16 +207,16 @@ class SearchBar(Widget):
         return Widget.is_visible(self) or self.animation.active()
 
     def start_search(self):
-        if not self.is_visible():
+        if not Widget.is_visible(self):
             self.toggle_visible()
-            self.animation.start(200)
+            self.animation.reverse(200)
             self.search_expression = ""
         self.focus()
 
     def hide(self):
-        if self.is_visible():
+        if Widget.is_visible(self):
             self.toggle_visible()
-            self.animation.start(200)
+            self.animation.reverse(200)
             self.search_expression = ""
 
     def update(self, rect, elapsed_ms):
@@ -690,7 +691,7 @@ class DebugBar(Widget):
 
     def toggle(self):
         self.toggle_visible()
-        self.animation.start(200)
+        self.animation.reverse(200)
 
     def update(self, rect, elapsed_ms):
         self.tot_elapsed_time += elapsed_ms
@@ -736,6 +737,12 @@ class Animation(object):
         self.duration_ms = duration_ms
         self.progress = 0
         self.last_consumed = False
+
+    def reverse(self, duration_ms):
+        if self.active():
+            self.progress = self.duration_ms - self.progress
+        else:
+            self.start(duration_ms)
 
     def advance(self, elapsed_ms):
         percent = float(self.progress) / float(self.duration_ms)
