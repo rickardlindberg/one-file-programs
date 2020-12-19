@@ -902,6 +902,22 @@
 ],
 "id":"e12e9efd48504b95acab8b98f7c2ee82",
 "type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class CairoDrawingInterface(object):\n\n    def __init__(self, surface):\n        self.ctx = cairo.Context(surface)\n\n    def create_image(self, rect, fn, with_cairo=False):\n        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, rect.width, rect.height)\n        fn(CairoDrawingInterface(surface))\n        return surface\n\n    def blit(self, image, pos, alpha=255, scale_to_fit=None):\n        self.ctx.save()\n        self.ctx.translate(pos[0], pos[1])\n        if scale_to_fit:\n            self.ctx.scale(\n                scale_to_fit[0] / image.get_width(),\n                scale_to_fit[1] / image.get_height()\n            )\n        self.ctx.set_source_surface(image, 0, 0)\n        self.ctx.paint_with_alpha(alpha/255)\n        self.ctx.restore()\n\n    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):\n        if len(color) == 3 and alpha != 255:\n            self._set_color(*color, alpha/255)\n        else:\n            self._set_color(color)\n        self.ctx.rectangle(rect.x, rect.y, rect.width, rect.height)\n        self.ctx.fill()\n\n    def draw_rect(self, rect, color, width):\n        self._set_color(color)\n        self.ctx.rectangle(rect.x, rect.y, rect.width, rect.height)\n        self.ctx.set_line_width(width)\n        self.ctx.stroke()\n\n    def _set_color(self, color):\n        if len(color) == 4:\n            self.ctx.set_source_rgba(color[0]/255, color[1]/255, color[2]/255, color[3]/255)\n        else:\n            self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)\n\n    def render_text(self, text, pos):\n        self.ctx.set_source_rgb(0, 0, 0)\n        self.ctx.move_to(pos[0]+20, pos[1]+20)\n        self.ctx.show_text(text)\n\n    def move_to(self, x, y):\n        self.ctx.move_to(x, y)\n\n    def line_to(self, x, y):\n        self.ctx.line_to(x, y)\n\n    def curve_to(self, *args):\n        self.ctx.curve_to(*args)\n\n    def set_source_rgb(self, *args):\n        self.ctx.set_source_rgb(*args)\n\n    def set_line_width(self, *args):\n        self.ctx.set_line_width(*args)\n\n    def stroke(self, *args):\n        self.ctx.stroke(*args)\n",
+"type":"code"
+}
+],
+"id":"b7c5f48ba9764ed3931b9d54775faad1",
+"type":"code"
 }
 ],
 "title":"Drawing interface"
@@ -1387,7 +1403,7 @@
 "type":"variable"
 },
 {
-"text":"(root_widget_cls, *args, **kwargs):\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    root_widget = root_widget_cls(*args, **kwargs)\n    screen = pygame.display.set_mode((1280, 720))\n    clock = pygame.time.Clock()\n    external_text_entries = ",
+"text":"(root_widget_cls, *args, **kwargs):\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    root_widget = root_widget_cls(*args, **kwargs)\n    size = (1280, 720)\n    screen = pygame.display.set_mode(size)\n    cairo_image = cairo.ImageSurface(cairo.FORMAT_ARGB32, *size)\n    clock = pygame.time.Clock()\n    external_text_entries = ",
 "type":"code"
 },
 {
@@ -1395,7 +1411,7 @@
 "type":"variable"
 },
 {
-"text":"()\n    pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == USER_EVENT_CHECK_EXTERNAL:\n                external_text_entries.check()\n            elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:\n                external_text_entries.add(event.entry)\n            else:\n                root_widget.process_event(event)\n        root_widget.update(screen.get_rect(), clock.get_time())\n        root_widget.draw(PygameDrawingInterface(screen))\n        pygame.display.flip()\n        clock.tick(60)\n",
+"text":"()\n    pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == USER_EVENT_CHECK_EXTERNAL:\n                external_text_entries.check()\n            elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:\n                external_text_entries.add(event.entry)\n            else:\n                root_widget.process_event(event)\n        root_widget.update(screen.get_rect(), clock.get_time())\n        root_widget.draw(CairoDrawingInterface(cairo_image))\n        buf = io.BytesIO()\n        cairo_image.write_to_png(buf)\n        buf.seek(0)\n        image = pygame.image.load(buf).convert_alpha()\n        screen.blit(\n            image,\n            (0, 0)\n        )\n        pygame.display.flip()\n        clock.tick(60)\n",
 "type":"code"
 }
 ],

@@ -796,6 +796,71 @@ class PygameDrawingInterface(object):
         text, rect = font.render(text)
         self.screen.blit(text, pos)
 
+class CairoDrawingInterface(object):
+
+    def __init__(self, surface):
+        self.ctx = cairo.Context(surface)
+
+    def create_image(self, rect, fn, with_cairo=False):
+        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, rect.width, rect.height)
+        fn(CairoDrawingInterface(surface))
+        return surface
+
+    def blit(self, image, pos, alpha=255, scale_to_fit=None):
+        self.ctx.save()
+        self.ctx.translate(pos[0], pos[1])
+        if scale_to_fit:
+            self.ctx.scale(
+                scale_to_fit[0] / image.get_width(),
+                scale_to_fit[1] / image.get_height()
+            )
+        self.ctx.set_source_surface(image, 0, 0)
+        self.ctx.paint_with_alpha(alpha/255)
+        self.ctx.restore()
+
+    def fill_rect(self, rect, color=(0, 0, 0), alpha=255):
+        if len(color) == 3 and alpha != 255:
+            self._set_color(*color, alpha/255)
+        else:
+            self._set_color(color)
+        self.ctx.rectangle(rect.x, rect.y, rect.width, rect.height)
+        self.ctx.fill()
+
+    def draw_rect(self, rect, color, width):
+        self._set_color(color)
+        self.ctx.rectangle(rect.x, rect.y, rect.width, rect.height)
+        self.ctx.set_line_width(width)
+        self.ctx.stroke()
+
+    def _set_color(self, color):
+        if len(color) == 4:
+            self.ctx.set_source_rgba(color[0]/255, color[1]/255, color[2]/255, color[3]/255)
+        else:
+            self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)
+
+    def render_text(self, text, pos):
+        self.ctx.set_source_rgb(0, 0, 0)
+        self.ctx.move_to(pos[0]+20, pos[1]+20)
+        self.ctx.show_text(text)
+
+    def move_to(self, x, y):
+        self.ctx.move_to(x, y)
+
+    def line_to(self, x, y):
+        self.ctx.line_to(x, y)
+
+    def curve_to(self, *args):
+        self.ctx.curve_to(*args)
+
+    def set_source_rgb(self, *args):
+        self.ctx.set_source_rgb(*args)
+
+    def set_line_width(self, *args):
+        self.ctx.set_line_width(*args)
+
+    def stroke(self, *args):
+        self.ctx.stroke(*args)
+
 class NoteDb(object):
 
     def __init__(self, path):
@@ -935,7 +1000,9 @@ def pygame_main(root_widget_cls, *args, **kwargs):
     pygame.init()
     pygame.display.set_caption("Smart Notes")
     root_widget = root_widget_cls(*args, **kwargs)
-    screen = pygame.display.set_mode((1280, 720))
+    size = (1280, 720)
+    screen = pygame.display.set_mode(size)
+    cairo_image = cairo.ImageSurface(cairo.FORMAT_ARGB32, *size)
     clock = pygame.time.Clock()
     external_text_entries = ExternalTextEntries()
     pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
@@ -950,7 +1017,15 @@ def pygame_main(root_widget_cls, *args, **kwargs):
             else:
                 root_widget.process_event(event)
         root_widget.update(screen.get_rect(), clock.get_time())
-        root_widget.draw(PygameDrawingInterface(screen))
+        root_widget.draw(CairoDrawingInterface(cairo_image))
+        buf = io.BytesIO()
+        cairo_image.write_to_png(buf)
+        buf.seek(0)
+        image = pygame.image.load(buf).convert_alpha()
+        screen.blit(
+            image,
+            (0, 0)
+        )
         pygame.display.flip()
         clock.tick(60)
 
