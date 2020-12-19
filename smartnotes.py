@@ -749,14 +749,14 @@ class Animation(object):
     def active(self):
         return self.progress < self.duration_ms or not self.last_consumed
 
-class CairoDrawingInterface(object):
+class CairoCanvas(object):
 
     def __init__(self, surface):
         self.ctx = cairo.Context(surface)
 
     def create_image(self, rect, fn, with_cairo=False):
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, rect.width, rect.height)
-        fn(CairoDrawingInterface(surface))
+        fn(CairoCanvas(surface))
         return surface
 
     def blit(self, image, pos, alpha=255, scale_to_fit=None):
@@ -970,7 +970,7 @@ def pygame_main(root_widget_cls, *args, **kwargs):
             else:
                 root_widget.process_event(event)
         root_widget.update(screen.get_rect(), clock.get_time())
-        root_widget.draw(CairoDrawingInterface(cairo_image))
+        root_widget.draw(CairoCanvas(cairo_image))
         buf = io.BytesIO()
         cairo_image.write_to_png(buf)
         buf.seek(0)
