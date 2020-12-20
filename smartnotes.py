@@ -141,20 +141,52 @@ class SmartNotesWidget(VBox):
 
     def __init__(self, path):
         VBox.__init__(self)
+        self.link_source = None
+        self.link_target = None
         self.db = NoteDb(path)
+        self.pos = (0, 0)
         self.search_bar = self.add(SearchBar(
             self.db,
+            self,
             open_callback=self._on_search_note_open,
             dismiss_callback=self._on_search_dismiss
         ))
         self.network = self.add(NetworkWidget(
             self.db,
+            self,
             request_search_callback=self._on_search_request
         ))
         self.debug_bar = self.add(DebugBar())
         self.network.focus()
 
+    def set_link_source(self, link_source):
+        self.link_source = link_source
+
+    def set_link_target(self, link_target):
+        if link_target is None:
+            self.link_target = None
+            return
+        if self.link_source is None:
+            return
+        if self.link_source.note_id == link_target.note_id:
+            return
+        self.link_target = link_target
+
     def process_event(self, event):
+        if event.type == pygame.MOUSEMOTION:
+            self.pos = event.pos
+            self.set_link_target(None)
+        if self.link_source and event.type == pygame.MOUSEBUTTONUP:
+            if self.link_target:
+                self.db.create_link(
+                    self.link_source.note_id,
+                    self.link_target.note_id
+                )
+                self.set_link_source(None)
+                self.set_link_target(None)
+                return
+            self.set_link_source(None)
+            self.set_link_target(None)
         if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:
             self.quit()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -179,15 +211,26 @@ class SmartNotesWidget(VBox):
     def draw(self, canvas):
         canvas.fill_rect(self.rect, color=(134, 169, 214))
         VBox.draw(self, canvas)
+        if self.link_source:
+            canvas.move_to(*self.link_source.rect.center)
+            canvas.line_to(*self.pos)
+            canvas.line_to(self.pos[0]+10, self.pos[1]+10)
+            if self.link_target:
+                canvas.set_source_rgb(0.1, 0.8, 0.1)
+            else:
+                canvas.set_source_rgb(0.8, 0.8, 0.8)
+            canvas.set_line_width(4)
+            canvas.stroke()
 
 class SearchBar(Widget):
 
     IDEAL_HEIGHT = 150
 
-    def __init__(self, db, open_callback, dismiss_callback):
+    def __init__(self, db, state, open_callback, dismiss_callback):
         Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)
         self.resize(height=0)
         self.db = db
+        self.state = state
         self.open_callback = open_callback
         self.dismiss_callback = dismiss_callback
         self.animation = Animation()
@@ -240,6 +283,7 @@ class SearchBar(Widget):
         for note_id, note_data in self.db.get_notes(self.search_expression):
             note = SearchNote(
                 self.db,
+                self.state,
                 note_id,
                 note_data,
                 self.open_callback
@@ -272,15 +316,22 @@ class SearchBar(Widget):
 
 class SearchNote(Widget):
 
-    def __init__(self, db, note_id, note_data, open_callback):
+    def __init__(self, db, state, note_id, note_data, open_callback):
         Widget.__init__(self)
         self.db = db
+        self.state = state
         self.note_id = note_id
         self.note_data = note_data
         self.open_callback = open_callback
 
     def process_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEMOTION:
+            if self.rect.collidepoint(event.pos):
+                self.state.set_link_target(self)
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                self.state.set_link_source(self)
+        elif event.type == pygame.MOUSEBUTTONUP:
             if self.rect.collidepoint(event.pos):
                 self.open_callback(self.note_id)
 
@@ -307,9 +358,10 @@ class SearchNote(Widget):
 
 class NetworkWidget(Widget):
 
-    def __init__(self, db, request_search_callback):
+    def __init__(self, db, state, request_search_callback):
         Widget.__init__(self)
         self.db = db
+        self.state = state
         self.request_search_callback = request_search_callback
         self.pos = (-1, -1)
         self.notes = []
@@ -325,6 +377,9 @@ class NetworkWidget(Widget):
         if event.type == pygame.MOUSEMOTION:
             self.pos = event.pos
         elif event.type == pygame.MOUSEBUTTONDOWN:
+            if self.selected_note:
+                self.state.set_link_source(self.selected_note)
+        elif event.type == pygame.MOUSEBUTTONUP:
             for note in reversed(self.notes):
                 if note.rect.collidepoint(event.pos):
                     self.make_root(note)
@@ -363,6 +418,7 @@ class NetworkWidget(Widget):
         for note in reversed(self.notes):
             if note.rect.collidepoint(self.pos):
                 self.selected_note = note
+                self.state.set_link_target(note)
                 break
         else:
             self.selected_note = None

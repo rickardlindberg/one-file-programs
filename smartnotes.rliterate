@@ -22,7 +22,7 @@
 "type":"variable"
 },
 {
-"text":"(VBox):\n\n    def __init__(self, path):\n        VBox.__init__(self)\n        self.db = ",
+"text":"(VBox):\n\n    def __init__(self, path):\n        VBox.__init__(self)\n        self.link_source = None\n        self.link_target = None\n        self.db = ",
 "type":"code"
 },
 {
@@ -30,7 +30,7 @@
 "type":"variable"
 },
 {
-"text":"(path)\n        self.search_bar = self.add(SearchBar(\n            self.db,\n            open_callback=self._on_search_note_open,\n            dismiss_callback=self._on_search_dismiss\n        ))\n        self.network = self.add(",
+"text":"(path)\n        self.pos = (0, 0)\n        self.search_bar = self.add(SearchBar(\n            self.db,\n            self,\n            open_callback=self._on_search_note_open,\n            dismiss_callback=self._on_search_dismiss\n        ))\n        self.network = self.add(",
 "type":"code"
 },
 {
@@ -38,7 +38,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            self.db,\n            request_search_callback=self._on_search_request\n        ))\n        self.debug_bar = self.add(DebugBar())\n        self.network.focus()\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n\n    def _on_search_note_open(self, note_id):\n        self.network.open_note(note_id)\n\n    def _on_search_dismiss(self):\n        self.search_bar.hide()\n        self.network.focus()\n\n    def _on_search_request(self):\n        self.search_bar.start_search()\n\n    def update(self, rect, elapsed_ms):\n        self.rect = rect\n        VBox.update(self, rect, elapsed_ms)\n\n    def draw(self, canvas):\n        canvas.fill_rect(self.rect, color=(134, 169, 214))\n        VBox.draw(self, canvas)\n",
+"text":"(\n            self.db,\n            self,\n            request_search_callback=self._on_search_request\n        ))\n        self.debug_bar = self.add(DebugBar())\n        self.network.focus()\n\n    def set_link_source(self, link_source):\n        self.link_source = link_source\n\n    def set_link_target(self, link_target):\n        if link_target is None:\n            self.link_target = None\n            return\n        if self.link_source is None:\n            return\n        if self.link_source.note_id == link_target.note_id:\n            return\n        self.link_target = link_target\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            self.pos = event.pos\n            self.set_link_target(None)\n        if self.link_source and event.type == pygame.MOUSEBUTTONUP:\n            if self.link_target:\n                self.db.create_link(\n                    self.link_source.note_id,\n                    self.link_target.note_id\n                )\n                self.set_link_source(None)\n                self.set_link_target(None)\n                return\n            self.set_link_source(None)\n            self.set_link_target(None)\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:\n            self.quit()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n\n    def _on_search_note_open(self, note_id):\n        self.network.open_note(note_id)\n\n    def _on_search_dismiss(self):\n        self.search_bar.hide()\n        self.network.focus()\n\n    def _on_search_request(self):\n        self.search_bar.start_search()\n\n    def update(self, rect, elapsed_ms):\n        self.rect = rect\n        VBox.update(self, rect, elapsed_ms)\n\n    def draw(self, canvas):\n        canvas.fill_rect(self.rect, color=(134, 169, 214))\n        VBox.draw(self, canvas)\n        if self.link_source:\n            canvas.move_to(*self.link_source.rect.center)\n            canvas.line_to(*self.pos)\n            canvas.line_to(self.pos[0]+10, self.pos[1]+10)\n            if self.link_target:\n                canvas.set_source_rgb(0.1, 0.8, 0.1)\n            else:\n                canvas.set_source_rgb(0.8, 0.8, 0.8)\n            canvas.set_line_width(4)\n            canvas.stroke()\n",
 "type":"code"
 }
 ],
@@ -65,7 +65,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchNote(Widget):\n\n    def __init__(self, db, note_id, note_data, open_callback):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.note_data = note_data\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def ",
+"text":"class SearchNote(Widget):\n\n    def __init__(self, db, state, note_id, note_data, open_callback):\n        Widget.__init__(self)\n        self.db = db\n        self.state = state\n        self.note_id = note_id\n        self.note_data = note_data\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_target(self)\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_source(self)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def ",
 "type":"code"
 },
 {
@@ -127,7 +127,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db, open_callback, dismiss_callback):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)\n        self.resize(height=0)\n        self.db = db\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.search_expression = \"\"\n        self.notes = []\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and not self.has_focus():\n            return\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:\n            self.dismiss_callback()\n        elif event.type == pygame.KEYDOWN and event.unicode:\n            self.search_expression += event.unicode\n        else:\n            for note in self.notes:\n                note.process_event(event)\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n            self.search_expression = \"\"\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n            self.search_expression = \"\"\n\n    def ",
+"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db, state, open_callback, dismiss_callback):\n        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)\n        self.resize(height=0)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.search_expression = \"\"\n        self.notes = []\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and not self.has_focus():\n            return\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:\n            self.dismiss_callback()\n        elif event.type == pygame.KEYDOWN and event.unicode:\n            self.search_expression += event.unicode\n        else:\n            for note in self.notes:\n                note.process_event(event)\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n            self.search_expression = \"\"\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n            self.search_expression = \"\"\n\n    def ",
 "type":"code"
 },
 {
@@ -167,7 +167,7 @@
 "type":"variable"
 },
 {
-"text":"\n        self.notes = []\n        rect = self.rect.inflate(-10, -10)\n        rect.height = self.IDEAL_HEIGHT - 40\n        single_width = rect.width/5\n        rect.x += 5\n        rect.width = single_width - 10\n        rect.bottom = self.rect.bottom - 10\n        for note_id, note_data in self.db.get_notes(self.search_expression):\n            note = SearchNote(\n                self.db,\n                note_id,\n                note_data,\n                self.open_callback\n            )\n            note.",
+"text":"\n        self.notes = []\n        rect = self.rect.inflate(-10, -10)\n        rect.height = self.IDEAL_HEIGHT - 40\n        single_width = rect.width/5\n        rect.x += 5\n        rect.width = single_width - 10\n        rect.bottom = self.rect.bottom - 10\n        for note_id, note_data in self.db.get_notes(self.search_expression):\n            note = SearchNote(\n                self.db,\n                self.state,\n                note_id,\n                note_data,\n                self.open_callback\n            )\n            note.",
 "type":"code"
 },
 {
@@ -485,7 +485,7 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, db, request_search_callback):\n        Widget.__init__(self)\n        self.db = db\n        self.request_search_callback = request_search_callback\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n        for note_id, note_data in self.db.get_notes():\n            self.",
+"text":"(Widget):\n\n    def __init__(self, db, state, request_search_callback):\n        Widget.__init__(self)\n        self.db = db\n        self.state = state\n        self.request_search_callback = request_search_callback\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n        for note_id, note_data in self.db.get_notes():\n            self.",
 "type":"code"
 },
 {
@@ -493,7 +493,7 @@
 "type":"variable"
 },
 {
-"text":"(note_id)\n            break\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and not self.has_focus():\n            return\n        if event.type == pygame.MOUSEMOTION:\n            self.pos = event.pos\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            for note in reversed(self.notes):\n                if note.rect.collidepoint(event.pos):\n                    self.make_root(note)\n                    return\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH:\n            self.request_search_callback()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n            if self.selected_note:\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, self.selected_note.note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n            if self.selected_note:\n                child_note_id = self.db.create_note(text=\"Enter note text...\")\n                self.db.create_link(self.selected_note.note_id, child_note_id)\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, child_note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n            note_id = self.db.create_note(text=\"Enter note text...\")\n            self.",
+"text":"(note_id)\n            break\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and not self.has_focus():\n            return\n        if event.type == pygame.MOUSEMOTION:\n            self.pos = event.pos\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.selected_note:\n                self.state.set_link_source(self.selected_note)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            for note in reversed(self.notes):\n                if note.rect.collidepoint(event.pos):\n                    self.make_root(note)\n                    return\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH:\n            self.request_search_callback()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n            if self.selected_note:\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, self.selected_note.note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n            if self.selected_note:\n                child_note_id = self.db.create_note(text=\"Enter note text...\")\n                self.db.create_link(self.selected_note.note_id, child_note_id)\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, child_note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n            note_id = self.db.create_note(text=\"Enter note text...\")\n            self.",
 "type":"code"
 },
 {
@@ -541,7 +541,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(self.pos):\n                self.selected_note = note\n                break\n        else:\n            self.selected_note = None\n        self.stripe_rects = []\n        padding = 8\n        self.full_width = int(",
+"text":"):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(self.pos):\n                self.selected_note = note\n                self.state.set_link_target(note)\n                break\n        else:\n            self.selected_note = None\n        self.stripe_rects = []\n        padding = 8\n        self.full_width = int(",
 "type":"code"
 },
 {
