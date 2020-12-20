@@ -402,6 +402,11 @@ class NetworkWidget(Widget):
         elif event.type == pygame.KEYDOWN and event.unicode == "d":
             if self.selected_note:
                 self.db.delete_note(self.selected_note.note_id)
+        elif event.type == pygame.KEYDOWN and event.unicode == "u":
+            if self.selected_note:
+                link_id = self.selected_note.get_link_id()
+                if link_id:
+                    self.db.delete_link(link_id)
         elif event.type == pygame.KEYDOWN and event.unicode == "c":
             if self.selected_note:
                 child_note_id = self.db.create_note(text="Enter note text...")
@@ -617,7 +622,14 @@ class NoteWidget(Widget):
                 )
         return self.outgoing
 
+    def get_link_id(self):
+        if self.side == "left" and len(self.outgoing) == 1:
+            return self.outgoing[0].link_id
+        if self.side == "right" and len(self.incoming) == 1:
+            return self.incoming[0].link_id
+
     def update(self, rect, elapsed_ms, full_width, side, fade_from_rect, selected):
+        self.side = side
         self.selected = selected
         self.true_rect = rect
         self.data = self.db.get_note_data(self.note_id)
@@ -1078,6 +1090,15 @@ class NoteDb(object):
         ))
         return link_id
 
+    def delete_link(self, link_id):
+        self._ensure_link_id(link_id)
+        new_links = dict(self.data["links"])
+        new_links.pop(link_id)
+        self._update(dict(
+            self.data,
+            links=new_links
+        ))
+
     def undo(self):
         if self.undo_list:
             self.redo_list.insert(0, self.data)
@@ -1100,7 +1121,14 @@ class NoteDb(object):
         if note_id not in self.data["notes"]:
             raise NoteNotFound(str(note_id))
 
+    def _ensure_link_id(self, link_id):
+        if link_id not in self.data["links"]:
+            raise LinkNotFound(str(link_id))
+
 class NoteNotFound(ValueError):
+    pass
+
+class LinkNotFound(ValueError):
     pass
 
 class ExternalTextEntries(object):
