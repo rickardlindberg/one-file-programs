@@ -370,6 +370,9 @@ class NetworkWidget(Widget):
         self.pos = (-1, -1)
         self.notes = []
         self.selected_note = None
+        self.open_last_note()
+
+    def open_last_note(self):
         self.root_note = None
         for note_id, note_data in self.db.get_notes():
             self.open_note(note_id)
@@ -396,6 +399,9 @@ class NetworkWidget(Widget):
                     USER_EVENT_EXTERNAL_TEXT_ENTRY,
                     entry=EditNoteText(self.db, self.selected_note.note_id)
                 )
+        elif event.type == pygame.KEYDOWN and event.unicode == "d":
+            if self.selected_note:
+                self.db.delete_note(self.selected_note.note_id)
         elif event.type == pygame.KEYDOWN and event.unicode == "c":
             if self.selected_note:
                 child_note_id = self.db.create_note(text="Enter note text...")
@@ -433,6 +439,8 @@ class NetworkWidget(Widget):
         self.notes = []
         self.links = []
         middle_stripe = self._stripe(rect, 0.3)
+        if self.root_note.is_deleted():
+            self.open_last_note()
         if self.root_note is None:
             return
         self.root_note.update(
@@ -565,6 +573,13 @@ class NoteWidget(Widget):
         self.target = None
         self.previous = None
         self.full_width = None
+
+    def is_deleted(self):
+        try:
+            self.db.get_note_data(self.note_id)
+            return False
+        except NoteNotFound:
+            return True
 
     def update_incoming(self):
         by_id = {
@@ -993,6 +1008,7 @@ class NoteDb(object):
         )
 
     def get_note_data(self, note_id):
+        self._ensure_note_id(note_id)
         return self.data["notes"][note_id]
 
     def get_outgoing_links(self, note_id):
@@ -1021,12 +1037,30 @@ class NoteDb(object):
         return note_id
 
     def update_note(self, note_id, **params):
+        self._ensure_note_id(note_id)
         self._update(dict(
             self.data,
             notes=dict(
                 self.data["notes"],
                 **{note_id: dict(self.data["notes"][note_id], **params)}
             )
+        ))
+
+    def delete_note(self, note_id):
+        self._ensure_note_id(note_id)
+        new_notes = dict(self.data["notes"])
+        new_notes.pop(note_id)
+        new_links = dict(self.data["links"])
+        dead_links = []
+        for link_id, link in new_links.items():
+            if link["to"] == note_id or link["from"] == note_id:
+                dead_links.append(link_id)
+        for link_id in dead_links:
+            new_links.pop(link_id)
+        self._update(dict(
+            self.data,
+            notes=new_notes,
+            links=new_links
         ))
 
     def create_link(self, from_id, to_id):
@@ -1061,6 +1095,13 @@ class NoteDb(object):
         self.redo_list.clear()
         self.data = data
         write_json_file(self.path, self.data)
+
+    def _ensure_note_id(self, note_id):
+        if note_id not in self.data["notes"]:
+            raise NoteNotFound(str(note_id))
+
+class NoteNotFound(ValueError):
+    pass
 
 class ExternalTextEntries(object):
 

@@ -240,7 +240,7 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, db, note_id):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.data = None\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n        self.full_width = None\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
+"text":"(Widget):\n\n    def __init__(self, db, note_id):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.data = None\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n        self.full_width = None\n\n    def is_deleted(self):\n        try:\n            self.db.get_note_data(self.note_id)\n            return False\n        except NoteNotFound:\n            return True\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -485,7 +485,7 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, db, state, request_search_callback):\n        Widget.__init__(self)\n        self.db = db\n        self.state = state\n        self.request_search_callback = request_search_callback\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.root_note = None\n        for note_id, note_data in self.db.get_notes():\n            self.",
+"text":"(Widget):\n\n    def __init__(self, db, state, request_search_callback):\n        Widget.__init__(self)\n        self.db = db\n        self.state = state\n        self.request_search_callback = request_search_callback\n        self.pos = (-1, -1)\n        self.notes = []\n        self.selected_note = None\n        self.open_last_note()\n\n    def open_last_note(self):\n        self.root_note = None\n        for note_id, note_data in self.db.get_notes():\n            self.",
 "type":"code"
 },
 {
@@ -493,7 +493,7 @@
 "type":"variable"
 },
 {
-"text":"(note_id)\n            break\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and not self.has_focus():\n            return\n        if event.type == pygame.MOUSEMOTION:\n            self.pos = event.pos\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.selected_note:\n                self.state.set_link_source(self.selected_note)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            for note in reversed(self.notes):\n                if note.rect.collidepoint(event.pos):\n                    self.make_root(note)\n                    return\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH:\n            self.request_search_callback()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n            if self.selected_note:\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, self.selected_note.note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n            if self.selected_note:\n                child_note_id = self.db.create_note(text=\"Enter note text...\")\n                self.db.create_link(self.selected_note.note_id, child_note_id)\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, child_note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n            note_id = self.db.create_note(text=\"Enter note text...\")\n            self.",
+"text":"(note_id)\n            break\n\n    def process_event(self, event):\n        if event.type == pygame.KEYDOWN and not self.has_focus():\n            return\n        if event.type == pygame.MOUSEMOTION:\n            self.pos = event.pos\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.selected_note:\n                self.state.set_link_source(self.selected_note)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            for note in reversed(self.notes):\n                if note.rect.collidepoint(event.pos):\n                    self.make_root(note)\n                    return\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH:\n            self.request_search_callback()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"e\":\n            if self.selected_note:\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, self.selected_note.note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"d\":\n            if self.selected_note:\n                self.db.delete_note(self.selected_note.note_id)\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n            if self.selected_note:\n                child_note_id = self.db.create_note(text=\"Enter note text...\")\n                self.db.create_link(self.selected_note.note_id, child_note_id)\n                self.post_event(\n                    USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                    entry=EditNoteText(self.db, child_note_id)\n                )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"n\":\n            note_id = self.db.create_note(text=\"Enter note text...\")\n            self.",
 "type":"code"
 },
 {
@@ -557,7 +557,7 @@
 "type":"variable"
 },
 {
-"text":", 0.3)\n        if self.root_note is None:\n            return\n        self.root_note.",
+"text":", 0.3)\n        if self.root_note.is_deleted():\n            self.open_last_note()\n        if self.root_note is None:\n            return\n        self.root_note.",
 "type":"code"
 },
 {
@@ -956,7 +956,7 @@
 "type":"variable"
 },
 {
-"text":"(self, note_id):\n        return self.data[\"notes\"][note_id]\n\n    def ",
+"text":"(self, note_id):\n        self._ensure_note_id(note_id)\n        return self.data[\"notes\"][note_id]\n\n    def ",
 "type":"code"
 },
 {
@@ -1004,7 +1004,15 @@
 "type":"variable"
 },
 {
-"text":"(self, note_id, **params):\n        self._update(dict(\n            self.data,\n            notes=dict(\n                self.data[\"notes\"],\n                **{note_id: dict(self.data[\"notes\"][note_id], **params)}\n            )\n        ))\n\n    def ",
+"text":"(self, note_id, **params):\n        self._ensure_note_id(note_id)\n        self._update(dict(\n            self.data,\n            notes=dict(\n                self.data[\"notes\"],\n                **{note_id: dict(self.data[\"notes\"][note_id], **params)}\n            )\n        ))\n\n    def ",
+"type":"code"
+},
+{
+"id":"673acc718f404d9986a6f3898cbbadf2",
+"type":"variable"
+},
+{
+"text":"(self, note_id):\n        self._ensure_note_id(note_id)\n        new_notes = dict(self.data[\"notes\"])\n        new_notes.pop(note_id)\n        new_links = dict(self.data[\"links\"])\n        dead_links = []\n        for link_id, link in new_links.items():\n            if link[\"to\"] == note_id or link[\"from\"] == note_id:\n                dead_links.append(link_id)\n        for link_id in dead_links:\n            new_links.pop(link_id)\n        self._update(dict(\n            self.data,\n            notes=new_notes,\n            links=new_links\n        ))\n\n    def ",
 "type":"code"
 },
 {
@@ -1036,11 +1044,27 @@
 "type":"variable"
 },
 {
-"text":"(self.path, self.data)\n",
+"text":"(self.path, self.data)\n\n    def _ensure_note_id(self, note_id):\n        if note_id not in self.data[\"notes\"]:\n            raise NoteNotFound(str(note_id))\n",
 "type":"code"
 }
 ],
 "id":"486ada8dcbd342f496b9909b2660347d",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class NoteNotFound(ValueError):\n    pass\n",
+"type":"code"
+}
+],
+"id":"acea5ef563274bf5836f62a8dbce6a78",
 "type":"code"
 },
 {
@@ -1416,6 +1440,7 @@
 "51e0d946025e49788fa31b8cfbab897a":"ExternalTextEntry",
 "550c4c8b55b444af9a0463ba8be1c5b9":"open_note",
 "595003a78e1e4326ac5ef9aa70b79fd9":"rect",
+"673acc718f404d9986a6f3898cbbadf2":"delete_note",
 "6b3f131bafd84a0eafcc6a947995a761":"get_outgoing_links",
 "7583be08dcbd4bcca0e6a043d3791710":"elapsed_ms",
 "7efd9878f5b944e09e96228ab258303b":"get_note_data",
