@@ -858,11 +858,16 @@ class CairoCanvas(object):
         height = 0
         start_y = None
         parts = []
+        font_ascent, font_descent = self.ctx.font_extents()[0:2]
+        extra = font_descent*0.9
         for text in splits:
             extents = self.ctx.text_extents(text)
-            parts.append((-extents.x_bearing, height-extents.y_bearing, text))
+            height += font_ascent
+            parts.append((-extents.x_bearing, height, text))
             width = max(width, extents.width)
-            height += extents.height*1.2
+            height += font_descent
+            height += extra
+        height -= extra
         return {
             "parts": parts,
             "width": width,
