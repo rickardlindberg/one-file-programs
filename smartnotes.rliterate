@@ -948,7 +948,7 @@
 "type":"variable"
 },
 {
-"text":"(self, expression=\"\"):\n        return sorted(\n            (\n                item\n                for item in self.data[\"notes\"].items()\n                if expression in item[1][\"text\"]\n            ),\n            key=lambda item: item[1][\"timestamp_created\"],\n            reverse=True\n        )\n\n    def ",
+"text":"(self, expression=\"\"):\n        def match(item):\n            lower_text = item[\"text\"].lower()\n            for part in expression.split(\" \"):\n                if part.lower() not in lower_text:\n                    return False\n            return True\n        return sorted(\n            (\n                item\n                for item in self.data[\"notes\"].items()\n                if match(item[1])\n            ),\n            key=lambda item: item[1][\"timestamp_created\"],\n            reverse=True\n        )\n\n    def ",
 "type":"code"
 },
 {

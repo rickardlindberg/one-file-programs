@@ -976,11 +976,17 @@ class NoteDb(object):
         self.redo_list = []
 
     def get_notes(self, expression=""):
+        def match(item):
+            lower_text = item["text"].lower()
+            for part in expression.split(" "):
+                if part.lower() not in lower_text:
+                    return False
+            return True
         return sorted(
             (
                 item
                 for item in self.data["notes"].items()
-                if expression in item[1]["text"]
+                if match(item[1])
             ),
             key=lambda item: item[1]["timestamp_created"],
             reverse=True
