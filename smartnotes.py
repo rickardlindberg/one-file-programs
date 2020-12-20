@@ -5,6 +5,7 @@ import contextlib
 import datetime
 import io
 import json
+import math
 import os
 import pygame
 import pygame.freetype
@@ -263,7 +264,7 @@ class SearchBar(Widget):
         )
         canvas.render_text(
             "Expression: {}".format(self.search_expression),
-            self.rect
+            pygame.Rect((0, 0), (self.rect.width, 20))
         )
         for note in self.notes:
             note.draw(canvas)
@@ -602,10 +603,7 @@ class NoteWidget(Widget):
         border.x -= border_size
         border.y -= border_size
         canvas.fill_rect(border, color=(250, 250, 250))
-        canvas.render_text(
-            self.data["text"],
-            border
-        )
+        canvas.render_text(self.data["text"], border.inflate(-10, -10))
 
 class LinkWidget(Widget):
 
@@ -721,7 +719,7 @@ class DebugBar(Widget):
         canvas.fill_rect(pygame.Rect((0, 0), self.rect.size), color=(84, 106, 134))
         canvas.render_text(
             f"elapsed_ms = {self.average_elapsed} | fps = {self.fps}",
-            (0, 0)
+            pygame.Rect((0, 0), self.rect.size)
         )
 
 class Animation(object):
@@ -794,10 +792,67 @@ class CairoCanvas(object):
         else:
             self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)
 
-    def render_text(self, text, pos):
+    def render_text(self, text, box, size=30):
+        if box.height <= 0:
+            return
+        self.ctx.set_font_size(size)
+
+        metrics = self._find_best_split(
+            text.strip().replace("\n", " "),
+            box
+        )
+        self.ctx.save()
+        scale_factor = box.width / metrics["width"]
+        if metrics["height"] * scale_factor > box.height:
+            scale_factor = box.height / metrics["height"]
+        self.ctx.translate(box[0], box[1])
+        self.ctx.scale(scale_factor, scale_factor)
         self.ctx.set_source_rgb(0, 0, 0)
-        self.ctx.move_to(pos[0]+20, pos[1]+20)
-        self.ctx.show_text(text)
+        for x, y, part in metrics["parts"]:
+            self.ctx.move_to(x, y)
+            self.ctx.show_text(part)
+        self.ctx.restore()
+
+    def _find_best_split(self, text, box):
+        split_times = 1
+        target_ratio = box.width / box.height
+        metrics = self._get_metrics(text, split_times)
+        diff = abs(metrics["ratio"] - target_ratio)
+        while True:
+            split_times += 1
+            new_metrics = self._get_metrics(text, split_times)
+            new_diff = abs(new_metrics["ratio"] - target_ratio)
+            if new_diff > diff:
+                return metrics
+            else:
+                diff = new_diff
+                metrics = new_metrics
+
+    def _get_metrics(self, text, times):
+        width = 0
+        height = 0
+        start_y = None
+        parts = []
+        for part in self._split_text(text, times):
+            extents = self.ctx.text_extents(part)
+            parts.append((-extents.x_bearing, height-extents.y_bearing, part))
+            width = max(width, extents.width)
+            height += extents.height*1.2
+        return {
+            "parts": parts,
+            "width": width,
+            "height": height,
+            "ratio": width / height,
+        }
+
+    def _split_text(self, text, times=1):
+        parts = []
+        part_len = int(math.ceil(len(text) / times))
+        pos = 0
+        for x in range(times):
+            parts.append(text[pos:pos+part_len])
+            pos += part_len
+        return parts
 
     def move_to(self, x, y):
         self.ctx.move_to(x, y)
