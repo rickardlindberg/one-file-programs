@@ -17,7 +17,7 @@ import uuid
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_TEXT_BORDER = os.environ.get("DEBUG_TEXT_BORDER") == "yes"
 DEBUG_ANIMATIONS = os.environ.get("DEBUG_ANIMATIONS") == "yes"
-DEBUG = DEBUG_NOTE_BORDER or DEBUG_ANIMATIONS
+DEBUG = DEBUG_NOTE_BORDER or DEBUG_TEXT_BORDER or DEBUG_ANIMATIONS
 
 USER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT
 USER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1
@@ -300,7 +300,9 @@ class SearchNote(Widget):
         )
         canvas.render_text(
             self.note_data["text"],
-            pygame.rect.Rect((0, 0), self.rect.size)
+            pygame.rect.Rect((0, 0), self.rect.size).inflate(-10, -10),
+            size=20,
+            center=True
         )
 
 class NetworkWidget(Widget):
@@ -604,7 +606,12 @@ class NoteWidget(Widget):
         border.x -= border_size
         border.y -= border_size
         canvas.fill_rect(border, color=(250, 250, 250))
-        canvas.render_text(self.data["text"], border.inflate(-10, -10))
+        canvas.render_text(
+            self.data["text"],
+            border.inflate(-10, -10),
+            size=30,
+            center=True
+        )
 
 class LinkWidget(Widget):
 
@@ -720,7 +727,10 @@ class DebugBar(Widget):
         canvas.fill_rect(pygame.Rect((0, 0), self.rect.size), color=(84, 106, 134))
         canvas.render_text(
             f"elapsed_ms = {self.average_elapsed} | fps = {self.fps}",
-            pygame.Rect((0, 0), self.rect.size)
+            pygame.Rect((0, 0), self.rect.size).inflate(-20, -20),
+            valign=True,
+            size=15,
+            face="Monospace"
         )
 
 class Animation(object):
@@ -793,9 +803,12 @@ class CairoCanvas(object):
         else:
             self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)
 
-    def render_text(self, text, box, size=40):
+    def render_text(self, text, box, size=40, center=False, halign=False,
+            valign=False, face=None):
         if box.height <= 0:
             return
+        if face is not None:
+            self.ctx.select_font_face(face)
         self.ctx.set_font_size(size)
         metrics = self._find_best_split(
             text.strip().replace("\n", " "),
@@ -806,7 +819,13 @@ class CairoCanvas(object):
         if metrics["height"] * scale_factor > box.height:
             scale_factor = box.height / metrics["height"]
         scale_factor = min(scale_factor, 1)
-        self.ctx.translate(box[0], box[1])
+        xoffset = 0
+        yoffset = 0
+        if halign or center:
+            xoffset = box[2]/2-metrics["width"]*scale_factor/2
+        if valign or center:
+            yoffset = box[3]/2-metrics["height"]*scale_factor/2
+        self.ctx.translate(box[0]+xoffset, box[1]+yoffset)
         self.ctx.scale(scale_factor, scale_factor)
         self.ctx.set_source_rgb(0, 0, 0)
         for x, y, part in metrics["parts"]:
