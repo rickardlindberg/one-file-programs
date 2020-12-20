@@ -793,7 +793,7 @@ class CairoCanvas(object):
         else:
             self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)
 
-    def render_text(self, text, box, size=30):
+    def render_text(self, text, box, size=40):
         if box.height <= 0:
             return
         self.ctx.set_font_size(size)
@@ -805,6 +805,7 @@ class CairoCanvas(object):
         scale_factor = box.width / metrics["width"]
         if metrics["height"] * scale_factor > box.height:
             scale_factor = box.height / metrics["height"]
+        scale_factor = min(scale_factor, 1)
         self.ctx.translate(box[0], box[1])
         self.ctx.scale(scale_factor, scale_factor)
         self.ctx.set_source_rgb(0, 0, 0)
