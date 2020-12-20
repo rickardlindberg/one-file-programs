@@ -15,6 +15,7 @@ import tempfile
 import uuid
 
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
+DEBUG_TEXT_BORDER = os.environ.get("DEBUG_TEXT_BORDER") == "yes"
 DEBUG_ANIMATIONS = os.environ.get("DEBUG_ANIMATIONS") == "yes"
 DEBUG = DEBUG_NOTE_BORDER or DEBUG_ANIMATIONS
 
@@ -796,7 +797,6 @@ class CairoCanvas(object):
         if box.height <= 0:
             return
         self.ctx.set_font_size(size)
-
         metrics = self._find_best_split(
             text.strip().replace("\n", " "),
             box
@@ -811,6 +811,11 @@ class CairoCanvas(object):
         for x, y, part in metrics["parts"]:
             self.ctx.move_to(x, y)
             self.ctx.show_text(part)
+        if DEBUG_TEXT_BORDER:
+            self.ctx.set_source_rgb(0.1, 1, 0.1)
+            self.ctx.rectangle(0, 0, metrics["width"], metrics["height"])
+            self.ctx.set_line_width(2/scale_factor)
+            self.ctx.stroke()
         self.ctx.restore()
 
     def _find_best_split(self, text, box):
