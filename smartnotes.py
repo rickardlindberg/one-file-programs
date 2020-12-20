@@ -189,6 +189,10 @@ class SmartNotesWidget(VBox):
             self.set_link_target(None)
         if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:
             self.quit()
+        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_z:
+            self.db.undo()
+        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_y:
+            self.db.redo()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.debug_bar.toggle()
         else:
@@ -968,6 +972,8 @@ class NoteDb(object):
             "notes": {},
             "links": {},
         })
+        self.undo_list = []
+        self.redo_list = []
 
     def get_notes(self, expression=""):
         return sorted(
@@ -999,29 +1005,27 @@ class NoteDb(object):
 
     def create_note(self, **params):
         note_id = genid()
-        self.data = dict(
+        self._update(dict(
             self.data,
             notes=dict(
                 self.data["notes"],
                 **{note_id: dict(params, timestamp_created=utcnow_timestamp_string())}
             )
-        )
-        self._update()
+        ))
         return note_id
 
     def update_note(self, note_id, **params):
-        self.data = dict(
+        self._update(dict(
             self.data,
             notes=dict(
                 self.data["notes"],
                 **{note_id: dict(self.data["notes"][note_id], **params)}
             )
-        )
-        self._update()
+        ))
 
     def create_link(self, from_id, to_id):
         link_id = genid()
-        self.data = dict(
+        self._update(dict(
             self.data,
             links=dict(
                 self.data["links"],
@@ -1031,11 +1035,25 @@ class NoteDb(object):
                     "timestamp_created": utcnow_timestamp_string(),
                 }}
             )
-        )
-        self._update()
+        ))
         return link_id
 
-    def _update(self):
+    def undo(self):
+        if self.undo_list:
+            self.redo_list.insert(0, self.data)
+            self.data = self.undo_list.pop(-1)
+
+    def redo(self):
+        if self.redo_list:
+            self.undo_list.append(self.data)
+            self.data = self.redo_list.pop(0)
+
+    def _update(self, data):
+        UNDO_LIST_SIZE = 20
+        self.undo_list.append(self.data)
+        self.undo_list = self.undo_list[-UNDO_LIST_SIZE:]
+        self.redo_list.clear()
+        self.data = data
         write_json_file(self.path, self.data)
 
 class ExternalTextEntries(object):
