@@ -847,7 +847,7 @@ class CairoCanvas(object):
             split_times += 1
             new_metrics = self._get_metrics(self._split_text(text, split_times))
             new_diff = abs(new_metrics["ratio"] - target_ratio)
-            if new_diff > diff:
+            if new_metrics == metrics or new_diff > diff:
                 return metrics
             else:
                 diff = new_diff
@@ -876,12 +876,13 @@ class CairoCanvas(object):
         }
 
     def _split_text(self, text, times):
+        words = text.split(" ")
+        words_per_part = max(1, int(round(len(words) / times)))
         parts = []
-        part_len = int(math.ceil(len(text) / times))
-        pos = 0
-        for x in range(times):
-            parts.append(text[pos:pos+part_len])
-            pos += part_len
+        start = 0
+        while start < len(words):
+            parts.append(" ".join(words[start:start+words_per_part]))
+            start += words_per_part
         return parts
 
     def move_to(self, x, y):
