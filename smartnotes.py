@@ -821,11 +821,11 @@ class CairoCanvas(object):
     def _find_best_split(self, text, box):
         split_times = 1
         target_ratio = box.width / box.height
-        metrics = self._get_metrics(text, split_times)
+        metrics = self._get_metrics(self._split_text(text, split_times))
         diff = abs(metrics["ratio"] - target_ratio)
         while True:
             split_times += 1
-            new_metrics = self._get_metrics(text, split_times)
+            new_metrics = self._get_metrics(self._split_text(text, split_times))
             new_diff = abs(new_metrics["ratio"] - target_ratio)
             if new_diff > diff:
                 return metrics
@@ -833,14 +833,14 @@ class CairoCanvas(object):
                 diff = new_diff
                 metrics = new_metrics
 
-    def _get_metrics(self, text, times):
+    def _get_metrics(self, splits):
         width = 0
         height = 0
         start_y = None
         parts = []
-        for part in self._split_text(text, times):
-            extents = self.ctx.text_extents(part)
-            parts.append((-extents.x_bearing, height-extents.y_bearing, part))
+        for text in splits:
+            extents = self.ctx.text_extents(text)
+            parts.append((-extents.x_bearing, height-extents.y_bearing, text))
             width = max(width, extents.width)
             height += extents.height*1.2
         return {
@@ -850,7 +850,7 @@ class CairoCanvas(object):
             "ratio": width / height,
         }
 
-    def _split_text(self, text, times=1):
+    def _split_text(self, text, times):
         parts = []
         part_len = int(math.ceil(len(text) / times))
         pos = 0
