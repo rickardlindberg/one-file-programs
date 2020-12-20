@@ -1193,10 +1193,19 @@ def pygame_main(root_widget_cls, *args, **kwargs):
     root_widget = root_widget_cls(*args, **kwargs)
     size = (1280, 720)
     screen = pygame.display.set_mode(size)
-    cairo_image = cairo.ImageSurface(cairo.FORMAT_ARGB32, *size)
     clock = pygame.time.Clock()
     external_text_entries = ExternalTextEntries()
     pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
+    pygame_cairo_surface = pygame.Surface(
+        size,
+        depth=32,
+        masks=(
+            0x00FF0000,
+            0x0000FF00,
+            0x000000FF,
+            0x00000000,
+        )
+    )
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1208,13 +1217,15 @@ def pygame_main(root_widget_cls, *args, **kwargs):
             else:
                 root_widget.process_event(event)
         root_widget.update(screen.get_rect(), clock.get_time())
-        root_widget.draw(CairoCanvas(cairo_image))
-        buf = io.BytesIO()
-        cairo_image.write_to_png(buf)
-        buf.seek(0)
-        image = pygame.image.load(buf).convert_alpha()
+        root_widget.draw(CairoCanvas(
+            cairo.ImageSurface.create_for_data(
+                pygame_cairo_surface.get_buffer(),
+                cairo.FORMAT_ARGB32,
+                *size
+            )
+        ))
         screen.blit(
-            image,
+            pygame_cairo_surface.convert(),
             (0, 0)
         )
         pygame.display.flip()
