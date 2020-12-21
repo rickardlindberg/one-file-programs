@@ -1217,6 +1217,7 @@ def pygame_main(root_widget_cls, *args, **kwargs):
             else:
                 root_widget.process_event(event)
         root_widget.update(screen.get_rect(), clock.get_time())
+        pygame_cairo_surface.lock()
         root_widget.draw(CairoCanvas(
             cairo.ImageSurface.create_for_data(
                 pygame_cairo_surface.get_buffer(),
@@ -1224,8 +1225,9 @@ def pygame_main(root_widget_cls, *args, **kwargs):
                 *size
             )
         ))
+        pygame_cairo_surface.unlock()
         screen.blit(
-            pygame_cairo_surface.convert(),
+            pygame_cairo_surface,
             (0, 0)
         )
         pygame.display.flip()
