@@ -441,7 +441,7 @@ class NetworkWidget(Widget):
     def process_event(self, event):
         if event.type == pygame.MOUSEMOTION:
             self.pos = event.pos
-        elif event.type == pygame.MOUSEBUTTONUP:
+        if event.type == pygame.MOUSEBUTTONUP:
             for note in reversed(self.notes):
                 if note.rect.collidepoint(event.pos):
                     self.make_root(note)
@@ -466,11 +466,6 @@ class NetworkWidget(Widget):
         self.root_note = node
 
     def update(self, rect, elapsed_ms):
-        for note in reversed(self.notes):
-            if note.rect.collidepoint(self.pos):
-                self.state.set_link_target(note)
-                note.quick_focus()
-                break
         self.stripe_rects = []
         padding = 8
         self.state.set_full_note_width(int(rect.width * 0.3))
@@ -606,6 +601,9 @@ class NetworkNote(NoteBaseWidget):
         self.previous = None
 
     def process_event(self, event):
+        if event.type == pygame.MOUSEMOTION and self.rect.collidepoint(event.pos):
+            self.state.set_link_target(self)
+            self.quick_focus()
         if not self.has_focus():
             return
         if event.type == pygame.KEYDOWN and event.unicode == "e":
