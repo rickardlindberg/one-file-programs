@@ -109,7 +109,7 @@ class NoteBaseWidget(Widget):
         canvas.render_text(
             self.data["text"],
             border.inflate(-10, -10),
-            size=30,
+            size=self.full_width/10,
             center=True
         )
 
