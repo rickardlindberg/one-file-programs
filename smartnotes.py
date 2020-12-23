@@ -476,7 +476,9 @@ class NetworkWidget(Widget):
         self.make_root(NetworkNote(self.db, note_id, self.state))
 
     def make_root(self, node):
-        self.root_note = node
+        if node is not self.root_note:
+            self.root_note = node
+            self.clear_quick_focus()
 
     def update(self, rect, elapsed_ms):
         self.rect = rect
