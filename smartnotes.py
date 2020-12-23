@@ -71,6 +71,31 @@ class NoteBaseWidget(Widget):
         self.db = db
         self.note_id = note_id
 
+    def is_deleted(self):
+        try:
+            self.db.get_note_data(self.note_id)
+            return False
+        except NoteNotFound:
+            return True
+
+    def _draw_card(self, canvas):
+        border_size = 4
+        border = self.card_full_rect.copy()
+        border.width -= border_size
+        border.height -= border_size
+        border.x += border_size
+        border.y += border_size
+        canvas.fill_rect(border, color=(50, 50, 50, 150))
+        border.x -= border_size
+        border.y -= border_size
+        canvas.fill_rect(border, color=(250, 250, 250))
+        canvas.render_text(
+            self.data["text"],
+            border.inflate(-10, -10),
+            size=30,
+            center=True
+        )
+
 class Box(Widget):
 
     def __init__(self):
@@ -582,13 +607,6 @@ class NoteWidget(NoteBaseWidget):
         self.previous = None
         self.full_width = None
 
-    def is_deleted(self):
-        try:
-            self.db.get_note_data(self.note_id)
-            return False
-        except NoteNotFound:
-            return True
-
     def update_incoming(self):
         by_id = {
             link.link_id: link
@@ -684,24 +702,6 @@ class NoteWidget(NoteBaseWidget):
             canvas.draw_rect(self.rect.inflate(-6, -6), (255, 0, 0), 2)
         if DEBUG_NOTE_BORDER:
             canvas.draw_rect(self.true_rect, (255, 0, 0), 1)
-
-    def _draw_card(self, canvas):
-        border_size = 4
-        border = self.card_full_rect.copy()
-        border.width -= border_size
-        border.height -= border_size
-        border.x += border_size
-        border.y += border_size
-        canvas.fill_rect(border, color=(50, 50, 50, 150))
-        border.x -= border_size
-        border.y -= border_size
-        canvas.fill_rect(border, color=(250, 250, 250))
-        canvas.render_text(
-            self.data["text"],
-            border.inflate(-10, -10),
-            size=30,
-            center=True
-        )
 
 class LinkWidget(Widget):
 
