@@ -161,7 +161,7 @@
 "type":"code"
 }
 ],
-"title":"SearchNote"
+"title":"Note"
 }
 ],
 "id":"adaef2134a284e998e6969dd65013fdf",
@@ -871,6 +871,8 @@
 "title":"Debug Bar"
 },
 {
+"children":[
+{
 "children":[],
 "id":"fc64ae030cb047b289cfbfd255f8980c",
 "paragraphs":[
@@ -899,7 +901,12 @@
 "type":"code"
 }
 ],
-"title":"Note Base"
+"title":"Note"
+}
+],
+"id":"ce9d57af2dba41ebbc38499a3dde8c7c",
+"paragraphs":[],
+"title":"Widgets"
 }
 ],
 "id":"6ea68f8a49284fe9b99b4d387ef13e94",
@@ -1638,7 +1645,7 @@
 "9827dd413fa74216bc5c610b7807fb0c":"delete_link",
 "a0616ad912904531a3479fccd5cb67cd":"pygame_main",
 "a342079796cc418b9f52363ab1ca3cf3":"get_notes",
-"ac730e733b7b46e49245a174f805ac8d":"NoteWidget",
+"ac730e733b7b46e49245a174f805ac8d":"NetworkNote",
 "acab4c17f89046f4a05b14a8c35ad89a":"draw",
 "b31e252cdc2f4776ac95bce3dc27c3f2":"update_note",
 "b948d840f9574847ab15f4d31f74b5c6":"genid",

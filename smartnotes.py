@@ -446,7 +446,7 @@ class NetworkWidget(Widget):
             )
 
     def open_note(self, note_id):
-        self.make_root(NoteWidget(self.db, note_id))
+        self.make_root(NetworkNote(self.db, note_id))
 
     def make_root(self, node):
         self.root_note = node
@@ -586,7 +586,7 @@ class NetworkWidget(Widget):
         for note in self.notes:
             note.draw(canvas)
 
-class NoteWidget(NoteBaseWidget):
+class NetworkNote(NoteBaseWidget):
 
     def __init__(self, db, note_id):
         NoteBaseWidget.__init__(self, db, note_id)
@@ -611,7 +611,7 @@ class NoteWidget(NoteBaseWidget):
                 LinkWidget(
                     self.db,
                     link_id,
-                    NoteWidget(self.db, link_data["from"]),
+                    NetworkNote(self.db, link_data["from"]),
                     self
                 )
         return self.incoming
@@ -630,7 +630,7 @@ class NoteWidget(NoteBaseWidget):
                     self.db,
                     link_id,
                     self,
-                    NoteWidget(self.db, link_data["to"])
+                    NetworkNote(self.db, link_data["to"])
                 )
         return self.outgoing
 
