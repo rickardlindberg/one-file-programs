@@ -22,7 +22,7 @@
 "type":"variable"
 },
 {
-"text":"(VBox):\n\n    def __init__(self, path):\n        VBox.__init__(self)\n        self.link_source = None\n        self.link_target = None\n        self.db = ",
+"text":"(VBox):\n\n    def __init__(self, path):\n        VBox.__init__(self)\n        self.link_source = None\n        self.link_target = None\n        self.full_note_width = 0\n        self.db = ",
 "type":"code"
 },
 {
@@ -38,7 +38,7 @@
 "type":"variable"
 },
 {
-"text":"(\n            self.db,\n            self,\n            request_search_callback=self._on_search_request\n        ))\n        self.debug_bar = self.add(DebugBar())\n        self.network.focus()\n\n    def set_link_source(self, link_source):\n        self.link_source = link_source\n\n    def set_link_target(self, link_target):\n        if link_target is None:\n            self.link_target = None\n            return\n        if self.link_source is None:\n            return\n        if self.link_source.note_id == link_target.note_id:\n            return\n        self.link_target = link_target\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            self.pos = event.pos\n            self.set_link_target(None)\n        if self.link_source and event.type == pygame.MOUSEBUTTONUP:\n            if self.link_target:\n                self.db.create_link(\n                    self.link_source.note_id,\n                    self.link_target.note_id\n                )\n                self.set_link_source(None)\n                self.set_link_target(None)\n                return\n            self.set_link_source(None)\n            self.set_link_target(None)\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:\n            self.quit()\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_z:\n            self.db.undo()\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_y:\n            self.db.redo()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n\n    def _on_search_note_open(self, note_id):\n        self.network.open_note(note_id)\n\n    def _on_search_dismiss(self):\n        self.search_bar.hide()\n        self.network.focus()\n\n    def _on_search_request(self):\n        self.search_bar.start_search()\n\n    def update(self, rect, elapsed_ms):\n        self.rect = rect\n        VBox.update(self, rect, elapsed_ms)\n\n    def draw(self, canvas):\n        canvas.fill_rect(self.rect, color=(134, 169, 214))\n        VBox.draw(self, canvas)\n        if self.link_source:\n            canvas.move_to(*self.link_source.rect.center)\n            canvas.line_to(*self.pos)\n            canvas.line_to(self.pos[0]+10, self.pos[1]+10)\n            if self.link_target:\n                canvas.set_source_rgb(0.1, 0.8, 0.1)\n            else:\n                canvas.set_source_rgb(0.8, 0.8, 0.8)\n            canvas.set_line_width(4)\n            canvas.stroke()\n",
+"text":"(\n            self.db,\n            self,\n            request_search_callback=self._on_search_request\n        ))\n        self.debug_bar = self.add(DebugBar())\n        self.network.focus()\n\n    def get_full_note_width(self):\n        return max(100, self.full_note_width)\n\n    def set_full_note_width(self, width):\n        self.full_note_width = width\n\n    def set_link_source(self, link_source):\n        self.link_source = link_source\n\n    def set_link_target(self, link_target):\n        if link_target is None:\n            self.link_target = None\n            return\n        if self.link_source is None:\n            return\n        if self.link_source.note_id == link_target.note_id:\n            return\n        self.link_target = link_target\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            self.pos = event.pos\n            self.set_link_target(None)\n        if self.link_source and event.type == pygame.MOUSEBUTTONUP:\n            if self.link_target:\n                self.db.create_link(\n                    self.link_source.note_id,\n                    self.link_target.note_id\n                )\n                self.set_link_source(None)\n                self.set_link_target(None)\n                return\n            self.set_link_source(None)\n            self.set_link_target(None)\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:\n            self.quit()\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_z:\n            self.db.undo()\n        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_y:\n            self.db.redo()\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.debug_bar.toggle()\n        else:\n            VBox.process_event(self, event)\n\n    def _on_search_note_open(self, note_id):\n        self.network.open_note(note_id)\n\n    def _on_search_dismiss(self):\n        self.search_bar.hide()\n        self.network.focus()\n\n    def _on_search_request(self):\n        self.search_bar.start_search()\n\n    def update(self, rect, elapsed_ms):\n        self.rect = rect\n        VBox.update(self, rect, elapsed_ms)\n\n    def draw(self, canvas):\n        canvas.fill_rect(self.rect, color=(134, 169, 214))\n        VBox.draw(self, canvas)\n        if self.link_source:\n            canvas.move_to(*self.link_source.rect.center)\n            canvas.line_to(*self.pos)\n            canvas.line_to(self.pos[0]+10, self.pos[1]+10)\n            if self.link_target:\n                canvas.set_source_rgb(0.1, 0.8, 0.1)\n            else:\n                canvas.set_source_rgb(0.8, 0.8, 0.8)\n            canvas.set_line_width(4)\n            canvas.stroke()\n",
 "type":"code"
 }
 ],
@@ -81,7 +81,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, db, note_id)\n        self.state = state\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_target(self)\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_source(self)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def update(self, rect, elapsed_ms):\n        ",
+"text":".__init__(self, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_target(self)\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_source(self)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def update(self, rect, elapsed_ms):\n        ",
 "type":"code"
 },
 {
@@ -232,7 +232,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, db, note_id):\n        ",
+"text":"):\n\n    def __init__(self, db, note_id, state):\n        ",
 "type":"code"
 },
 {
@@ -240,7 +240,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, db, note_id)\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
+"text":".__init__(self, db, note_id, state)\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -264,7 +264,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, link_data[\"from\"]),\n                    self\n                )\n        return self.incoming\n\n    def update_outgoing(self):\n        by_id = {\n            link.link_id: link\n            for link in self.outgoing\n        }\n        self.outgoing = []\n        for link_id, link_data in self.db.",
+"text":"(self.db, link_data[\"from\"], self.state),\n                    self\n                )\n        return self.incoming\n\n    def update_outgoing(self):\n        by_id = {\n            link.link_id: link\n            for link in self.outgoing\n        }\n        self.outgoing = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -288,7 +288,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, link_data[\"to\"])\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def ",
+"text":"(self.db, link_data[\"to\"], self.state)\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def ",
 "type":"code"
 },
 {
@@ -312,7 +312,7 @@
 "type":"variable"
 },
 {
-"text":", full_width, side, fade_from_rect, selected):\n        ",
+"text":", side, fade_from_rect, selected):\n        ",
 "type":"code"
 },
 {
@@ -517,7 +517,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, note_id))\n\n    def make_root(self, node):\n        self.root_note = node\n\n    def ",
+"text":"(self.db, note_id, self.state))\n\n    def make_root(self, node):\n        self.root_note = node\n\n    def ",
 "type":"code"
 },
 {
@@ -541,7 +541,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(self.pos):\n                self.selected_note = note\n                self.state.set_link_target(note)\n                break\n        else:\n            self.selected_note = None\n        self.stripe_rects = []\n        padding = 8\n        self.full_width = int(",
+"text":"):\n        for note in reversed(self.notes):\n            if note.rect.collidepoint(self.pos):\n                self.selected_note = note\n                self.state.set_link_target(note)\n                break\n        else:\n            self.selected_note = None\n        self.stripe_rects = []\n        padding = 8\n        self.state.set_full_note_width(int(",
 "type":"code"
 },
 {
@@ -549,7 +549,7 @@
 "type":"variable"
 },
 {
-"text":".width * 0.3)\n        self.old_nodes = self.notes\n        self.notes = []\n        self.links = []\n        middle_stripe = self._stripe(",
+"text":".width * 0.3))\n        self.old_nodes = self.notes\n        self.notes = []\n        self.links = []\n        middle_stripe = self._stripe(",
 "type":"code"
 },
 {
@@ -573,7 +573,7 @@
 "type":"variable"
 },
 {
-"text":",\n            self.full_width,\n            \"center\",\n            None,\n            self.root_note is self.selected_note\n        )\n        self.notes.append(self.root_note)\n        sizes = [\n            (",
+"text":",\n            \"center\",\n            None,\n            self.root_note is self.selected_note\n        )\n        self.notes.append(self.root_note)\n        sizes = [\n            (",
 "type":"code"
 },
 {
@@ -661,7 +661,7 @@
 "type":"variable"
 },
 {
-"text":",\n                    self.full_width,\n                    direction,\n                    note.rect if linked not in self.old_nodes else None,\n                    linked is self.selected_note\n                )\n                self.notes.insert(0, linked)\n                self.links.append(link)\n                self._stripe_recursive(linked, stripe, widths[1:], ",
+"text":",\n                    direction,\n                    note.rect if linked not in self.old_nodes else None,\n                    linked is self.selected_note\n                )\n                self.notes.insert(0, linked)\n                self.links.append(link)\n                self._stripe_recursive(linked, stripe, widths[1:], ",
 "type":"code"
 },
 {
@@ -805,7 +805,7 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, db, note_id):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.data = None\n        self.full_width = 300\n        self.card_full_size = (self.full_width, int(self.full_width*3/5))\n        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)\n\n    def is_deleted(self):\n        try:\n            self.db.get_note_data(self.note_id)\n            return False\n        except NoteNotFound:\n            return True\n\n    def update(self, rect, elapsed_ms):\n        self.data = self.db.get_note_data(self.note_id)\n\n    def draw(self, canvas):\n        canvas.blit(\n            canvas.create_image(\n                self.card_full_size,\n                self._draw_card\n            ),\n            self.rect,\n            scale_to_fit=self.rect.size\n        )\n\n    def _draw_card(self, canvas):\n        border_size = 4\n        border = self.card_full_rect.copy()\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        canvas.fill_rect(border, color=(50, 50, 50, 150))\n        border.x -= border_size\n        border.y -= border_size\n        canvas.fill_rect(border, color=(250, 250, 250))\n        canvas.render_text(\n            self.data[\"text\"],\n            border.inflate(-10, -10),\n            size=self.full_width/10,\n            center=True\n        )\n\n    def _get_target(self, alotted_rect, align=\"center\"):\n        target = self.card_full_rect\n        target = target.fit(alotted_rect)\n        if align == \"left\":\n            target.midright = alotted_rect.midright\n        elif align == \"right\":\n            target.midleft = alotted_rect.midleft\n        else:\n            target.center = alotted_rect.center\n        return target\n",
+"text":"(Widget):\n\n    def __init__(self, db, note_id, state):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.state = state\n\n    def is_deleted(self):\n        try:\n            self.db.get_note_data(self.note_id)\n            return False\n        except NoteNotFound:\n            return True\n\n    def update(self, rect, elapsed_ms):\n        self.data = self.db.get_note_data(self.note_id)\n        self.full_width = self.state.get_full_note_width()\n        self.card_full_size = (self.full_width, int(self.full_width*3/5))\n        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)\n\n    def draw(self, canvas):\n        canvas.blit(\n            canvas.create_image(\n                self.card_full_size,\n                self._draw_card\n            ),\n            self.rect,\n            scale_to_fit=self.rect.size\n        )\n\n    def _draw_card(self, canvas):\n        border_size = 4\n        border = self.card_full_rect.copy()\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        canvas.fill_rect(border, color=(50, 50, 50, 150))\n        border.x -= border_size\n        border.y -= border_size\n        canvas.fill_rect(border, color=(250, 250, 250))\n        canvas.render_text(\n            self.data[\"text\"],\n            border.inflate(-10, -10),\n            size=self.full_width/10,\n            center=True\n        )\n\n    def _get_target(self, alotted_rect, align=\"center\"):\n        target = self.card_full_rect\n        target = target.fit(alotted_rect)\n        if align == \"left\":\n            target.midright = alotted_rect.midright\n        elif align == \"right\":\n            target.midleft = alotted_rect.midleft\n        else:\n            target.center = alotted_rect.center\n        return target\n",
 "type":"code"
 }
 ],

@@ -66,14 +66,11 @@ class Widget(object):
 
 class NoteBaseWidget(Widget):
 
-    def __init__(self, db, note_id):
+    def __init__(self, db, note_id, state):
         Widget.__init__(self)
         self.db = db
         self.note_id = note_id
-        self.data = None
-        self.full_width = 300
-        self.card_full_size = (self.full_width, int(self.full_width*3/5))
-        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)
+        self.state = state
 
     def is_deleted(self):
         try:
@@ -84,6 +81,9 @@ class NoteBaseWidget(Widget):
 
     def update(self, rect, elapsed_ms):
         self.data = self.db.get_note_data(self.note_id)
+        self.full_width = self.state.get_full_note_width()
+        self.card_full_size = (self.full_width, int(self.full_width*3/5))
+        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)
 
     def draw(self, canvas):
         canvas.blit(
@@ -203,6 +203,7 @@ class SmartNotesWidget(VBox):
         VBox.__init__(self)
         self.link_source = None
         self.link_target = None
+        self.full_note_width = 0
         self.db = NoteDb(path)
         self.pos = (0, 0)
         self.search_bar = self.add(SearchBar(
@@ -218,6 +219,12 @@ class SmartNotesWidget(VBox):
         ))
         self.debug_bar = self.add(DebugBar())
         self.network.focus()
+
+    def get_full_note_width(self):
+        return max(100, self.full_note_width)
+
+    def set_full_note_width(self, width):
+        self.full_note_width = width
 
     def set_link_source(self, link_source):
         self.link_source = link_source
@@ -381,8 +388,7 @@ class SearchBar(Widget):
 class SearchNote(NoteBaseWidget):
 
     def __init__(self, db, state, note_id, note_data, open_callback):
-        NoteBaseWidget.__init__(self, db, note_id)
-        self.state = state
+        NoteBaseWidget.__init__(self, db, note_id, state)
         self.open_callback = open_callback
 
     def process_event(self, event):
@@ -464,7 +470,7 @@ class NetworkWidget(Widget):
             )
 
     def open_note(self, note_id):
-        self.make_root(NetworkNote(self.db, note_id))
+        self.make_root(NetworkNote(self.db, note_id, self.state))
 
     def make_root(self, node):
         self.root_note = node
@@ -479,7 +485,7 @@ class NetworkWidget(Widget):
             self.selected_note = None
         self.stripe_rects = []
         padding = 8
-        self.full_width = int(rect.width * 0.3)
+        self.state.set_full_note_width(int(rect.width * 0.3))
         self.old_nodes = self.notes
         self.notes = []
         self.links = []
@@ -491,7 +497,6 @@ class NetworkWidget(Widget):
         self.root_note.update(
             middle_stripe,
             elapsed_ms,
-            self.full_width,
             "center",
             None,
             self.root_note is self.selected_note
@@ -548,7 +553,6 @@ class NetworkWidget(Widget):
                 linked.update(
                     stripe.inflate(0, -padding),
                     elapsed_ms,
-                    self.full_width,
                     direction,
                     note.rect if linked not in self.old_nodes else None,
                     linked is self.selected_note
@@ -606,8 +610,8 @@ class NetworkWidget(Widget):
 
 class NetworkNote(NoteBaseWidget):
 
-    def __init__(self, db, note_id):
-        NoteBaseWidget.__init__(self, db, note_id)
+    def __init__(self, db, note_id, state):
+        NoteBaseWidget.__init__(self, db, note_id, state)
         self.incoming = []
         self.outgoing = []
         self.animation = Animation()
@@ -628,7 +632,7 @@ class NetworkNote(NoteBaseWidget):
                 LinkWidget(
                     self.db,
                     link_id,
-                    NetworkNote(self.db, link_data["from"]),
+                    NetworkNote(self.db, link_data["from"], self.state),
                     self
                 )
         return self.incoming
@@ -647,7 +651,7 @@ class NetworkNote(NoteBaseWidget):
                     self.db,
                     link_id,
                     self,
-                    NetworkNote(self.db, link_data["to"])
+                    NetworkNote(self.db, link_data["to"], self.state)
                 )
         return self.outgoing
 
@@ -657,7 +661,7 @@ class NetworkNote(NoteBaseWidget):
         if self.side == "right" and len(self.incoming) == 1:
             return self.incoming[0].link_id
 
-    def update(self, rect, elapsed_ms, full_width, side, fade_from_rect, selected):
+    def update(self, rect, elapsed_ms, side, fade_from_rect, selected):
         NoteBaseWidget.update(self, rect, elapsed_ms)
         self.side = side
         self.selected = selected
