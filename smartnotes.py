@@ -275,8 +275,10 @@ class SmartNotesWidget(VBox):
             self.db.undo()
         if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_y:
             self.db.redo()
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
             self.debug_bar.toggle()
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.clear_quick_focus()
         else:
             VBox.process_event(self, event)
 
