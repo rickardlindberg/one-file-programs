@@ -1191,25 +1191,17 @@ def pygame_main(root_widget_cls, *args, **kwargs):
     pygame.init()
     pygame.display.set_caption("Smart Notes")
     root_widget = root_widget_cls(*args, **kwargs)
-    size = (1280, 720)
-    screen = pygame.display.set_mode(size)
+    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     clock = pygame.time.Clock()
     external_text_entries = ExternalTextEntries()
     pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
-    pygame_cairo_surface = pygame.Surface(
-        size,
-        depth=32,
-        masks=(
-            0x00FF0000,
-            0x0000FF00,
-            0x000000FF,
-            0x00000000,
-        )
-    )
+    pygame_cairo_surface = create_pygame_cairo_surface(screen)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
+            elif event.type == pygame.VIDEORESIZE:
+                pygame_cairo_surface = create_pygame_cairo_surface(screen)
             elif event.type == USER_EVENT_CHECK_EXTERNAL:
                 external_text_entries.check()
             elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:
@@ -1218,20 +1210,30 @@ def pygame_main(root_widget_cls, *args, **kwargs):
                 root_widget.process_event(event)
         root_widget.update(screen.get_rect(), clock.get_time())
         pygame_cairo_surface.lock()
-        root_widget.draw(CairoCanvas(
-            cairo.ImageSurface.create_for_data(
-                pygame_cairo_surface.get_buffer(),
-                cairo.FORMAT_ARGB32,
-                *size
-            )
-        ))
+        root_widget.draw(CairoCanvas(create_cairo_image(pygame_cairo_surface)))
         pygame_cairo_surface.unlock()
-        screen.blit(
-            pygame_cairo_surface,
-            (0, 0)
-        )
+        screen.blit(pygame_cairo_surface, (0, 0))
         pygame.display.flip()
         clock.tick(60)
+
+def create_pygame_cairo_surface(screen):
+    return pygame.Surface(
+        screen.get_size(),
+        depth=32,
+        masks=(
+            0x00FF0000,
+            0x0000FF00,
+            0x000000FF,
+            0x00000000,
+        )
+    )
+
+def create_cairo_image(pygame_cairo_surface):
+    return cairo.ImageSurface.create_for_data(
+        pygame_cairo_surface.get_buffer(),
+        cairo.FORMAT_ARGB32,
+        *pygame_cairo_surface.get_size()
+    )
 
 def read_json_file(path, default_value):
     if os.path.exists(path):

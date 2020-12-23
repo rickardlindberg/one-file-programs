@@ -902,6 +902,38 @@
 ],
 "id":"b7c5f48ba9764ed3931b9d54775faad1",
 "type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def create_pygame_cairo_surface(screen):\n    return pygame.Surface(\n        screen.get_size(),\n        depth=32,\n        masks=(\n            0x00FF0000,\n            0x0000FF00,\n            0x000000FF,\n            0x00000000,\n        )\n    )\n",
+"type":"code"
+}
+],
+"id":"58743cb43c5b4a849a6cdf96fa0a8464",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def create_cairo_image(pygame_cairo_surface):\n    return cairo.ImageSurface.create_for_data(\n        pygame_cairo_surface.get_buffer(),\n        cairo.FORMAT_ARGB32,\n        *pygame_cairo_surface.get_size()\n    )\n",
+"type":"code"
+}
+],
+"id":"7abe0a4f69224dc4b1f735a5b1c18e20",
+"type":"code"
 }
 ],
 "title":"Canvas"
@@ -1435,7 +1467,7 @@
 "type":"variable"
 },
 {
-"text":"(root_widget_cls, *args, **kwargs):\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    root_widget = root_widget_cls(*args, **kwargs)\n    size = (1280, 720)\n    screen = pygame.display.set_mode(size)\n    clock = pygame.time.Clock()\n    external_text_entries = ",
+"text":"(root_widget_cls, *args, **kwargs):\n    pygame.init()\n    pygame.display.set_caption(\"Smart Notes\")\n    root_widget = root_widget_cls(*args, **kwargs)\n    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)\n    clock = pygame.time.Clock()\n    external_text_entries = ",
 "type":"code"
 },
 {
@@ -1443,7 +1475,7 @@
 "type":"variable"
 },
 {
-"text":"()\n    pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)\n    pygame_cairo_surface = pygame.Surface(\n        size,\n        depth=32,\n        masks=(\n            0x00FF0000,\n            0x0000FF00,\n            0x000000FF,\n            0x00000000,\n        )\n    )\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == USER_EVENT_CHECK_EXTERNAL:\n                external_text_entries.check()\n            elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:\n                external_text_entries.add(event.entry)\n            else:\n                root_widget.process_event(event)\n        root_widget.update(screen.get_rect(), clock.get_time())\n        pygame_cairo_surface.lock()\n        root_widget.draw(CairoCanvas(\n            cairo.ImageSurface.create_for_data(\n                pygame_cairo_surface.get_buffer(),\n                cairo.FORMAT_ARGB32,\n                *size\n            )\n        ))\n        pygame_cairo_surface.unlock()\n        screen.blit(\n            pygame_cairo_surface,\n            (0, 0)\n        )\n        pygame.display.flip()\n        clock.tick(60)\n",
+"text":"()\n    pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)\n    pygame_cairo_surface = create_pygame_cairo_surface(screen)\n    while True:\n        for event in pygame.event.get():\n            if event.type == pygame.QUIT:\n                return\n            elif event.type == pygame.VIDEORESIZE:\n                pygame_cairo_surface = create_pygame_cairo_surface(screen)\n            elif event.type == USER_EVENT_CHECK_EXTERNAL:\n                external_text_entries.check()\n            elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:\n                external_text_entries.add(event.entry)\n            else:\n                root_widget.process_event(event)\n        root_widget.update(screen.get_rect(), clock.get_time())\n        pygame_cairo_surface.lock()\n        root_widget.draw(CairoCanvas(create_cairo_image(pygame_cairo_surface)))\n        pygame_cairo_surface.unlock()\n        screen.blit(pygame_cairo_surface, (0, 0))\n        pygame.display.flip()\n        clock.tick(60)\n",
 "type":"code"
 }
 ],
