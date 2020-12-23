@@ -299,15 +299,14 @@ class SmartNotesWidget(VBox):
     def draw(self, canvas):
         canvas.fill_rect(self.rect, color=(134, 169, 214))
         VBox.draw(self, canvas)
-        if self.link_source:
+        if self.link_source and not self.link_source.rect.collidepoint(self.pos):
             canvas.move_to(*self.link_source.rect.center)
             canvas.line_to(*self.pos)
-            canvas.line_to(self.pos[0]+10, self.pos[1]+10)
             if self.link_target:
                 canvas.set_source_rgb(0.1, 0.8, 0.1)
             else:
                 canvas.set_source_rgb(0.8, 0.8, 0.8)
-            canvas.set_line_width(4)
+            canvas.set_line_width(5)
             canvas.stroke()
 
 class SearchBar(Widget):
