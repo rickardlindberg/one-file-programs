@@ -440,8 +440,6 @@ class NetworkWidget(Widget):
             break
 
     def process_event(self, event):
-        if event.type == pygame.KEYDOWN and not self.has_focus():
-            return
         if event.type == pygame.MOUSEMOTION:
             self.pos = event.pos
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -452,37 +450,18 @@ class NetworkWidget(Widget):
                 if note.rect.collidepoint(event.pos):
                     self.make_root(note)
                     return
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH:
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH and self.has_focus():
             self.request_search_callback()
-        elif event.type == pygame.KEYDOWN and event.unicode == "e":
-            if self.selected_note:
-                self.post_event(
-                    USER_EVENT_EXTERNAL_TEXT_ENTRY,
-                    entry=EditNoteText(self.db, self.selected_note.note_id)
-                )
-        elif event.type == pygame.KEYDOWN and event.unicode == "d":
-            if self.selected_note:
-                self.db.delete_note(self.selected_note.note_id)
-        elif event.type == pygame.KEYDOWN and event.unicode == "u":
-            if self.selected_note:
-                link_id = self.selected_note.get_link_id()
-                if link_id:
-                    self.db.delete_link(link_id)
-        elif event.type == pygame.KEYDOWN and event.unicode == "c":
-            if self.selected_note:
-                child_note_id = self.db.create_note(text="Enter note text...")
-                self.db.create_link(self.selected_note.note_id, child_note_id)
-                self.post_event(
-                    USER_EVENT_EXTERNAL_TEXT_ENTRY,
-                    entry=EditNoteText(self.db, child_note_id)
-                )
-        elif event.type == pygame.KEYDOWN and event.unicode == "n":
+        elif event.type == pygame.KEYDOWN and event.unicode == "n" and self.has_focus():
             note_id = self.db.create_note(text="Enter note text...")
             self.open_note(note_id)
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
                 entry=EditNoteText(self.db, note_id)
             )
+        else:
+            for note in self.notes:
+                note.process_event(event)
 
     def open_note(self, note_id):
         self.make_root(NetworkNote(self.db, note_id, self.state))
@@ -632,6 +611,28 @@ class NetworkNote(NoteBaseWidget):
         self.rect = None
         self.target = None
         self.previous = None
+
+    def process_event(self, event):
+        if not self.has_focus():
+            return
+        if event.type == pygame.KEYDOWN and event.unicode == "e":
+            self.post_event(
+                USER_EVENT_EXTERNAL_TEXT_ENTRY,
+                entry=EditNoteText(self.db, self.note_id)
+            )
+        elif event.type == pygame.KEYDOWN and event.unicode == "d":
+            self.db.delete_note(self.note_id)
+        elif event.type == pygame.KEYDOWN and event.unicode == "u":
+            link_id = self.get_link_id()
+            if link_id:
+                self.db.delete_link(link_id)
+        elif event.type == pygame.KEYDOWN and event.unicode == "c":
+            child_note_id = self.db.create_note(text="Enter note text...")
+            self.db.create_link(self.note_id, child_note_id)
+            self.post_event(
+                USER_EVENT_EXTERNAL_TEXT_ENTRY,
+                entry=EditNoteText(self.db, child_note_id)
+            )
 
     def update_incoming(self):
         by_id = {
