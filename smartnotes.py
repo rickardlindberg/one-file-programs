@@ -430,7 +430,6 @@ class NetworkWidget(Widget):
         self.request_search_callback = request_search_callback
         self.pos = (-1, -1)
         self.notes = []
-        self.selected_note = None
         self.open_last_note()
 
     def open_last_note(self):
@@ -442,9 +441,6 @@ class NetworkWidget(Widget):
     def process_event(self, event):
         if event.type == pygame.MOUSEMOTION:
             self.pos = event.pos
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if self.selected_note:
-                self.state.set_link_source(self.selected_note)
         elif event.type == pygame.MOUSEBUTTONUP:
             for note in reversed(self.notes):
                 if note.rect.collidepoint(event.pos):
@@ -472,12 +468,9 @@ class NetworkWidget(Widget):
     def update(self, rect, elapsed_ms):
         for note in reversed(self.notes):
             if note.rect.collidepoint(self.pos):
-                self.selected_note = note
                 self.state.set_link_target(note)
                 note.quick_focus()
                 break
-        else:
-            self.selected_note = None
         self.stripe_rects = []
         padding = 8
         self.state.set_full_note_width(int(rect.width * 0.3))
@@ -633,6 +626,8 @@ class NetworkNote(NoteBaseWidget):
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
                 entry=EditNoteText(self.db, child_note_id)
             )
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            self.state.set_link_source(self)
 
     def update_incoming(self):
         by_id = {
