@@ -351,6 +351,7 @@ class SearchBar(Widget):
             self.search_expression = ""
 
     def update(self, rect, elapsed_ms):
+        self._update_notes_list()
         percent = self.animation.advance(elapsed_ms)
         if Widget.is_visible(self):
             self.alpha = int(255 * percent)
@@ -359,25 +360,32 @@ class SearchBar(Widget):
             self.alpha = 255 - int(255 * percent)
             self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))
         self.rect = rect
-        self.notes = []
         rect = self.rect.inflate(-10, -10)
         rect.height = self.IDEAL_HEIGHT - 40
-        single_width = rect.width/5
+        single_width = rect.width/max(1, len(self.notes))
         rect.x += 5
         rect.width = single_width - 10
         rect.bottom = self.rect.bottom - 10
-        for note_id, note_data in self.db.get_notes(self.search_expression):
-            note = SearchNote(
-                self.db,
-                self.state,
-                note_id,
-                note_data,
-                self.open_callback
-            )
+        for note in self.notes:
             note.update(rect, elapsed_ms)
-            self.notes.append(note)
             rect = rect.copy()
             rect.x += single_width
+
+    def _update_notes_list(self):
+        by_id = {}
+        for note in self.notes:
+            by_id[note.note_id] = note
+        self.notes = []
+        for note_id, note_data in self.db.get_notes(self.search_expression):
+            if note_id in by_id:
+                self.notes.append(by_id[note_id])
+            else:
+                self.notes.append(SearchNote(
+                    self.db,
+                    self.state,
+                    note_id,
+                    self.open_callback
+                ))
             if len(self.notes) >= 5:
                 break
 
@@ -402,7 +410,7 @@ class SearchBar(Widget):
 
 class SearchNote(NoteBaseWidget):
 
-    def __init__(self, db, state, note_id, note_data, open_callback):
+    def __init__(self, db, state, note_id, open_callback):
         NoteBaseWidget.__init__(self, db, note_id, state)
         self.open_callback = open_callback
 
@@ -410,6 +418,7 @@ class SearchNote(NoteBaseWidget):
         if event.type == pygame.MOUSEMOTION:
             if self.rect.collidepoint(event.pos):
                 self.state.set_link_target(self)
+                self.quick_focus()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.state.set_link_source(self)

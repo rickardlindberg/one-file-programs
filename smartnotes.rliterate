@@ -73,7 +73,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, db, state, note_id, note_data, open_callback):\n        ",
+"text":"):\n\n    def __init__(self, db, state, note_id, open_callback):\n        ",
 "type":"code"
 },
 {
@@ -81,7 +81,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_target(self)\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_source(self)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def update(self, rect, elapsed_ms):\n        ",
+"text":".__init__(self, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_target(self)\n                self.quick_focus()\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_source(self)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def update(self, rect, elapsed_ms):\n        ",
 "type":"code"
 },
 {
@@ -135,7 +135,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        percent = self.animation.advance(",
+"text":"):\n        self._update_notes_list()\n        percent = self.animation.advance(",
 "type":"code"
 },
 {
@@ -151,7 +151,7 @@
 "type":"variable"
 },
 {
-"text":"\n        self.notes = []\n        rect = self.rect.inflate(-10, -10)\n        rect.height = self.IDEAL_HEIGHT - 40\n        single_width = rect.width/5\n        rect.x += 5\n        rect.width = single_width - 10\n        rect.bottom = self.rect.bottom - 10\n        for note_id, note_data in self.db.get_notes(self.search_expression):\n            note = SearchNote(\n                self.db,\n                self.state,\n                note_id,\n                note_data,\n                self.open_callback\n            )\n            note.",
+"text":"\n        rect = self.rect.inflate(-10, -10)\n        rect.height = self.IDEAL_HEIGHT - 40\n        single_width = rect.width/max(1, len(self.notes))\n        rect.x += 5\n        rect.width = single_width - 10\n        rect.bottom = self.rect.bottom - 10\n        for note in self.notes:\n            note.",
 "type":"code"
 },
 {
@@ -167,7 +167,7 @@
 "type":"variable"
 },
 {
-"text":")\n            self.notes.append(note)\n            rect = rect.copy()\n            rect.x += single_width\n            if len(self.notes) >= 5:\n                break\n\n    def ",
+"text":")\n            rect = rect.copy()\n            rect.x += single_width\n\n    def _update_notes_list(self):\n        by_id = {}\n        for note in self.notes:\n            by_id[note.note_id] = note\n        self.notes = []\n        for note_id, note_data in self.db.get_notes(self.search_expression):\n            if note_id in by_id:\n                self.notes.append(by_id[note_id])\n            else:\n                self.notes.append(SearchNote(\n                    self.db,\n                    self.state,\n                    note_id,\n                    self.open_callback\n                ))\n            if len(self.notes) >= 5:\n                break\n\n    def ",
 "type":"code"
 },
 {
