@@ -403,6 +403,8 @@ class SearchBar(Widget):
             self.rect,
             color=(84, 106, 134)
         )
+        if self.has_focus():
+            canvas.draw_rect(self.rect, (0, 0, 200), 2)
         canvas.render_text(
             "Expression: {}".format(self.search_expression),
             pygame.Rect((0, 0), (self.rect.width, 20))
@@ -477,6 +479,7 @@ class NetworkWidget(Widget):
         self.root_note = node
 
     def update(self, rect, elapsed_ms):
+        self.rect = rect
         self.stripe_rects = []
         padding = 8
         self.state.set_full_note_width(int(rect.width * 0.3))
@@ -595,6 +598,8 @@ class NetworkWidget(Widget):
         if DEBUG_NOTE_BORDER:
             for rect in self.stripe_rects:
                 canvas.draw_rect(rect, (255, 255, 0), 2)
+        if self.has_focus():
+            canvas.draw_rect(self.rect, (0, 0, 200), 2)
         for link in self.links:
             link.draw(canvas)
         for note in self.notes:

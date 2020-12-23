@@ -183,7 +183,7 @@
 "type":"variable"
 },
 {
-"text":",\n            color=(84, 106, 134)\n        )\n        canvas.render_text(\n            \"Expression: {}\".format(self.search_expression),\n            pygame.Rect((0, 0), (self.rect.width, 20))\n        )\n        for note in self.notes:\n            note.",
+"text":",\n            color=(84, 106, 134)\n        )\n        if self.has_focus():\n            canvas.draw_rect(self.rect, (0, 0, 200), 2)\n        canvas.render_text(\n            \"Expression: {}\".format(self.search_expression),\n            pygame.Rect((0, 0), (self.rect.width, 20))\n        )\n        for note in self.notes:\n            note.",
 "type":"code"
 },
 {
@@ -541,7 +541,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.stripe_rects = []\n        padding = 8\n        self.state.set_full_note_width(int(",
+"text":"):\n        self.rect = rect\n        self.stripe_rects = []\n        padding = 8\n        self.state.set_full_note_width(int(",
 "type":"code"
 },
 {
@@ -677,7 +677,7 @@
 "type":"variable"
 },
 {
-"text":"(self, canvas):\n        if DEBUG_NOTE_BORDER:\n            for rect in self.stripe_rects:\n                canvas.draw_rect(rect, (255, 255, 0), 2)\n        for link in self.links:\n            link.",
+"text":"(self, canvas):\n        if DEBUG_NOTE_BORDER:\n            for rect in self.stripe_rects:\n                canvas.draw_rect(rect, (255, 255, 0), 2)\n        if self.has_focus():\n            canvas.draw_rect(self.rect, (0, 0, 200), 2)\n        for link in self.links:\n            link.",
 "type":"code"
 },
 {
