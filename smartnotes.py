@@ -452,7 +452,7 @@ class NetworkWidget(Widget):
                     return
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH and self.has_focus():
             self.request_search_callback()
-        elif event.type == pygame.KEYDOWN and event.unicode == "n" and self.has_focus():
+        elif event.type == pygame.KEYDOWN and event.unicode == "c" and self.has_focus():
             note_id = self.db.create_note(text="Enter note text...")
             self.open_note(note_id)
             self.post_event(
