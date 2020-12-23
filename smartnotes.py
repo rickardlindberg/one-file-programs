@@ -25,6 +25,7 @@ USER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1
 class Widget(object):
 
     _focused_widget = None
+    _stable_focused_widget = None
 
     def __init__(self, width=-1, height=-1, visible=True):
         self._width = width
@@ -35,6 +36,16 @@ class Widget(object):
         return Widget._focused_widget is self
 
     def focus(self):
+        Widget._focused_widget = self
+
+    def clear_quick_focus(self):
+        if Widget._focused_widget is not None and Widget._stable_focused_widget is not None:
+            Widget._focused_widget = Widget._stable_focused_widget
+            Widget._stable_focused_widget = None
+
+    def quick_focus(self):
+        if Widget._stable_focused_widget is None:
+            Widget._stable_focused_widget = Widget._focused_widget
         Widget._focused_widget = self
 
     def resize(self, width=None, height=None):
@@ -95,6 +106,8 @@ class NoteBaseWidget(Widget):
             self.rect,
             scale_to_fit=self.rect.size
         )
+        if self.has_focus():
+            canvas.draw_rect(self.rect.inflate(-6, -6), (0, 0, 200), 2)
 
     def _draw_card(self, canvas):
         border_size = 4
@@ -244,6 +257,7 @@ class SmartNotesWidget(VBox):
         if event.type == pygame.MOUSEMOTION:
             self.pos = event.pos
             self.set_link_target(None)
+            self.clear_quick_focus()
         if self.link_source and event.type == pygame.MOUSEBUTTONUP:
             if self.link_target:
                 self.db.create_link(
@@ -481,6 +495,7 @@ class NetworkWidget(Widget):
             if note.rect.collidepoint(self.pos):
                 self.selected_note = note
                 self.state.set_link_target(note)
+                note.quick_focus()
                 break
         else:
             self.selected_note = None
@@ -499,8 +514,7 @@ class NetworkWidget(Widget):
             middle_stripe,
             elapsed_ms,
             "center",
-            None,
-            self.root_note is self.selected_note
+            None
         )
         self.notes.append(self.root_note)
         sizes = [
@@ -555,8 +569,7 @@ class NetworkWidget(Widget):
                     stripe.inflate(0, -padding),
                     elapsed_ms,
                     direction,
-                    note.rect if linked not in self.old_nodes else None,
-                    linked is self.selected_note
+                    note.rect if linked not in self.old_nodes else None
                 )
                 self.notes.insert(0, linked)
                 self.links.append(link)
@@ -662,10 +675,9 @@ class NetworkNote(NoteBaseWidget):
         if self.side == "right" and len(self.incoming) == 1:
             return self.incoming[0].link_id
 
-    def update(self, rect, elapsed_ms, side, fade_from_rect, selected):
+    def update(self, rect, elapsed_ms, side, fade_from_rect):
         NoteBaseWidget.update(self, rect, elapsed_ms)
         self.side = side
-        self.selected = selected
         self.true_rect = rect
         target = self._get_target(rect, side)
         if fade_from_rect:
@@ -693,8 +705,6 @@ class NetworkNote(NoteBaseWidget):
 
     def draw(self, canvas):
         NoteBaseWidget.draw(self, canvas)
-        if self.selected:
-            canvas.draw_rect(self.rect.inflate(-6, -6), (255, 0, 0), 2)
         if DEBUG_NOTE_BORDER:
             canvas.draw_rect(self.true_rect, (255, 0, 0), 1)
 
