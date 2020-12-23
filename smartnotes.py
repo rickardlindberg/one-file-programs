@@ -84,7 +84,7 @@ class NoteBaseWidget(Widget):
 
     def _draw_card(self, canvas):
         border_size = 4
-        border = self.card_full_rect.copy()
+        border = canvas.get_rect().copy()
         border.width -= border_size
         border.height -= border_size
         border.x += border_size
@@ -378,20 +378,8 @@ class SearchNote(NoteBaseWidget):
 
     def draw(self, canvas):
         canvas.blit(
-            canvas.create_image(self.rect.size, self._draw_note_image),
+            canvas.create_image(self.rect.size, self._draw_card),
             self.rect
-        )
-
-    def _draw_note_image(self, canvas):
-        canvas.fill_rect(
-            pygame.rect.Rect((0, 0), self.rect.size),
-            color=(200, 200, 200)
-        )
-        canvas.render_text(
-            self.data["text"],
-            pygame.rect.Rect((0, 0), self.rect.size).inflate(-10, -10),
-            size=20,
-            center=True
         )
 
 class NetworkWidget(Widget):
@@ -860,7 +848,8 @@ class Animation(object):
 class CairoCanvas(object):
 
     def __init__(self, surface):
-        self.ctx = cairo.Context(surface)
+        self.surface = surface
+        self.ctx = cairo.Context(self.surface)
 
     def create_image(self, size, fn):
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, size[0], size[1])
@@ -995,6 +984,14 @@ class CairoCanvas(object):
 
     def stroke(self, *args):
         self.ctx.stroke(*args)
+
+    def get_rect(self):
+        return pygame.Rect(
+            0,
+            0,
+            self.surface.get_width(),
+            self.surface.get_height()
+        )
 
 class NoteDb(object):
 
