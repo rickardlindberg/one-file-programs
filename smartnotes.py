@@ -70,6 +70,7 @@ class NoteBaseWidget(Widget):
         Widget.__init__(self)
         self.db = db
         self.note_id = note_id
+        self.data = None
 
     def is_deleted(self):
         try:
@@ -77,6 +78,9 @@ class NoteBaseWidget(Widget):
             return False
         except NoteNotFound:
             return True
+
+    def update(self, rect, elapsed_ms):
+        self.data = self.db.get_note_data(self.note_id)
 
     def _draw_card(self, canvas):
         border_size = 4
@@ -355,7 +359,6 @@ class SearchNote(NoteBaseWidget):
     def __init__(self, db, state, note_id, note_data, open_callback):
         NoteBaseWidget.__init__(self, db, note_id)
         self.state = state
-        self.note_data = note_data
         self.open_callback = open_callback
 
     def process_event(self, event):
@@ -370,6 +373,7 @@ class SearchNote(NoteBaseWidget):
                 self.open_callback(self.note_id)
 
     def update(self, rect, elapsed_ms):
+        NoteBaseWidget.update(self, rect, elapsed_ms)
         self.rect = rect
 
     def draw(self, canvas):
@@ -384,7 +388,7 @@ class SearchNote(NoteBaseWidget):
             color=(200, 200, 200)
         )
         canvas.render_text(
-            self.note_data["text"],
+            self.data["text"],
             pygame.rect.Rect((0, 0), self.rect.size).inflate(-10, -10),
             size=20,
             center=True
@@ -598,7 +602,6 @@ class NoteWidget(NoteBaseWidget):
 
     def __init__(self, db, note_id):
         NoteBaseWidget.__init__(self, db, note_id)
-        self.data = None
         self.incoming = []
         self.outgoing = []
         self.animation = Animation()
@@ -650,10 +653,10 @@ class NoteWidget(NoteBaseWidget):
             return self.incoming[0].link_id
 
     def update(self, rect, elapsed_ms, full_width, side, fade_from_rect, selected):
+        NoteBaseWidget.update(self, rect, elapsed_ms)
         self.side = side
         self.selected = selected
         self.true_rect = rect
-        self.data = self.db.get_note_data(self.note_id)
         self.full_width = full_width
         self.card_full_size = (full_width, int(full_width*3/5))
         self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)
