@@ -85,6 +85,16 @@ class NoteBaseWidget(Widget):
     def update(self, rect, elapsed_ms):
         self.data = self.db.get_note_data(self.note_id)
 
+    def draw(self, canvas):
+        canvas.blit(
+            canvas.create_image(
+                self.card_full_size,
+                self._draw_card
+            ),
+            self.rect,
+            scale_to_fit=self.rect.size
+        )
+
     def _draw_card(self, canvas):
         border_size = 4
         border = self.card_full_rect.copy()
@@ -390,13 +400,6 @@ class SearchNote(NoteBaseWidget):
         NoteBaseWidget.update(self, rect, elapsed_ms)
         self.rect = self._get_target(rect, align="center")
 
-    def draw(self, canvas):
-        canvas.blit(
-            canvas.create_image(self.card_full_size, self._draw_card),
-            self.rect,
-            scale_to_fit=self.rect.size
-        )
-
 class NetworkWidget(Widget):
 
     def __init__(self, db, state, request_search_callback):
@@ -684,11 +687,7 @@ class NetworkNote(NoteBaseWidget):
             )
 
     def draw(self, canvas):
-        canvas.blit(
-            canvas.create_image(self.card_full_rect.size, self._draw_card),
-            self.rect,
-            scale_to_fit=self.rect.size
-        )
+        NoteBaseWidget.draw(self, canvas)
         if self.selected:
             canvas.draw_rect(self.rect.inflate(-6, -6), (255, 0, 0), 2)
         if DEBUG_NOTE_BORDER:
