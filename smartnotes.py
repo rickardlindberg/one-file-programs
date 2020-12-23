@@ -82,7 +82,8 @@ class NoteBaseWidget(Widget):
     def update(self, rect, elapsed_ms):
         self.data = self.db.get_note_data(self.note_id)
         self.full_width = self.state.get_full_note_width()
-        self.card_full_size = (self.full_width, int(self.full_width*3/5))
+        self.full_height = int(self.full_width*3/5)
+        self.card_full_size = (self.full_width, self.full_height)
         self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)
 
     def draw(self, canvas):
@@ -108,7 +109,7 @@ class NoteBaseWidget(Widget):
         canvas.fill_rect(border, color=(250, 250, 250))
         canvas.render_text(
             self.data["text"],
-            border.inflate(-10, -10),
+            border.inflate(-self.full_width/15, -self.full_height/15),
             size=self.full_width/10,
             center=True
         )
