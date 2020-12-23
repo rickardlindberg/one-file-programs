@@ -64,6 +64,13 @@ class Widget(object):
     def process_event(self, event):
         pass
 
+class NoteBaseWidget(Widget):
+
+    def __init__(self, db, note_id):
+        Widget.__init__(self)
+        self.db = db
+        self.note_id = note_id
+
 class Box(Widget):
 
     def __init__(self):
@@ -318,13 +325,11 @@ class SearchBar(Widget):
         for note in self.notes:
             note.draw(canvas)
 
-class SearchNote(Widget):
+class SearchNote(NoteBaseWidget):
 
     def __init__(self, db, state, note_id, note_data, open_callback):
-        Widget.__init__(self)
-        self.db = db
+        NoteBaseWidget.__init__(self, db, note_id)
         self.state = state
-        self.note_id = note_id
         self.note_data = note_data
         self.open_callback = open_callback
 
@@ -564,12 +569,10 @@ class NetworkWidget(Widget):
         for note in self.notes:
             note.draw(canvas)
 
-class NoteWidget(Widget):
+class NoteWidget(NoteBaseWidget):
 
     def __init__(self, db, note_id):
-        Widget.__init__(self)
-        self.db = db
-        self.note_id = note_id
+        NoteBaseWidget.__init__(self, db, note_id)
         self.data = None
         self.incoming = []
         self.outgoing = []

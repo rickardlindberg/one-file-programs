@@ -65,7 +65,23 @@
 ],
 "fragments":[
 {
-"text":"class SearchNote(Widget):\n\n    def __init__(self, db, state, note_id, note_data, open_callback):\n        Widget.__init__(self)\n        self.db = db\n        self.state = state\n        self.note_id = note_id\n        self.note_data = note_data\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_target(self)\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_source(self)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def ",
+"text":"class SearchNote(",
+"type":"code"
+},
+{
+"id":"137180d5603e43c7a4a6224ea4c709fc",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, db, state, note_id, note_data, open_callback):\n        ",
+"type":"code"
+},
+{
+"id":"137180d5603e43c7a4a6224ea4c709fc",
+"type":"variable"
+},
+{
+"text":".__init__(self, db, note_id)\n        self.state = state\n        self.note_data = note_data\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_target(self)\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_source(self)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def ",
 "type":"code"
 },
 {
@@ -240,7 +256,23 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, db, note_id):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.data = None\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n        self.full_width = None\n\n    def is_deleted(self):\n        try:\n            self.db.get_note_data(self.note_id)\n            return False\n        except NoteNotFound:\n            return True\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
+"text":"(",
+"type":"code"
+},
+{
+"id":"137180d5603e43c7a4a6224ea4c709fc",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, db, note_id):\n        ",
+"type":"code"
+},
+{
+"id":"137180d5603e43c7a4a6224ea4c709fc",
+"type":"variable"
+},
+{
+"text":".__init__(self, db, note_id)\n        self.data = None\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n        self.full_width = None\n\n    def is_deleted(self):\n        try:\n            self.db.get_note_data(self.note_id)\n            return False\n        except NoteNotFound:\n            return True\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -781,6 +813,37 @@
 }
 ],
 "title":"Debug Bar"
+},
+{
+"children":[],
+"id":"fc64ae030cb047b289cfbfd255f8980c",
+"paragraphs":[
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class ",
+"type":"code"
+},
+{
+"id":"137180d5603e43c7a4a6224ea4c709fc",
+"type":"variable"
+},
+{
+"text":"(Widget):\n\n    def __init__(self, db, note_id):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n",
+"type":"code"
+}
+],
+"id":"5a6d5d5e3655471c96db2681d66bca48",
+"type":"code"
+}
+],
+"title":"Note Base"
 }
 ],
 "id":"6ea68f8a49284fe9b99b4d387ef13e94",
@@ -795,7 +858,7 @@
 "paragraphs":[
 {
 "chunkpath":[
-"base classes"
+"base base classes"
 ],
 "filepath":[
 "smartnotes.py"
@@ -1381,6 +1444,18 @@
 {
 "blank_lines_before":1,
 "path":[
+"base base classes"
+],
+"prefix":"",
+"type":"chunk"
+},
+{
+"text":"\n",
+"type":"code"
+},
+{
+"blank_lines_before":1,
+"path":[
 "base classes"
 ],
 "prefix":"",
@@ -1489,6 +1564,7 @@
 "03a7c6b0000146f5ba3d059fd0936900":"NoteDb",
 "0b307bcf1b0c4063a456d2120dfe8ae0":"create_note",
 "12a5523894264ebaaff391fa452cb51c":"safe_write",
+"137180d5603e43c7a4a6224ea4c709fc":"NoteBaseWidget",
 "1d6a87fbf9354dd7a07c9fcf3f92ffb4":"create_link",
 "2237aa8492f74e6da9484546734acc06":"read_json_file",
 "28992293e2f14729bfa7acc3ba2d153d":"SmartNotesWidget",
