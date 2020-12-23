@@ -137,7 +137,7 @@
 "type":"variable"
 },
 {
-"text":")\n        self.rect = ",
+"text":")\n        self.rect = self._get_target(",
 "type":"code"
 },
 {
@@ -145,7 +145,7 @@
 "type":"variable"
 },
 {
-"text":"\n\n    def ",
+"text":", align=\"center\")\n\n    def ",
 "type":"code"
 },
 {
@@ -153,7 +153,7 @@
 "type":"variable"
 },
 {
-"text":"(self, canvas):\n        canvas.blit(\n            canvas.create_image(self.rect.size, self._draw_card),\n            self.rect\n        )\n",
+"text":"(self, canvas):\n        canvas.blit(\n            canvas.create_image(self.card_full_size, self._draw_card),\n            self.rect,\n            scale_to_fit=self.rect.size\n        )\n",
 "type":"code"
 }
 ],
@@ -304,7 +304,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, db, note_id)\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n        self.full_width = None\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
+"text":".__init__(self, db, note_id)\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -416,7 +416,7 @@
 "type":"variable"
 },
 {
-"text":"\n        self.full_width = full_width\n        self.card_full_size = (full_width, int(full_width*3/5))\n        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)\n        target = self._get_target(",
+"text":"\n        target = self._get_target(",
 "type":"code"
 },
 {
@@ -432,47 +432,7 @@
 "type":"variable"
 },
 {
-"text":")\n            self.rect = self.previous.inflate(x_diff*percent, y_diff*percent).move(\n                (\n                    pygame.math.Vector2(self.target.center)-\n                    pygame.math.Vector2(self.previous.center)\n                )*percent\n            )\n\n    def _get_target(self, ",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":", side):\n        target = self.card_full_rect\n        target = target.fit(",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":")\n        if side == \"left\":\n            target.midright = ",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":".midright\n        elif side == \"right\":\n            target.midleft = ",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":".midleft\n        else:\n            target.center = ",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":".center\n        return target\n\n    def ",
+"text":")\n            self.rect = self.previous.inflate(x_diff*percent, y_diff*percent).move(\n                (\n                    pygame.math.Vector2(self.target.center)-\n                    pygame.math.Vector2(self.previous.center)\n                )*percent\n            )\n\n    def ",
 "type":"code"
 },
 {
@@ -893,7 +853,7 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, db, note_id):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.data = None\n\n    def is_deleted(self):\n        try:\n            self.db.get_note_data(self.note_id)\n            return False\n        except NoteNotFound:\n            return True\n\n    def update(self, rect, elapsed_ms):\n        self.data = self.db.get_note_data(self.note_id)\n\n    def _draw_card(self, canvas):\n        border_size = 4\n        border = canvas.get_rect().copy()\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        canvas.fill_rect(border, color=(50, 50, 50, 150))\n        border.x -= border_size\n        border.y -= border_size\n        canvas.fill_rect(border, color=(250, 250, 250))\n        canvas.render_text(\n            self.data[\"text\"],\n            border.inflate(-10, -10),\n            size=30,\n            center=True\n        )\n",
+"text":"(Widget):\n\n    def __init__(self, db, note_id):\n        Widget.__init__(self)\n        self.db = db\n        self.note_id = note_id\n        self.data = None\n        self.full_width = 300\n        self.card_full_size = (self.full_width, int(self.full_width*3/5))\n        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)\n\n    def is_deleted(self):\n        try:\n            self.db.get_note_data(self.note_id)\n            return False\n        except NoteNotFound:\n            return True\n\n    def update(self, rect, elapsed_ms):\n        self.data = self.db.get_note_data(self.note_id)\n\n    def _draw_card(self, canvas):\n        border_size = 4\n        border = self.card_full_rect.copy()\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        canvas.fill_rect(border, color=(50, 50, 50, 150))\n        border.x -= border_size\n        border.y -= border_size\n        canvas.fill_rect(border, color=(250, 250, 250))\n        canvas.render_text(\n            self.data[\"text\"],\n            border.inflate(-10, -10),\n            size=30,\n            center=True\n        )\n\n    def _get_target(self, alotted_rect, align=\"center\"):\n        target = self.card_full_rect\n        target = target.fit(alotted_rect)\n        if align == \"left\":\n            target.midright = alotted_rect.midright\n        elif align == \"right\":\n            target.midleft = alotted_rect.midleft\n        else:\n            target.center = alotted_rect.center\n        return target\n",
 "type":"code"
 }
 ],

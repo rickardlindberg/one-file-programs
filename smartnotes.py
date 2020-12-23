@@ -71,6 +71,9 @@ class NoteBaseWidget(Widget):
         self.db = db
         self.note_id = note_id
         self.data = None
+        self.full_width = 300
+        self.card_full_size = (self.full_width, int(self.full_width*3/5))
+        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)
 
     def is_deleted(self):
         try:
@@ -84,7 +87,7 @@ class NoteBaseWidget(Widget):
 
     def _draw_card(self, canvas):
         border_size = 4
-        border = canvas.get_rect().copy()
+        border = self.card_full_rect.copy()
         border.width -= border_size
         border.height -= border_size
         border.x += border_size
@@ -99,6 +102,17 @@ class NoteBaseWidget(Widget):
             size=30,
             center=True
         )
+
+    def _get_target(self, alotted_rect, align="center"):
+        target = self.card_full_rect
+        target = target.fit(alotted_rect)
+        if align == "left":
+            target.midright = alotted_rect.midright
+        elif align == "right":
+            target.midleft = alotted_rect.midleft
+        else:
+            target.center = alotted_rect.center
+        return target
 
 class Box(Widget):
 
@@ -374,12 +388,13 @@ class SearchNote(NoteBaseWidget):
 
     def update(self, rect, elapsed_ms):
         NoteBaseWidget.update(self, rect, elapsed_ms)
-        self.rect = rect
+        self.rect = self._get_target(rect, align="center")
 
     def draw(self, canvas):
         canvas.blit(
-            canvas.create_image(self.rect.size, self._draw_card),
-            self.rect
+            canvas.create_image(self.card_full_size, self._draw_card),
+            self.rect,
+            scale_to_fit=self.rect.size
         )
 
 class NetworkWidget(Widget):
@@ -596,7 +611,6 @@ class NetworkNote(NoteBaseWidget):
         self.rect = None
         self.target = None
         self.previous = None
-        self.full_width = None
 
     def update_incoming(self):
         by_id = {
@@ -645,9 +659,6 @@ class NetworkNote(NoteBaseWidget):
         self.side = side
         self.selected = selected
         self.true_rect = rect
-        self.full_width = full_width
-        self.card_full_size = (full_width, int(full_width*3/5))
-        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)
         target = self._get_target(rect, side)
         if fade_from_rect:
             x = target.copy()
@@ -671,17 +682,6 @@ class NetworkNote(NoteBaseWidget):
                     pygame.math.Vector2(self.previous.center)
                 )*percent
             )
-
-    def _get_target(self, rect, side):
-        target = self.card_full_rect
-        target = target.fit(rect)
-        if side == "left":
-            target.midright = rect.midright
-        elif side == "right":
-            target.midleft = rect.midleft
-        else:
-            target.center = rect.center
-        return target
 
     def draw(self, canvas):
         canvas.blit(
