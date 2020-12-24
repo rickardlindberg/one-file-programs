@@ -634,17 +634,21 @@ class NetworkNote(NoteBaseWidget):
         if not self.has_focus():
             return
         if event.type == pygame.KEYDOWN and event.unicode == "e":
+            self.clear_quick_focus()
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
                 entry=EditNoteText(self.db, self.note_id)
             )
         elif event.type == pygame.KEYDOWN and event.unicode == "d":
+            self.clear_quick_focus()
             self.db.delete_note(self.note_id)
         elif event.type == pygame.KEYDOWN and event.unicode == "u":
             link_id = self.get_link_id()
             if link_id:
                 self.db.delete_link(link_id)
+                self.clear_quick_focus()
         elif event.type == pygame.KEYDOWN and event.unicode == "c":
+            self.clear_quick_focus()
             child_note_id = self.db.create_note(text="Enter note text...")
             self.db.create_link(self.note_id, child_note_id)
             self.post_event(
