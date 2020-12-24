@@ -166,8 +166,8 @@ class NoteBaseWidget(Widget):
 
 class Box(Widget):
 
-    def __init__(self):
-        Widget.__init__(self)
+    def __init__(self, **kwargs):
+        Widget.__init__(self, **kwargs)
         self.children = []
 
     def add(self, child):
@@ -239,8 +239,9 @@ class HBox(Box):
 
 class TextField(Widget):
 
-    def __init__(self, text_changed_callback):
-        Widget.__init__(self)
+    def __init__(self, text_changed_callback, text_size=10, **kwargs):
+        Widget.__init__(self, **kwargs)
+        self.text_size = text_size
         self.text = ""
         self.text_changed_callback = text_changed_callback
 
@@ -262,8 +263,10 @@ class TextField(Widget):
         )
         canvas.render_text(
             self.text,
-            self.rect,
-            face="Monospace"
+            self.rect.inflate(-4, -4),
+            face="Monospace",
+            size=self.text_size,
+            valign=True
         )
         if self.has_focus():
             canvas.draw_rect(self.rect, (0, 0, 200), 2)
@@ -371,12 +374,12 @@ class SmartNotesWidget(VBox):
             canvas.set_line_width(5)
             canvas.stroke()
 
-class SearchBar(Widget):
+class SearchBar(VBox):
 
-    IDEAL_HEIGHT = 150
+    IDEAL_HEIGHT = 200
 
     def __init__(self, db, state, open_callback, dismiss_callback):
-        Widget.__init__(self, height=0, visible=False)
+        VBox.__init__(self, height=0, visible=False)
         self.db = db
         self.state = state
         self.open_callback = open_callback
@@ -385,13 +388,11 @@ class SearchBar(Widget):
         self.notes = []
         self.search_results = SearchResults(db, state, open_callback)
         self.search_field = SearchField(self.search_results.update_search_text, self.dismiss_callback)
+        self.add(self.search_field)
+        self.add(self.search_results)
 
     def focus(self):
         self.search_field.focus()
-
-    def process_event(self, event):
-        self.search_field.process_event(event)
-        self.search_results.process_event(event)
 
     def is_visible(self):
         return Widget.is_visible(self) or self.animation.active()
@@ -410,11 +411,9 @@ class SearchBar(Widget):
             self.search_field.set_text("")
 
     def update(self, rect, elapsed_ms):
-        r = pygame.Rect(0, 0, 200, 20)
-        r.bottom = rect.bottom - self.IDEAL_HEIGHT + 10 + 20
-        self.search_field.update(r, elapsed_ms)
-        self.search_results.update(rect, elapsed_ms)
-        self.rect = rect
+        self.ideal_rect = rect.copy()
+        self.ideal_rect.height = self.IDEAL_HEIGHT
+        VBox.update(self, self.ideal_rect, elapsed_ms)
         percent = self.animation.advance(elapsed_ms)
         if Widget.is_visible(self):
             self.alpha = int(255 * percent)
@@ -425,24 +424,28 @@ class SearchBar(Widget):
 
     def draw(self, canvas):
         canvas.blit(
-            canvas.create_image(self.rect.size, self._draw_search_bar_image),
-            self.rect,
+            canvas.create_image(self.ideal_rect.size, self._draw_search_bar_image),
+            (0, -self.IDEAL_HEIGHT+self.get_height()),
             alpha=self.alpha
         )
 
     def _draw_search_bar_image(self, canvas):
         canvas.fill_rect(
-            self.rect,
+            pygame.Rect(0, 0, self.ideal_rect.width, self.ideal_rect.height),
             color=(84, 106, 134)
         )
-        self.search_field.draw(canvas)
-        self.search_results.draw(canvas)
+        VBox.draw(self, canvas)
 
 class SearchField(TextField):
 
     def __init__(self, text_changed_callback, dismiss_callback):
-        TextField.__init__(self, text_changed_callback)
+        TextField.__init__(self, text_changed_callback, text_size=20, height=50)
         self.dismiss_callback = dismiss_callback
+
+    def update(self, rect, elapsed_time):
+        x_shrink = int(rect.width * 0.1)
+        y_shrink = 15
+        TextField.update(self, rect.inflate(-x_shrink, -y_shrink), elapsed_time)
 
     def process_event(self, event):
         if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
@@ -451,8 +454,6 @@ class SearchField(TextField):
             TextField.process_event(self, event)
 
 class SearchResults(Widget):
-
-    IDEAL_HEIGHT = 150
 
     def __init__(self, db, state, open_callback):
         Widget.__init__(self)
@@ -473,11 +474,9 @@ class SearchResults(Widget):
         self._update_notes_list()
         self.rect = rect
         rect = self.rect.inflate(-10, -10)
-        rect.height = self.IDEAL_HEIGHT - 40
         single_width = rect.width/max(1, len(self.notes))
         rect.x += 5
         rect.width = single_width - 10
-        rect.bottom = self.rect.bottom - 10
         for note in self.notes:
             note.update(rect, elapsed_ms)
             rect = rect.copy()
