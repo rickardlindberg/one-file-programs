@@ -262,7 +262,7 @@ class TextField(Widget):
             (250, 250, 250)
         )
         canvas.render_text(
-            self.text,
+            "{}\u2302".format(self.text),
             self.rect.inflate(-4, -4),
             face="Monospace",
             size=self.text_size,
@@ -401,14 +401,12 @@ class SearchBar(VBox):
         if not Widget.is_visible(self):
             self.toggle_visible()
             self.animation.reverse(200)
-            self.search_field.set_text("")
         self.focus()
 
     def hide(self):
         if Widget.is_visible(self):
             self.toggle_visible()
             self.animation.reverse(200)
-            self.search_field.set_text("")
 
     def update(self, rect, elapsed_ms):
         self.ideal_rect = rect.copy()
@@ -450,6 +448,10 @@ class SearchField(TextField):
     def process_event(self, event):
         if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
             self.dismiss_callback()
+        elif self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_w:
+            self.set_text(strip_last_word(self.text))
+        elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
+            self.set_text(self.text[:-1])
         else:
             TextField.process_event(self, event)
 
@@ -1358,6 +1360,13 @@ def pygame_main(root_widget_cls, *args, **kwargs):
         screen.blit(pygame_cairo_surface, (0, 0))
         pygame.display.flip()
         clock.tick(60)
+
+def strip_last_word(text):
+    remaining_parts = text.rstrip().split(" ")[:-1]
+    if remaining_parts:
+        return " ".join(remaining_parts) + " "
+    else:
+        return ""
 
 def create_pygame_cairo_surface(screen):
     return pygame.Surface(

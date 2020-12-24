@@ -111,7 +111,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchBar(VBox):\n\n    IDEAL_HEIGHT = 200\n\n    def __init__(self, db, state, open_callback, dismiss_callback):\n        VBox.__init__(self, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_results = SearchResults(db, state, open_callback)\n        self.search_field = SearchField(self.search_results.update_search_text, self.dismiss_callback)\n        self.add(self.search_field)\n        self.add(self.search_results)\n\n    def focus(self):\n        self.search_field.focus()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n            self.search_field.set_text(\"\")\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n            self.search_field.set_text(\"\")\n\n    def ",
+"text":"class SearchBar(VBox):\n\n    IDEAL_HEIGHT = 200\n\n    def __init__(self, db, state, open_callback, dismiss_callback):\n        VBox.__init__(self, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_results = SearchResults(db, state, open_callback)\n        self.search_field = SearchField(self.search_results.update_search_text, self.dismiss_callback)\n        self.add(self.search_field)\n        self.add(self.search_results)\n\n    def focus(self):\n        self.search_field.focus()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -167,11 +167,27 @@
 ],
 "fragments":[
 {
-"text":"class SearchField(TextField):\n\n    def __init__(self, text_changed_callback, dismiss_callback):\n        TextField.__init__(self, text_changed_callback, text_size=20, height=50)\n        self.dismiss_callback = dismiss_callback\n\n    def update(self, rect, elapsed_time):\n        x_shrink = int(rect.width * 0.1)\n        y_shrink = 15\n        TextField.update(self, rect.inflate(-x_shrink, -y_shrink), elapsed_time)\n\n    def process_event(self, event):\n        if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:\n            self.dismiss_callback()\n        else:\n            TextField.process_event(self, event)\n",
+"text":"class SearchField(TextField):\n\n    def __init__(self, text_changed_callback, dismiss_callback):\n        TextField.__init__(self, text_changed_callback, text_size=20, height=50)\n        self.dismiss_callback = dismiss_callback\n\n    def update(self, rect, elapsed_time):\n        x_shrink = int(rect.width * 0.1)\n        y_shrink = 15\n        TextField.update(self, rect.inflate(-x_shrink, -y_shrink), elapsed_time)\n\n    def process_event(self, event):\n        if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:\n            self.dismiss_callback()\n        elif self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_w:\n            self.set_text(strip_last_word(self.text))\n        elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:\n            self.set_text(self.text[:-1])\n        else:\n            TextField.process_event(self, event)\n",
 "type":"code"
 }
 ],
 "id":"d3269ff2d7fc4237bd8d03ba444183a8",
+"type":"code"
+},
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def strip_last_word(text):\n    remaining_parts = text.rstrip().split(\" \")[:-1]\n    if remaining_parts:\n        return \" \".join(remaining_parts) + \" \"\n    else:\n        return \"\"\n",
+"type":"code"
+}
+],
+"id":"6e6598d06118446594115047ecf5af5e",
 "type":"code"
 },
 {
@@ -992,7 +1008,7 @@
 "type":"variable"
 },
 {
-"text":"(self, canvas):\n        canvas.fill_rect(\n            self.rect,\n            (250, 250, 250)\n        )\n        canvas.render_text(\n            self.text,\n            self.rect.inflate(-4, -4),\n            face=\"Monospace\",\n            size=self.text_size,\n            valign=True\n        )\n        if self.has_focus():\n            canvas.draw_rect(self.rect, (74, 144, 217), 2)\n",
+"text":"(self, canvas):\n        canvas.fill_rect(\n            self.rect,\n            (250, 250, 250)\n        )\n        canvas.render_text(\n            \"{}\\u2302\".format(self.text),\n            self.rect.inflate(-4, -4),\n            face=\"Monospace\",\n            size=self.text_size,\n            valign=True\n        )\n        if self.has_focus():\n            canvas.draw_rect(self.rect, (74, 144, 217), 2)\n",
 "type":"code"
 }
 ],
