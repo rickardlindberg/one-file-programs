@@ -26,11 +26,29 @@ class Widget(object):
 
     _focused_widget = None
     _stable_focused_widget = None
+    _stored_focus = None
 
     def __init__(self, width=-1, height=-1, visible=True):
         self._width = width
         self._height = height
         self._visible = visible
+
+    def store_focus(self):
+        if Widget._stored_focus is None:
+            Widget._stored_focus = (
+                Widget._focused_widget,
+                Widget._stable_focused_widget
+            )
+            Widget._focused_widget = None
+            Widget._stable_focused_widget = None
+
+    def restore_focus(self):
+        if Widget._stored_focus is not None:
+            (
+                Widget._focused_widget,
+                Widget._stable_focused_widget
+            ) = Widget._stored_focus
+            Widget._stored_focus = None
 
     def has_focus(self):
         return Widget._focused_widget is self
@@ -262,6 +280,11 @@ class SmartNotesWidget(VBox):
             self.pos = event.pos
             self.set_link_target(None)
             self.clear_quick_focus()
+        if event.type == pygame.ACTIVEEVENT and event.state == 1:
+            if event.gain:
+                self.restore_focus()
+            else:
+                self.store_focus()
         if self.link_source and event.type == pygame.MOUSEBUTTONUP:
             if self.link_target:
                 self.db.create_link(
