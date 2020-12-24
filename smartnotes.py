@@ -90,6 +90,9 @@ class NoteBaseWidget(Widget):
         except NoteNotFound:
             return True
 
+    def is_category(self):
+        return "." not in self.data["text"]
+
     def update(self, rect, elapsed_ms):
         self.data = self.db.get_note_data(self.note_id)
         self.full_width = self.state.get_full_note_width()
@@ -124,6 +127,7 @@ class NoteBaseWidget(Widget):
             self.data["text"],
             border.inflate(-self.full_width/15, -self.full_height/15),
             size=self.full_width/10,
+            textalign="center" if self.is_category() else "left",
             center=True
         )
 
@@ -917,7 +921,7 @@ class CairoCanvas(object):
             self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)
 
     def render_text(self, text, box, size=40, center=False, halign=False,
-            valign=False, face=None):
+            valign=False, face=None, textalign="left"):
         if box.height <= 0:
             return
         if face is not None:
@@ -941,8 +945,11 @@ class CairoCanvas(object):
         self.ctx.translate(box[0]+xoffset, box[1]+yoffset)
         self.ctx.scale(scale_factor, scale_factor)
         self.ctx.set_source_rgb(0, 0, 0)
-        for x, y, part in metrics["parts"]:
-            self.ctx.move_to(x, y)
+        for x, y, width, part in metrics["parts"]:
+            x_align_offset = 0
+            if textalign == "center":
+                x_align_offset = (metrics["width"]-width)/2
+            self.ctx.move_to(x+x_align_offset, y)
             self.ctx.show_text(part)
         if DEBUG_TEXT_BORDER:
             self.ctx.set_source_rgb(0.1, 1, 0.1)
@@ -976,7 +983,7 @@ class CairoCanvas(object):
         for text in splits:
             extents = self.ctx.text_extents(text)
             height += font_ascent
-            parts.append((-extents.x_bearing, height, text))
+            parts.append((-extents.x_bearing, height, extents.width, text))
             width = max(width, extents.width)
             height += font_descent
             height += extra
