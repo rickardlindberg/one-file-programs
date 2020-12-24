@@ -119,6 +119,19 @@ class NoteBaseWidget(Widget):
         self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)
 
     def draw(self, canvas):
+        border_size = 3
+        border = self.rect.copy()
+        border.width -= border_size
+        border.height -= border_size
+        border.x += border_size
+        border.y += border_size
+        canvas.fill_rect(border, color=(0, 0, 0, 50))
+        border.x -= border_size
+        border.y -= border_size
+        canvas.fill_rect(border, color=(250, 250, 250))
+        canvas.draw_rect(border, (120, 120, 120), 1)
+        if self.has_focus():
+            canvas.draw_rect(border.inflate(-7, -7).move(1, 1), (74, 144, 217), 2)
         canvas.blit(
             canvas.create_image(
                 self.card_full_size,
@@ -127,23 +140,14 @@ class NoteBaseWidget(Widget):
             self.rect,
             scale_to_fit=self.rect.size
         )
-        if self.has_focus():
-            canvas.draw_rect(self.rect.inflate(-6, -6), (0, 0, 200), 2)
 
     def _draw_card(self, canvas):
-        border_size = 4
-        border = self.card_full_rect.copy()
-        border.width -= border_size
-        border.height -= border_size
-        border.x += border_size
-        border.y += border_size
-        canvas.fill_rect(border, color=(50, 50, 50, 150))
-        border.x -= border_size
-        border.y -= border_size
-        canvas.fill_rect(border, color=(250, 250, 250))
         canvas.render_text(
             self.data["text"],
-            border.inflate(-self.full_width/15, -self.full_height/15),
+            self.card_full_rect.inflate(
+                -self.full_width/15,
+                -self.full_height/15
+            ),
             size=self.full_width/10,
             textalign="center" if self.is_category() else "left",
             center=True
@@ -936,8 +940,12 @@ class CairoCanvas(object):
         self.ctx.fill()
 
     def draw_rect(self, rect, color, width):
+        if width % 2 == 0:
+            offset = 0
+        else:
+            offset = 0.5
         self._set_color(color)
-        self.ctx.rectangle(rect.x, rect.y, rect.width, rect.height)
+        self.ctx.rectangle(rect.x+offset, rect.y+offset, rect.width, rect.height)
         self.ctx.set_line_width(width)
         self.ctx.stroke()
 
