@@ -521,6 +521,8 @@ class NetworkWidget(Widget):
         )
         for link in self.links:
             link.update(None, elapsed_ms)
+        for note in self.notes:
+            note.clear_hidden_links(self.links)
 
     def _stripe_recursive(self, note, parent_rect, widths, elapsed_ms, padding, direction):
         if not widths:
@@ -616,6 +618,10 @@ class NetworkNote(NoteBaseWidget):
         self.rect = None
         self.target = None
         self.previous = None
+
+    def clear_hidden_links(self, visible_links):
+        self.incoming = [x for x in self.incoming if x in visible_links]
+        self.outgoing = [x for x in self.outgoing if x in visible_links]
 
     def process_event(self, event):
         if event.type == pygame.MOUSEMOTION and self.rect.collidepoint(event.pos):
