@@ -269,7 +269,7 @@ class TextField(Widget):
             valign=True
         )
         if self.has_focus():
-            canvas.draw_rect(self.rect, (0, 0, 200), 2)
+            canvas.draw_rect(self.rect, (74, 144, 217), 2)
 
 class SmartNotesWidget(VBox):
 
