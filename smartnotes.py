@@ -345,8 +345,7 @@ class SearchBar(Widget):
     IDEAL_HEIGHT = 150
 
     def __init__(self, db, state, open_callback, dismiss_callback):
-        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=False)
-        self.resize(height=0)
+        Widget.__init__(self, height=0, visible=False)
         self.db = db
         self.state = state
         self.open_callback = open_callback
