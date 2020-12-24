@@ -111,7 +111,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db, state, open_callback, dismiss_callback):\n        Widget.__init__(self, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_field = SearchField(lambda: None, self.dismiss_callback)\n\n    def focus(self):\n        self.search_field.focus()\n\n    def process_event(self, event):\n        self.search_field.process_event(event)\n        for note in self.notes:\n            note.process_event(event)\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n            self.search_field.text = \"\"\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n            self.search_field.text = \"\"\n\n    def ",
+"text":"class SearchBar(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db, state, open_callback, dismiss_callback):\n        Widget.__init__(self, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_results = SearchResults(db, state, open_callback)\n        self.search_field = SearchField(self.search_results.update_search_text, self.dismiss_callback)\n\n    def focus(self):\n        self.search_field.focus()\n\n    def process_event(self, event):\n        self.search_field.process_event(event)\n        self.search_results.process_event(event)\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n            self.search_field.set_text(\"\")\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n            self.search_field.set_text(\"\")\n\n    def ",
 "type":"code"
 },
 {
@@ -135,7 +135,15 @@
 "type":"variable"
 },
 {
-"text":"):\n        r = pygame.Rect(0, 0, 200, 20)\n        r.bottom = rect.bottom - self.IDEAL_HEIGHT + 10 + 20\n        self.search_field.update(r, elapsed_ms)\n        self._update_notes_list()\n        percent = self.animation.advance(",
+"text":"):\n        r = pygame.Rect(0, 0, 200, 20)\n        r.bottom = rect.bottom - self.IDEAL_HEIGHT + 10 + 20\n        self.search_field.update(r, elapsed_ms)\n        self.search_results.update(rect, elapsed_ms)\n        self.rect = ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":"\n        percent = self.animation.advance(",
 "type":"code"
 },
 {
@@ -143,7 +151,79 @@
 "type":"variable"
 },
 {
-"text":")\n        if Widget.is_visible(self):\n            self.alpha = int(255 * percent)\n            self.resize(height=int(self.IDEAL_HEIGHT * percent))\n        else:\n            self.alpha = 255 - int(255 * percent)\n            self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))\n        self.rect = ",
+"text":")\n        if Widget.is_visible(self):\n            self.alpha = int(255 * percent)\n            self.resize(height=int(self.IDEAL_HEIGHT * percent))\n        else:\n            self.alpha = 255 - int(255 * percent)\n            self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))\n\n    def ",
+"type":"code"
+},
+{
+"id":"acab4c17f89046f4a05b14a8c35ad89a",
+"type":"variable"
+},
+{
+"text":"(self, canvas):\n        canvas.blit(\n            canvas.create_image(self.rect.size, self._draw_search_bar_image),\n            self.rect,\n            alpha=self.alpha\n        )\n\n    def _draw_search_bar_image(self, canvas):\n        canvas.fill_rect(\n            self.",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":",\n            color=(84, 106, 134)\n        )\n        self.search_field.draw(canvas)\n        self.search_results.draw(canvas)\n",
+"type":"code"
+}
+],
+"id":"6c37a4f747b84ad493d88f40beedcc16",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class SearchField(TextField):\n\n    def __init__(self, text_changed_callback, dismiss_callback):\n        TextField.__init__(self, text_changed_callback)\n        self.dismiss_callback = dismiss_callback\n\n    def process_event(self, event):\n        if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:\n            self.dismiss_callback()\n        else:\n            TextField.process_event(self, event)\n",
+"type":"code"
+}
+],
+"id":"d3269ff2d7fc4237bd8d03ba444183a8",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class SearchResults(Widget):\n\n    IDEAL_HEIGHT = 150\n\n    def __init__(self, db, state, open_callback):\n        Widget.__init__(self)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.notes = []\n        self.update_search_text(\"\")\n\n    def update_search_text(self, text):\n        self.text = text\n\n    def process_event(self, event):\n        for note in self.notes:\n            note.process_event(event)\n\n    def ",
+"type":"code"
+},
+{
+"id":"8cce3dd9f80645e6a8df699f872f1736",
+"type":"variable"
+},
+{
+"text":"(self, ",
+"type":"code"
+},
+{
+"id":"595003a78e1e4326ac5ef9aa70b79fd9",
+"type":"variable"
+},
+{
+"text":", ",
+"type":"code"
+},
+{
+"id":"7583be08dcbd4bcca0e6a043d3791710",
+"type":"variable"
+},
+{
+"text":"):\n        self._update_notes_list()\n        self.rect = ",
 "type":"code"
 },
 {
@@ -167,7 +247,7 @@
 "type":"variable"
 },
 {
-"text":")\n            rect = rect.copy()\n            rect.x += single_width\n\n    def _update_notes_list(self):\n        by_id = {}\n        for note in self.notes:\n            by_id[note.note_id] = note\n        self.notes = []\n        for note_id, note_data in self.db.get_notes(self.search_field.text):\n            if note_id in by_id:\n                self.notes.append(by_id[note_id])\n            else:\n                self.notes.append(SearchNote(\n                    self.db,\n                    self.state,\n                    note_id,\n                    self.open_callback\n                ))\n            if len(self.notes) >= 5:\n                break\n\n    def ",
+"text":")\n            rect = rect.copy()\n            rect.x += single_width\n\n    def _update_notes_list(self):\n        by_id = {}\n        for note in self.notes:\n            by_id[note.note_id] = note\n        self.notes = []\n        for note_id, note_data in self.db.get_notes(self.text):\n            if note_id in by_id:\n                self.notes.append(by_id[note_id])\n            else:\n                self.notes.append(SearchNote(\n                    self.db,\n                    self.state,\n                    note_id,\n                    self.open_callback\n                ))\n            if len(self.notes) >= 5:\n                break\n\n    def ",
 "type":"code"
 },
 {
@@ -175,15 +255,7 @@
 "type":"variable"
 },
 {
-"text":"(self, canvas):\n        canvas.blit(\n            canvas.create_image(self.rect.size, self._draw_search_bar_image),\n            self.rect,\n            alpha=self.alpha\n        )\n\n    def _draw_search_bar_image(self, canvas):\n        canvas.fill_rect(\n            self.",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":",\n            color=(84, 106, 134)\n        )\n        self.search_field.draw(canvas)\n        for note in self.notes:\n            note.",
+"text":"(self, canvas):\n        for note in self.notes:\n            note.",
 "type":"code"
 },
 {
@@ -195,23 +267,7 @@
 "type":"code"
 }
 ],
-"id":"6c37a4f747b84ad493d88f40beedcc16",
-"type":"code"
-},
-{
-"chunkpath":[
-"classes"
-],
-"filepath":[
-"smartnotes.py"
-],
-"fragments":[
-{
-"text":"class SearchField(TextField):\n\n    def __init__(self, text_changed_callback, dismiss_callback):\n        TextField.__init__(self, text_changed_callback)\n        self.dismiss_callback = dismiss_callback\n\n    def process_event(self, event):\n        if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:\n            self.dismiss_callback()\n        else:\n            TextField.process_event(self, event)\n",
-"type":"code"
-}
-],
-"id":"d3269ff2d7fc4237bd8d03ba444183a8",
+"id":"2c9d0470d81f48f08dde382dadd0c2d2",
 "type":"code"
 }
 ],
@@ -920,7 +976,7 @@
 ],
 "fragments":[
 {
-"text":"class TextField(Widget):\n\n    def __init__(self, text_changed_callback):\n        Widget.__init__(self)\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def process_event(self, event):\n        if self.has_focus() and event.type == pygame.KEYDOWN and event.unicode:\n            self.text += event.unicode\n            self.text_changed_callback()\n\n    def ",
+"text":"class TextField(Widget):\n\n    def __init__(self, text_changed_callback):\n        Widget.__init__(self)\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def set_text(self, text):\n        self.text = text\n        self.text_changed_callback(text)\n\n    def process_event(self, event):\n        if self.has_focus() and event.type == pygame.KEYDOWN and event.unicode:\n            self.set_text(self.text + event.unicode)\n\n    def ",
 "type":"code"
 },
 {

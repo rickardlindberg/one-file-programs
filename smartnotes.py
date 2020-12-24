@@ -244,10 +244,13 @@ class TextField(Widget):
         self.text = ""
         self.text_changed_callback = text_changed_callback
 
+    def set_text(self, text):
+        self.text = text
+        self.text_changed_callback(text)
+
     def process_event(self, event):
         if self.has_focus() and event.type == pygame.KEYDOWN and event.unicode:
-            self.text += event.unicode
-            self.text_changed_callback()
+            self.set_text(self.text + event.unicode)
 
     def update(self, rect, elapsed_ms):
         self.rect = rect
@@ -380,15 +383,15 @@ class SearchBar(Widget):
         self.dismiss_callback = dismiss_callback
         self.animation = Animation()
         self.notes = []
-        self.search_field = SearchField(lambda: None, self.dismiss_callback)
+        self.search_results = SearchResults(db, state, open_callback)
+        self.search_field = SearchField(self.search_results.update_search_text, self.dismiss_callback)
 
     def focus(self):
         self.search_field.focus()
 
     def process_event(self, event):
         self.search_field.process_event(event)
-        for note in self.notes:
-            note.process_event(event)
+        self.search_results.process_event(event)
 
     def is_visible(self):
         return Widget.is_visible(self) or self.animation.active()
@@ -397,20 +400,21 @@ class SearchBar(Widget):
         if not Widget.is_visible(self):
             self.toggle_visible()
             self.animation.reverse(200)
-            self.search_field.text = ""
+            self.search_field.set_text("")
         self.focus()
 
     def hide(self):
         if Widget.is_visible(self):
             self.toggle_visible()
             self.animation.reverse(200)
-            self.search_field.text = ""
+            self.search_field.set_text("")
 
     def update(self, rect, elapsed_ms):
         r = pygame.Rect(0, 0, 200, 20)
         r.bottom = rect.bottom - self.IDEAL_HEIGHT + 10 + 20
         self.search_field.update(r, elapsed_ms)
-        self._update_notes_list()
+        self.search_results.update(rect, elapsed_ms)
+        self.rect = rect
         percent = self.animation.advance(elapsed_ms)
         if Widget.is_visible(self):
             self.alpha = int(255 * percent)
@@ -418,6 +422,55 @@ class SearchBar(Widget):
         else:
             self.alpha = 255 - int(255 * percent)
             self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))
+
+    def draw(self, canvas):
+        canvas.blit(
+            canvas.create_image(self.rect.size, self._draw_search_bar_image),
+            self.rect,
+            alpha=self.alpha
+        )
+
+    def _draw_search_bar_image(self, canvas):
+        canvas.fill_rect(
+            self.rect,
+            color=(84, 106, 134)
+        )
+        self.search_field.draw(canvas)
+        self.search_results.draw(canvas)
+
+class SearchField(TextField):
+
+    def __init__(self, text_changed_callback, dismiss_callback):
+        TextField.__init__(self, text_changed_callback)
+        self.dismiss_callback = dismiss_callback
+
+    def process_event(self, event):
+        if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
+            self.dismiss_callback()
+        else:
+            TextField.process_event(self, event)
+
+class SearchResults(Widget):
+
+    IDEAL_HEIGHT = 150
+
+    def __init__(self, db, state, open_callback):
+        Widget.__init__(self)
+        self.db = db
+        self.state = state
+        self.open_callback = open_callback
+        self.notes = []
+        self.update_search_text("")
+
+    def update_search_text(self, text):
+        self.text = text
+
+    def process_event(self, event):
+        for note in self.notes:
+            note.process_event(event)
+
+    def update(self, rect, elapsed_ms):
+        self._update_notes_list()
         self.rect = rect
         rect = self.rect.inflate(-10, -10)
         rect.height = self.IDEAL_HEIGHT - 40
@@ -435,7 +488,7 @@ class SearchBar(Widget):
         for note in self.notes:
             by_id[note.note_id] = note
         self.notes = []
-        for note_id, note_data in self.db.get_notes(self.search_field.text):
+        for note_id, note_data in self.db.get_notes(self.text):
             if note_id in by_id:
                 self.notes.append(by_id[note_id])
             else:
@@ -449,32 +502,8 @@ class SearchBar(Widget):
                 break
 
     def draw(self, canvas):
-        canvas.blit(
-            canvas.create_image(self.rect.size, self._draw_search_bar_image),
-            self.rect,
-            alpha=self.alpha
-        )
-
-    def _draw_search_bar_image(self, canvas):
-        canvas.fill_rect(
-            self.rect,
-            color=(84, 106, 134)
-        )
-        self.search_field.draw(canvas)
         for note in self.notes:
             note.draw(canvas)
-
-class SearchField(TextField):
-
-    def __init__(self, text_changed_callback, dismiss_callback):
-        TextField.__init__(self, text_changed_callback)
-        self.dismiss_callback = dismiss_callback
-
-    def process_event(self, event):
-        if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
-            self.dismiss_callback()
-        else:
-            TextField.process_event(self, event)
 
 class SearchNote(NoteBaseWidget):
 
