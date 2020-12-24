@@ -237,6 +237,34 @@ class HBox(Box):
     def move_rect(self, rect, delta):
         return rect.move(delta, 0)
 
+class TextField(Widget):
+
+    def __init__(self, text_changed_callback):
+        Widget.__init__(self)
+        self.text = ""
+        self.text_changed_callback = text_changed_callback
+
+    def process_event(self, event):
+        if self.has_focus() and event.type == pygame.KEYDOWN and event.unicode:
+            self.text += event.unicode
+            self.text_changed_callback()
+
+    def update(self, rect, elapsed_ms):
+        self.rect = rect
+
+    def draw(self, canvas):
+        canvas.fill_rect(
+            self.rect,
+            (250, 250, 250)
+        )
+        canvas.render_text(
+            self.text,
+            self.rect,
+            face="Monospace"
+        )
+        if self.has_focus():
+            canvas.draw_rect(self.rect, (0, 0, 200), 2)
+
 class SmartNotesWidget(VBox):
 
     def __init__(self, path):
@@ -351,19 +379,16 @@ class SearchBar(Widget):
         self.open_callback = open_callback
         self.dismiss_callback = dismiss_callback
         self.animation = Animation()
-        self.search_expression = ""
         self.notes = []
+        self.search_field = SearchField(lambda: None, self.dismiss_callback)
+
+    def focus(self):
+        self.search_field.focus()
 
     def process_event(self, event):
-        if event.type == pygame.KEYDOWN and not self.has_focus():
-            return
-        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
-            self.dismiss_callback()
-        elif event.type == pygame.KEYDOWN and event.unicode:
-            self.search_expression += event.unicode
-        else:
-            for note in self.notes:
-                note.process_event(event)
+        self.search_field.process_event(event)
+        for note in self.notes:
+            note.process_event(event)
 
     def is_visible(self):
         return Widget.is_visible(self) or self.animation.active()
@@ -372,16 +397,19 @@ class SearchBar(Widget):
         if not Widget.is_visible(self):
             self.toggle_visible()
             self.animation.reverse(200)
-            self.search_expression = ""
+            self.search_field.text = ""
         self.focus()
 
     def hide(self):
         if Widget.is_visible(self):
             self.toggle_visible()
             self.animation.reverse(200)
-            self.search_expression = ""
+            self.search_field.text = ""
 
     def update(self, rect, elapsed_ms):
+        r = pygame.Rect(0, 0, 200, 20)
+        r.bottom = rect.bottom - self.IDEAL_HEIGHT + 10 + 20
+        self.search_field.update(r, elapsed_ms)
         self._update_notes_list()
         percent = self.animation.advance(elapsed_ms)
         if Widget.is_visible(self):
@@ -407,7 +435,7 @@ class SearchBar(Widget):
         for note in self.notes:
             by_id[note.note_id] = note
         self.notes = []
-        for note_id, note_data in self.db.get_notes(self.search_expression):
+        for note_id, note_data in self.db.get_notes(self.search_field.text):
             if note_id in by_id:
                 self.notes.append(by_id[note_id])
             else:
@@ -432,14 +460,21 @@ class SearchBar(Widget):
             self.rect,
             color=(84, 106, 134)
         )
-        if self.has_focus():
-            canvas.draw_rect(self.rect, (0, 0, 200), 2)
-        canvas.render_text(
-            "Expression: {}".format(self.search_expression),
-            pygame.Rect((0, 0), (self.rect.width, 20))
-        )
+        self.search_field.draw(canvas)
         for note in self.notes:
             note.draw(canvas)
+
+class SearchField(TextField):
+
+    def __init__(self, text_changed_callback, dismiss_callback):
+        TextField.__init__(self, text_changed_callback)
+        self.dismiss_callback = dismiss_callback
+
+    def process_event(self, event):
+        if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
+            self.dismiss_callback()
+        else:
+            TextField.process_event(self, event)
 
 class SearchNote(NoteBaseWidget):
 
@@ -958,11 +993,16 @@ class CairoCanvas(object):
             valign=False, face=None, textalign="left"):
         if box.height <= 0:
             return
+        if box.height <= 0:
+            return
+        text = text.strip().replace("\n", " ")
+        if not text:
+            return
         if face is not None:
             self.ctx.select_font_face(face)
         self.ctx.set_font_size(size)
         metrics = self._find_best_split(
-            text.strip().replace("\n", " "),
+            text,
             box
         )
         self.ctx.save()
