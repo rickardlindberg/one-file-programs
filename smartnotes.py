@@ -166,7 +166,7 @@ class NoteBaseWidget(Widget):
             rect,
             size=status_height,
             face="Monospace",
-            boxalign="midleft",
+            boxalign="bottomleft",
             split=False,
             color=(100, 100, 100)
         )
@@ -176,7 +176,7 @@ class NoteBaseWidget(Widget):
                 rect,
                 size=status_height,
                 face="Monospace",
-                boxalign="midright",
+                boxalign="bottomright",
                 split=False,
                 color=(100, 100, 255)
             )
