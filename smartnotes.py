@@ -1319,10 +1319,62 @@ class NoteText(ExternalTextEntry):
     def __init__(self, db, note_id=None):
         self.db = db
         self.note_id = note_id
-        ExternalTextEntry.__init__(self, db.get_note_data(self.note_id)["text"])
+        ExternalTextEntry.__init__(self, self._note_to_text())
+
+    def _note_to_text(self):
+        data = self.db.get_note_data(self.note_id)
+        links = data.get("links", [])
+        tags = data.get("tags", [])
+        extra = []
+        if links or tags:
+            extra.append("\n")
+            extra.append("--\n")
+            for link in links:
+                extra.append("link: {}\n".format(link))
+            for tag in tags:
+                extra.append("tag: {}\n".format(tag))
+            extra.append("--\n")
+        return data["text"] + "".join(extra)
 
     def _new_text(self):
-        self.db.update_note(self.note_id, text=self.text)
+        self.db.update_note(self.note_id, **self._text_to_note_fields())
+
+    def _text_to_note_fields(self):
+        try:
+            return self._parse_footer()
+        except ParseError:
+            return {
+                "text": self.text,
+                "links": [],
+                "tags": [],
+            }
+
+    def _parse_footer(self):
+        data = {
+            "text": "",
+            "links": [],
+            "tags": [],
+        }
+        parts = self.text.splitlines(True)
+        if parts and parts.pop(-1).rstrip() == "--":
+            while parts and parts[-1].rstrip() != "--":
+                part = parts.pop(-1)
+                if part.startswith("link: "):
+                    data["links"].append(part[6:].rstrip())
+                elif part.startswith("tag: "):
+                    data["tags"].append(part[5:].rstrip())
+                else:
+                    raise ParseError("unknown field")
+            if parts:
+                parts.pop(-1)
+                while parts and parts[-1].strip() == "":
+                    parts.pop(-1)
+                data["text"] = "".join(parts)
+                return data
+        raise ParseError("no footer found")
+
+class ParseError(ValueError):
+    pass
 
 def main():
     if len(sys.argv) < 2:

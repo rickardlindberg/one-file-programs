@@ -1521,7 +1521,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, db.",
+"text":".__init__(self, self._note_to_text())\n\n    def _note_to_text(self):\n        data = self.db.",
 "type":"code"
 },
 {
@@ -1529,7 +1529,7 @@
 "type":"variable"
 },
 {
-"text":"(self.note_id)[\"text\"])\n\n    def _new_text(self):\n        self.db.",
+"text":"(self.note_id)\n        links = data.get(\"links\", [])\n        tags = data.get(\"tags\", [])\n        extra = []\n        if links or tags:\n            extra.append(\"\\n\")\n            extra.append(\"--\\n\")\n            for link in links:\n                extra.append(\"link: {}\\n\".format(link))\n            for tag in tags:\n                extra.append(\"tag: {}\\n\".format(tag))\n            extra.append(\"--\\n\")\n        return data[\"text\"] + \"\".join(extra)\n\n    def _new_text(self):\n        self.db.",
 "type":"code"
 },
 {
@@ -1537,11 +1537,27 @@
 "type":"variable"
 },
 {
-"text":"(self.note_id, text=self.text)\n",
+"text":"(self.note_id, **self._text_to_note_fields())\n\n    def _text_to_note_fields(self):\n        try:\n            return self._parse_footer()\n        except ParseError:\n            return {\n                \"text\": self.text,\n                \"links\": [],\n                \"tags\": [],\n            }\n\n    def _parse_footer(self):\n        data = {\n            \"text\": \"\",\n            \"links\": [],\n            \"tags\": [],\n        }\n        parts = self.text.splitlines(True)\n        if parts and parts.pop(-1).rstrip() == \"--\":\n            while parts and parts[-1].rstrip() != \"--\":\n                part = parts.pop(-1)\n                if part.startswith(\"link: \"):\n                    data[\"links\"].append(part[6:].rstrip())\n                elif part.startswith(\"tag: \"):\n                    data[\"tags\"].append(part[5:].rstrip())\n                else:\n                    raise ParseError(\"unknown field\")\n            if parts:\n                parts.pop(-1)\n                while parts and parts[-1].strip() == \"\":\n                    parts.pop(-1)\n                data[\"text\"] = \"\".join(parts)\n                return data\n        raise ParseError(\"no footer found\")\n",
 "type":"code"
 }
 ],
 "id":"d8e41e42e3c74c77972240dd961292f6",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class ParseError(ValueError):\n    pass\n",
+"type":"code"
+}
+],
+"id":"7faca746eb97474c9701e11e9f451cf6",
 "type":"code"
 }
 ],
