@@ -145,7 +145,7 @@ class NoteBaseWidget(Widget):
         border = 8
         status_height = self.full_width/20
         rect = self.card_full_rect
-        rect = rect.inflate(-border*2, -border*3-status_height)
+        rect = rect.inflate(-border*4, -border*3-status_height)
         rect.top = border
         if DEBUG_NOTE_BORDER:
             canvas.draw_rect(rect, (200, 50, 50), 1)
@@ -156,6 +156,7 @@ class NoteBaseWidget(Widget):
             textalign="center" if self.is_category() else "left",
             center=True
         )
+        rect = rect.inflate(border*2, 0)
         rect.height = status_height
         rect.bottom = self.card_full_rect.bottom - border
         if DEBUG_NOTE_BORDER:
