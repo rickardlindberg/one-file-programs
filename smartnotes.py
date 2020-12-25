@@ -109,7 +109,7 @@ class NoteBaseWidget(Widget):
             return True
 
     def is_category(self):
-        return "." not in self.data["text"]
+        return "category" in self.data.get("tags", [])
 
     def update(self, rect, elapsed_ms):
         self.data = self.db.get_note_data(self.note_id)
