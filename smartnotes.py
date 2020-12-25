@@ -1068,8 +1068,7 @@ class CairoCanvas(object):
         if face is not None:
             self.ctx.select_font_face(face)
         self._set_color(color)
-        self.ctx.set_font_size(size)
-        metrics, scale_factor = self._find_best_fit(text, box, split)
+        metrics, scale_factor = self._find_best_fit(text, box, split, size)
         self.ctx.save()
         xoffset = 0
         yoffset = 0
@@ -1091,7 +1090,8 @@ class CairoCanvas(object):
             self.ctx.stroke()
         self.ctx.restore()
 
-    def _find_best_fit(self, text, box, split):
+    def _find_best_fit(self, text, box, split, size):
+        self.ctx.set_font_size(size)
         if split:
             metrics = self._find_best_split(text, box)
         else:
