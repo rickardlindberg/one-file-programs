@@ -1054,7 +1054,7 @@ class CairoCanvas(object):
         face=None,
         textalign="left",
         split=True,
-        color=None
+        color=(0, 0, 0)
     ):
         if box.height <= 0:
             return
@@ -1068,10 +1068,7 @@ class CairoCanvas(object):
             self.ctx.stroke()
         if face is not None:
             self.ctx.select_font_face(face)
-        if color is None:
-            self.ctx.set_source_rgb(0, 0, 0)
-        else:
-            self._set_color(color)
+        self._set_color(color)
         self.ctx.set_font_size(size)
         if split:
             metrics = self._find_best_split(text, box)
