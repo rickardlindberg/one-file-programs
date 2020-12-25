@@ -142,16 +142,44 @@ class NoteBaseWidget(Widget):
         )
 
     def _draw_card(self, canvas):
+        border = 8
+        status_height = self.full_width/20
+        rect = self.card_full_rect
+        rect = rect.inflate(-border*2, -border*3-status_height)
+        rect.top = border
+        if DEBUG_NOTE_BORDER:
+            canvas.draw_rect(rect, (200, 50, 50), 1)
         canvas.render_text(
             self.data["text"],
-            self.card_full_rect.inflate(
-                -self.full_width/15,
-                -self.full_height/15
-            ),
+            rect,
             size=self.full_width/10,
             textalign="center" if self.is_category() else "left",
             center=True
         )
+        rect.height = status_height
+        rect.bottom = self.card_full_rect.bottom - border
+        if DEBUG_NOTE_BORDER:
+            canvas.draw_rect(rect, (200, 50, 50), 1)
+        canvas.render_text(
+            self.data["timestamp_created"][:10],
+            rect,
+            size=status_height,
+            face="Monospace",
+            valign=True,
+            split=False,
+            color=(100, 100, 100)
+        )
+        if self.data.get("tags", None):
+            canvas.render_text(
+                " ".join("#{}".format(tag) for tag in self.data["tags"]),
+                rect,
+                size=status_height,
+                face="Monospace",
+                halign="right",
+                valign=True,
+                split=False,
+                color=(100, 100, 255)
+            )
 
     def _get_target(self, alotted_rect, align="center"):
         target = self.card_full_rect
@@ -1020,9 +1048,7 @@ class CairoCanvas(object):
             self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)
 
     def render_text(self, text, box, size=40, center=False, halign=False,
-            valign=False, face=None, textalign="left"):
-        if box.height <= 0:
-            return
+            valign=False, face=None, textalign="left", split=True, color=None):
         if box.height <= 0:
             return
         text = text.strip().replace("\n", " ")
@@ -1030,11 +1056,15 @@ class CairoCanvas(object):
             return
         if face is not None:
             self.ctx.select_font_face(face)
+        if color is None:
+            self.ctx.set_source_rgb(0, 0, 0)
+        else:
+            self._set_color(color)
         self.ctx.set_font_size(size)
-        metrics = self._find_best_split(
-            text,
-            box
-        )
+        if split:
+            metrics = self._find_best_split(text, box)
+        else:
+            metrics = self._get_metrics([text])
         self.ctx.save()
         scale_factor = box.width / metrics["width"]
         if metrics["height"] * scale_factor > box.height:
@@ -1042,13 +1072,14 @@ class CairoCanvas(object):
         scale_factor = min(scale_factor, 1)
         xoffset = 0
         yoffset = 0
-        if halign or center:
+        if halign == "right":
+            xoffset = box[2]-metrics["width"]*scale_factor
+        elif halign or center:
             xoffset = box[2]/2-metrics["width"]*scale_factor/2
         if valign or center:
             yoffset = box[3]/2-metrics["height"]*scale_factor/2
         self.ctx.translate(box[0]+xoffset, box[1]+yoffset)
         self.ctx.scale(scale_factor, scale_factor)
-        self.ctx.set_source_rgb(0, 0, 0)
         for x, y, width, part in metrics["parts"]:
             x_align_offset = 0
             if textalign == "center":
