@@ -1069,21 +1069,8 @@ class CairoCanvas(object):
             self.ctx.select_font_face(face)
         self._set_color(color)
         self.ctx.set_font_size(size)
-        if split:
-            metrics = self._find_best_split(text, box)
-        else:
-            metrics = self._get_metrics([text])
+        metrics, scale_factor = self._find_best_fit(text, box, split)
         self.ctx.save()
-        scale_factor = box.width / metrics["width"]
-        if metrics["height"] * scale_factor > box.height:
-            scale_factor = box.height / metrics["height"]
-        scale_factor = min(scale_factor, 1)
-
-        self.ctx.save()
-        self.ctx.scale(scale_factor, scale_factor)
-        metrics = self._get_metrics([x[-1] for x in metrics["parts"]])
-        self.ctx.restore()
-
         xoffset = 0
         yoffset = 0
         self._translate_box(box, metrics["width"]*scale_factor, metrics["height"]*scale_factor, boxalign)
@@ -1104,23 +1091,20 @@ class CairoCanvas(object):
             self.ctx.stroke()
         self.ctx.restore()
 
-    def _translate_box(self, box, text_width, text_height, boxalign):
-        # topleft      topcenter     topright
-        # midleft        center      midright
-        # bottomleft  bottomcenter  bottomright
-        if boxalign in ["topright", "midright", "bottomright"]:
-            xoffset = box[2]-text_width
-        elif boxalign in ["topcenter", "center", "bottomcenter"]:
-            xoffset = box[2]/2-text_width/2
+    def _find_best_fit(self, text, box, split):
+        if split:
+            metrics = self._find_best_split(text, box)
         else:
-            xoffset = 0
-        if boxalign in ["bottomleft", "bottomcenter", "bottomright"]:
-            yoffset = box[3]-text_height
-        elif boxalign in ["midleft", "center", "midright"]:
-            yoffset = box[3]/2-text_height/2
-        else:
-            yoffset = 0
-        self.ctx.translate(box[0]+xoffset, box[1]+yoffset)
+            metrics = self._get_metrics([text])
+        scale_factor = box.width / metrics["width"]
+        if metrics["height"] * scale_factor > box.height:
+            scale_factor = box.height / metrics["height"]
+        scale_factor = min(scale_factor, 1)
+        self.ctx.save()
+        self.ctx.scale(scale_factor, scale_factor)
+        metrics = self._get_metrics([x[-1] for x in metrics["parts"]])
+        self.ctx.restore()
+        return metrics, scale_factor
 
     def _find_best_split(self, text, box):
         split_times = 1
@@ -1136,6 +1120,16 @@ class CairoCanvas(object):
             else:
                 diff = new_diff
                 metrics = new_metrics
+
+    def _split_text(self, text, times):
+        words = text.split(" ")
+        words_per_part = max(1, int(round(len(words) / times)))
+        parts = []
+        start = 0
+        while start < len(words):
+            parts.append(" ".join(words[start:start+words_per_part]))
+            start += words_per_part
+        return parts
 
     def _get_metrics(self, splits):
         width = 0
@@ -1159,15 +1153,23 @@ class CairoCanvas(object):
             "ratio": width / height,
         }
 
-    def _split_text(self, text, times):
-        words = text.split(" ")
-        words_per_part = max(1, int(round(len(words) / times)))
-        parts = []
-        start = 0
-        while start < len(words):
-            parts.append(" ".join(words[start:start+words_per_part]))
-            start += words_per_part
-        return parts
+    def _translate_box(self, box, text_width, text_height, boxalign):
+        # topleft      topcenter     topright
+        # midleft        center      midright
+        # bottomleft  bottomcenter  bottomright
+        if boxalign in ["topright", "midright", "bottomright"]:
+            xoffset = box[2]-text_width
+        elif boxalign in ["topcenter", "center", "bottomcenter"]:
+            xoffset = box[2]/2-text_width/2
+        else:
+            xoffset = 0
+        if boxalign in ["bottomleft", "bottomcenter", "bottomright"]:
+            yoffset = box[3]-text_height
+        elif boxalign in ["midleft", "center", "midright"]:
+            yoffset = box[3]/2-text_height/2
+        else:
+            yoffset = 0
+        self.ctx.translate(box[0]+xoffset, box[1]+yoffset)
 
     def move_to(self, x, y):
         self.ctx.move_to(x, y)
