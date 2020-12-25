@@ -1100,10 +1100,11 @@ class CairoCanvas(object):
         if metrics["height"] * scale_factor > box.height:
             scale_factor = box.height / metrics["height"]
         scale_factor = min(scale_factor, 1)
-        self.ctx.save()
-        self.ctx.scale(scale_factor, scale_factor)
-        metrics = self._get_metrics([x[-1] for x in metrics["parts"]])
-        self.ctx.restore()
+        if scale_factor < 1:
+            self.ctx.save()
+            self.ctx.scale(scale_factor, scale_factor)
+            metrics = self._get_metrics([x[-1] for x in metrics["parts"]])
+            self.ctx.restore()
         return metrics, scale_factor
 
     def _find_best_split(self, text, box):
