@@ -1078,6 +1078,12 @@ class CairoCanvas(object):
         if metrics["height"] * scale_factor > box.height:
             scale_factor = box.height / metrics["height"]
         scale_factor = min(scale_factor, 1)
+
+        self.ctx.save()
+        self.ctx.scale(scale_factor, scale_factor)
+        metrics = self._get_metrics([x[-1] for x in metrics["parts"]])
+        self.ctx.restore()
+
         xoffset = 0
         yoffset = 0
         self._translate_box(box, metrics["width"]*scale_factor, metrics["height"]*scale_factor, boxalign)
