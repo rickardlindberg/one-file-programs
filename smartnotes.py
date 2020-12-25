@@ -1055,6 +1055,11 @@ class CairoCanvas(object):
         text = text.strip().replace("\n", " ")
         if not text:
             return
+        if DEBUG_TEXT_BORDER:
+            self.ctx.set_source_rgb(1, 0.1, 0.1)
+            self.ctx.rectangle(box[0], box[1], box[2], box[3])
+            self.ctx.set_line_width(1)
+            self.ctx.stroke()
         if face is not None:
             self.ctx.select_font_face(face)
         if color is None:
