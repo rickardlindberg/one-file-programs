@@ -1101,6 +1101,7 @@ class CairoCanvas(object):
             scale_factor = box.height / metrics["height"]
         scale_factor = min(scale_factor, 1)
         if scale_factor < 1:
+            scale_factor *= 0.95
             self.ctx.save()
             self.ctx.scale(scale_factor, scale_factor)
             metrics = self._get_metrics([x[-1] for x in metrics["parts"]])
