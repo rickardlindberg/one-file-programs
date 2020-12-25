@@ -1151,8 +1151,16 @@ class NoteDb(object):
         def match(item):
             lower_text = item["text"].lower()
             for part in expression.split(" "):
-                if part.lower() not in lower_text:
-                    return False
+                if part.startswith("#"):
+                    tagpart = part[1:]
+                    for tag in item.get("tags", []):
+                        if tagpart in tag:
+                            break
+                    else:
+                        return False
+                else:
+                    if part.lower() not in lower_text:
+                        return False
             return True
         return sorted(
             (
