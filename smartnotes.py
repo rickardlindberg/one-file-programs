@@ -1109,7 +1109,7 @@ class CairoCanvas(object):
             xoffset = box[2]/2-text_width/2
         else:
             xoffset = 0
-        if boxalign in ["bottomleft", "bottomcenter" "bottomright"]:
+        if boxalign in ["bottomleft", "bottomcenter", "bottomright"]:
             yoffset = box[3]-text_height
         elif boxalign in ["midleft", "center", "midright"]:
             yoffset = box[3]/2-text_height/2
