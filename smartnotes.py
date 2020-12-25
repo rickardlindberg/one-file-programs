@@ -560,7 +560,7 @@ class NetworkWidget(Widget):
             self.open_note(note_id)
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
-                entry=EditNoteText(self.db, note_id)
+                entry=NoteText(self.db, note_id)
             )
         else:
             for note in self.notes:
@@ -728,7 +728,7 @@ class NetworkNote(NoteBaseWidget):
             self.clear_quick_focus()
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
-                entry=EditNoteText(self.db, self.note_id)
+                entry=NoteText(self.db, self.note_id)
             )
         elif event.type == pygame.KEYDOWN and event.unicode == "d":
             self.clear_quick_focus()
@@ -744,7 +744,7 @@ class NetworkNote(NoteBaseWidget):
             self.db.create_link(self.note_id, child_note_id)
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
-                entry=EditNoteText(self.db, child_note_id)
+                entry=NoteText(self.db, child_note_id)
             )
         elif event.type == pygame.MOUSEBUTTONDOWN:
             self.state.set_link_source(self)
@@ -1314,7 +1314,7 @@ class ExternalTextEntry(object):
     def _new_text(self):
         pass
 
-class EditNoteText(ExternalTextEntry):
+class NoteText(ExternalTextEntry):
 
     def __init__(self, db, note_id=None):
         self.db = db
