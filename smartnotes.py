@@ -1089,9 +1089,12 @@ class CairoCanvas(object):
         self._translate_box(box, metrics["width"]*scale_factor, metrics["height"]*scale_factor, boxalign)
         self.ctx.scale(scale_factor, scale_factor)
         for x, y, width, part in metrics["parts"]:
-            x_align_offset = 0
             if textalign == "center":
                 x_align_offset = (metrics["width"]-width)/2
+            elif textalign == "right":
+                x_align_offset = metrics["width"]-width
+            else:
+                x_align_offset = 0
             self.ctx.move_to(x+x_align_offset, y)
             self.ctx.show_text(part)
         if DEBUG_TEXT_BORDER:
