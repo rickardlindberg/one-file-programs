@@ -154,7 +154,7 @@ class NoteBaseWidget(Widget):
             rect,
             size=self.full_width/10,
             textalign="center" if self.is_category() else "left",
-            center=True
+            boxalign="center"
         )
         rect = rect.inflate(border*2, 0)
         rect.height = status_height
@@ -166,7 +166,7 @@ class NoteBaseWidget(Widget):
             rect,
             size=status_height,
             face="Monospace",
-            valign=True,
+            boxalign="midleft",
             split=False,
             color=(100, 100, 100)
         )
@@ -177,7 +177,7 @@ class NoteBaseWidget(Widget):
                 size=status_height,
                 face="Monospace",
                 halign="right",
-                valign=True,
+                boxalign="midleft",
                 split=False,
                 color=(100, 100, 255)
             )
@@ -295,7 +295,7 @@ class TextField(Widget):
             self.rect.inflate(-4, -4),
             face="Monospace",
             size=self.text_size,
-            valign=True
+            boxalign="midleft"
         )
         if self.has_focus():
             canvas.draw_rect(self.rect, (74, 144, 217), 2)
@@ -968,7 +968,7 @@ class DebugBar(Widget):
         canvas.render_text(
             f"elapsed_ms = {self.average_elapsed} | fps = {self.fps}",
             pygame.Rect((0, 0), self.rect.size).inflate(-20, -20),
-            valign=True,
+            boxalign="midleft",
             size=15,
             face="Monospace"
         )
@@ -1048,8 +1048,14 @@ class CairoCanvas(object):
         else:
             self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)
 
-    def render_text(self, text, box, size=40, center=False, halign=False,
-            valign=False, face=None, textalign="left", split=True, color=None):
+    def render_text(self, text, box,
+        size=40,
+        boxalign="center",
+        face=None,
+        textalign="left",
+        split=True,
+        color=None
+    ):
         if box.height <= 0:
             return
         text = text.strip().replace("\n", " ")
@@ -1078,13 +1084,7 @@ class CairoCanvas(object):
         scale_factor = min(scale_factor, 1)
         xoffset = 0
         yoffset = 0
-        if halign == "right":
-            xoffset = box[2]-metrics["width"]*scale_factor
-        elif halign or center:
-            xoffset = box[2]/2-metrics["width"]*scale_factor/2
-        if valign or center:
-            yoffset = box[3]/2-metrics["height"]*scale_factor/2
-        self.ctx.translate(box[0]+xoffset, box[1]+yoffset)
+        self._translate_box(box, metrics["width"]*scale_factor, metrics["height"]*scale_factor, boxalign)
         self.ctx.scale(scale_factor, scale_factor)
         for x, y, width, part in metrics["parts"]:
             x_align_offset = 0
@@ -1098,6 +1098,24 @@ class CairoCanvas(object):
             self.ctx.set_line_width(2/scale_factor)
             self.ctx.stroke()
         self.ctx.restore()
+
+    def _translate_box(self, box, text_width, text_height, boxalign):
+        # topleft      topcenter     topright
+        # midleft        center      midright
+        # bottomleft  bottomcenter  bottomright
+        if boxalign in ["topright", "midright", "bottomright"]:
+            xoffset = box[2]-text_width
+        elif boxalign in ["topcenter", "center", "bottomcenter"]:
+            xoffset = box[2]/2-text_width/2
+        else:
+            xoffset = 0
+        if boxalign in ["bottomleft", "bottomcenter" "bottomright"]:
+            yoffset = box[3]-text_height
+        elif boxalign in ["midleft", "center", "midright"]:
+            yoffset = box[3]/2-text_height/2
+        else:
+            yoffset = 0
+        self.ctx.translate(box[0]+xoffset, box[1]+yoffset)
 
     def _find_best_split(self, text, box):
         split_times = 1
