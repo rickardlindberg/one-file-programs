@@ -1436,9 +1436,9 @@ class NoteText(ExternalTextEntry):
             while parts and parts[-1].rstrip() != "--":
                 part = parts.pop(-1)
                 if part.startswith("link: "):
-                    data["links"].append(part[6:].rstrip())
+                    data["links"].insert(0, part[6:].rstrip())
                 elif part.startswith("tag: "):
-                    data["tags"].append(part[5:].rstrip())
+                    data["tags"].insert(0, part[5:].rstrip())
                 else:
                     raise ParseError("unknown field")
             if parts:
