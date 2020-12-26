@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import uuid
+import webbrowser
 
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_TEXT_BORDER = os.environ.get("DEBUG_TEXT_BORDER") == "yes"
@@ -779,6 +780,9 @@ class NetworkNote(NoteBaseWidget):
             if link_id:
                 self.db.delete_link(link_id)
                 self.clear_quick_focus()
+        elif event.type == pygame.KEYDOWN and event.unicode == "g":
+            for link in self.data.get("links", []):
+                webbrowser.open(link)
         elif event.type == pygame.KEYDOWN and event.unicode == "c":
             self.clear_quick_focus()
             child_note_id = self.db.create_note(text="Enter note text...")

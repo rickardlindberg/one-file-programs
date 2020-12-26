@@ -320,7 +320,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, self.note_id)\n            )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"d\":\n            self.clear_quick_focus()\n            self.db.delete_note(self.note_id)\n        elif event.type == pygame.KEYDOWN and event.unicode == \"u\":\n            link_id = self.get_link_id()\n            if link_id:\n                self.db.delete_link(link_id)\n                self.clear_quick_focus()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n            self.clear_quick_focus()\n            child_note_id = self.db.create_note(text=\"Enter note text...\")\n            self.db.create_link(self.note_id, child_note_id)\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
+"text":"(self.db, self.note_id)\n            )\n        elif event.type == pygame.KEYDOWN and event.unicode == \"d\":\n            self.clear_quick_focus()\n            self.db.delete_note(self.note_id)\n        elif event.type == pygame.KEYDOWN and event.unicode == \"u\":\n            link_id = self.get_link_id()\n            if link_id:\n                self.db.delete_link(link_id)\n                self.clear_quick_focus()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"g\":\n            for link in self.data.get(\"links\", []):\n                webbrowser.open(link)\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\":\n            self.clear_quick_focus()\n            child_note_id = self.db.create_note(text=\"Enter note text...\")\n            self.db.create_link(self.note_id, child_note_id)\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
 "type":"code"
 },
 {
@@ -1573,7 +1573,7 @@
 ],
 "fragments":[
 {
-"text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport io\nimport json\nimport math\nimport os\nimport pygame\nimport pygame.freetype\nimport subprocess\nimport sys\nimport tempfile\nimport uuid\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_TEXT_BORDER = os.environ.get(\"DEBUG_TEXT_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\nDEBUG = DEBUG_NOTE_BORDER or DEBUG_TEXT_BORDER or DEBUG_ANIMATIONS\n\nUSER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT\nUSER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1\n\n",
+"text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport io\nimport json\nimport math\nimport os\nimport pygame\nimport pygame.freetype\nimport subprocess\nimport sys\nimport tempfile\nimport uuid\nimport webbrowser\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_TEXT_BORDER = os.environ.get(\"DEBUG_TEXT_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\nDEBUG = DEBUG_NOTE_BORDER or DEBUG_TEXT_BORDER or DEBUG_ANIMATIONS\n\nUSER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT\nUSER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1\n\n",
 "type":"code"
 },
 {
