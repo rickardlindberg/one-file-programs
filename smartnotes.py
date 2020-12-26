@@ -108,8 +108,8 @@ class NoteBaseWidget(Widget):
         except NoteNotFound:
             return True
 
-    def is_category(self):
-        return "category" in self.data.get("tags", [])
+    def is_title(self):
+        return "title" in self.data.get("tags", [])
 
     def update(self, rect, elapsed_ms):
         self.data = self.db.get_note_data(self.note_id)
@@ -153,7 +153,7 @@ class NoteBaseWidget(Widget):
             self.data["text"],
             rect,
             size=self.full_width/10,
-            textalign="center" if self.is_category() else "left",
+            textalign="center" if self.is_title() else "left",
             boxalign="center"
         )
         rect = rect.inflate(border*2, 0)
