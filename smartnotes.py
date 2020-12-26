@@ -61,6 +61,8 @@ class Widget(object):
         if Widget._focused_widget is not None and Widget._stable_focused_widget is not None:
             Widget._focused_widget = Widget._stable_focused_widget
             Widget._stable_focused_widget = None
+            return True
+        return False
 
     def quick_focus(self):
         if Widget._stable_focused_widget is None:
@@ -384,16 +386,17 @@ class SmartNotesWidget(VBox):
             self.db.redo()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
             self.debug_bar.toggle()
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self.clear_quick_focus()
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and self.clear_quick_focus():
+            pass
         else:
             VBox.process_event(self, event)
 
     def _on_search_note_open(self, note_id):
         self.network.open_note(note_id)
 
-    def _on_search_dismiss(self):
-        self.search_bar.hide()
+    def _on_search_dismiss(self, close):
+        if close:
+            self.search_bar.hide()
         self.network.focus()
 
     def _on_search_request(self):
@@ -483,17 +486,22 @@ class SearchField(TextField):
         self.dismiss_callback = dismiss_callback
 
     def update(self, rect, elapsed_time):
+        self.rect = rect
         x_shrink = int(rect.width * 0.1)
         y_shrink = 15
         TextField.update(self, rect.inflate(-x_shrink, -y_shrink), elapsed_time)
 
     def process_event(self, event):
         if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
-            self.dismiss_callback()
+            self.dismiss_callback(close=True)
         elif self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_w:
             self.set_text(strip_last_word(self.text))
         elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
             self.set_text(self.text[:-1])
+        elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.dismiss_callback(close=False)
+        elif event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos):
+            self.focus()
         else:
             TextField.process_event(self, event)
 
