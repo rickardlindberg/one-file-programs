@@ -1100,13 +1100,17 @@ class CairoCanvas(object):
         if metrics["height"] * scale_factor > box.height:
             scale_factor = box.height / metrics["height"]
         scale_factor = min(scale_factor, 1)
+        size = int(size*scale_factor)
         if scale_factor < 1:
-            scale_factor *= 0.95
-            self.ctx.save()
-            self.ctx.scale(scale_factor, scale_factor)
-            metrics = self._get_metrics([x[-1] for x in metrics["parts"]])
-            self.ctx.restore()
-        return metrics, scale_factor
+            while True:
+                self.ctx.set_font_size(size)
+                metrics = self._get_metrics([x[-1] for x in metrics["parts"]])
+                if size < 2:
+                    break
+                if metrics["width"] <= box.width and metrics["height"] <= box.height:
+                    break
+                size -= 1
+        return metrics, 1
 
     def _find_best_split(self, text, box):
         split_times = 1
