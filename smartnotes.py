@@ -170,7 +170,11 @@ class NoteBaseWidget(Widget):
             split=False,
             color=(100, 100, 100)
         )
-        if self.data.get("tags", None):
+        tags = self.data.get("tags", [])
+        links = self.data.get("links", [])
+        if tags or links:
+            right = rect.right
+            rect.width -= (rect.height*1.3) * len(links)
             canvas.render_text(
                 " ".join("#{}".format(tag) for tag in self.data["tags"]),
                 rect,
@@ -180,6 +184,15 @@ class NoteBaseWidget(Widget):
                 split=False,
                 color=(100, 100, 255)
             )
+            rect.width = rect.height
+            rect.right = right
+            for link in links:
+                canvas.draw_rect(
+                    rect,
+                    (50, 150, 50),
+                    1
+                )
+                rect = rect.move(-rect.height*1.3, 0)
 
     def _get_target(self, alotted_rect, align="center"):
         target = self.card_full_rect
