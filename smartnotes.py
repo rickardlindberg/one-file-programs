@@ -315,27 +315,44 @@ class TextField(Widget):
 class Immutable(object):
 
     def __init__(self, data, undo_list_size=20):
-        self.undo_list_size = undo_list_size
         self.data = data
+        self.undo_list_size = undo_list_size
         self.undo_list = []
         self.redo_list = []
+        self.transaction_count = 0
+
+    def set_data(self, data):
+        with self.transaction():
+            self.data = data
+
+    @contextlib.contextmanager
+    def transaction(self):
+        current_data = self.data
+        self.transaction_count += 1
+        try:
+            yield
+        except:
+            self.data = current_data
+            raise
+        finally:
+            self.transaction_count -= 1
+            if self.transaction_count == 0 and self.data is not current_data:
+                self.undo_list.append(current_data)
+                self.undo_list = self.undo_list[-self.undo_list_size:]
+                self.redo_list.clear()
+                self._data_changed()
 
     def undo(self):
-        if self.undo_list:
+        if self.transaction_count == 0 and self.undo_list:
             self.redo_list.insert(0, self.data)
             self.data = self.undo_list.pop(-1)
+            self._data_changed()
 
     def redo(self):
-        if self.redo_list:
+        if self.transaction_count == 0 and self.redo_list:
             self.undo_list.append(self.data)
             self.data = self.redo_list.pop(0)
-
-    def _update(self, data):
-        self.undo_list.append(self.data)
-        self.undo_list = self.undo_list[-self.undo_list_size:]
-        self.redo_list.clear()
-        self.data = data
-        self._data_changed()
+            self._data_changed()
 
     def _data_changed(self):
         pass
@@ -841,8 +858,9 @@ class NetworkNote(NoteBaseWidget):
                 webbrowser.open(link)
         elif event.type == pygame.KEYDOWN and event.unicode == "c":
             self.clear_quick_focus()
-            child_note_id = self.db.create_note(text="Enter note text...")
-            self.db.create_link(self.note_id, child_note_id)
+            with self.db.transaction():
+                child_note_id = self.db.create_note(text="Enter note text...\n")
+                self.db.create_link(self.note_id, child_note_id)
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
                 entry=NoteText(self.db, child_note_id)
@@ -1100,7 +1118,7 @@ class NoteDb(Immutable):
 
     def create_note(self, **params):
         note_id = genid()
-        self._update(dict(
+        self.set_data(dict(
             self.data,
             notes=dict(
                 self.data["notes"],
@@ -1111,7 +1129,7 @@ class NoteDb(Immutable):
 
     def update_note(self, note_id, **params):
         self._ensure_note_id(note_id)
-        self._update(dict(
+        self.set_data(dict(
             self.data,
             notes=dict(
                 self.data["notes"],
@@ -1130,15 +1148,11 @@ class NoteDb(Immutable):
                 dead_links.append(link_id)
         for link_id in dead_links:
             new_links.pop(link_id)
-        self._update(dict(
-            self.data,
-            notes=new_notes,
-            links=new_links
-        ))
+        self.set_data(dict(self.data, notes=new_notes, links=new_links))
 
     def create_link(self, from_id, to_id):
         link_id = genid()
-        self._update(dict(
+        self.set_data(dict(
             self.data,
             links=dict(
                 self.data["links"],
@@ -1155,13 +1169,7 @@ class NoteDb(Immutable):
         self._ensure_link_id(link_id)
         new_links = dict(self.data["links"])
         new_links.pop(link_id)
-        self._update(dict(
-            self.data,
-            links=new_links
-        ))
-
-    def _data_changed(self):
-        write_json_file(self.path, self.data)
+        self.set_data(dict(self.data, links=new_links))
 
     def _ensure_note_id(self, note_id):
         if note_id not in self.data["notes"]:
@@ -1170,6 +1178,9 @@ class NoteDb(Immutable):
     def _ensure_link_id(self, link_id):
         if link_id not in self.data["links"]:
             raise LinkNotFound(str(link_id))
+
+    def _data_changed(self):
+        write_json_file(self.path, self.data)
 
 class NoteNotFound(ValueError):
     pass
