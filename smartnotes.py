@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-import cairo
-import contextlib
 import datetime
-import json
-import os
-import pygame
-import subprocess
 import sys
-import tempfile
 import uuid
 import webbrowser
+import cairo
+import pygame
+import contextlib
+import json
+import os
+import subprocess
+import tempfile
 
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_TEXT_BORDER = os.environ.get("DEBUG_TEXT_BORDER") == "yes"
@@ -311,6 +311,29 @@ class TextField(Widget):
         )
         if self.has_focus():
             canvas.draw_rect(self.rect, (74, 144, 217), 2)
+
+class ExternalTextEntry(object):
+
+    def __init__(self, text):
+        self.text = text
+        self.f = tempfile.NamedTemporaryFile(suffix="-smartnotes-external-")
+        self.f.write(self.text.encode("utf-8"))
+        self.f.flush()
+        self.p = subprocess.Popen(["gvim", "--nofork", self.f.name])
+
+    def check(self):
+        self.f.seek(0)
+        text = self.f.read().decode("utf-8")
+        if text != self.text:
+            self.text = text
+            self._new_text()
+        if self.p.poll() is not None:
+            self.f.close()
+            return False
+        return True
+
+    def _new_text(self):
+        pass
 
 class SmartNotesWidget(VBox):
 
@@ -994,6 +1017,217 @@ class DebugBar(Widget):
             face="Monospace"
         )
 
+class NoteDb(object):
+
+    def __init__(self, path):
+        self.path = path
+        self.data = read_json_file(self.path, {
+            "version": 1,
+            "notes": {},
+            "links": {},
+        })
+        self.undo_list = []
+        self.redo_list = []
+
+    def get_notes(self, expression=""):
+        def match(item):
+            lower_text = item["text"].lower()
+            for part in expression.split(" "):
+                if part.startswith("#"):
+                    tagpart = part[1:]
+                    for tag in item.get("tags", []):
+                        if tagpart in tag:
+                            break
+                    else:
+                        return False
+                else:
+                    if part.lower() not in lower_text:
+                        return False
+            return True
+        return sorted(
+            (
+                item
+                for item in self.data["notes"].items()
+                if match(item[1])
+            ),
+            key=lambda item: item[1]["timestamp_created"],
+            reverse=True
+        )
+
+    def get_note_data(self, note_id):
+        self._ensure_note_id(note_id)
+        return self.data["notes"][note_id]
+
+    def get_outgoing_links(self, note_id):
+        return [
+            (link_id, link)
+            for link_id, link in self.data["links"].items()
+            if link["from"] == note_id
+        ]
+
+    def get_incoming_links(self, note_id):
+        return [
+            (link_id, link)
+            for link_id, link in self.data["links"].items()
+            if link["to"] == note_id
+        ]
+
+    def create_note(self, **params):
+        note_id = genid()
+        self._update(dict(
+            self.data,
+            notes=dict(
+                self.data["notes"],
+                **{note_id: dict(params, timestamp_created=utcnow_timestamp_string())}
+            )
+        ))
+        return note_id
+
+    def update_note(self, note_id, **params):
+        self._ensure_note_id(note_id)
+        self._update(dict(
+            self.data,
+            notes=dict(
+                self.data["notes"],
+                **{note_id: dict(self.data["notes"][note_id], **params)}
+            )
+        ))
+
+    def delete_note(self, note_id):
+        self._ensure_note_id(note_id)
+        new_notes = dict(self.data["notes"])
+        new_notes.pop(note_id)
+        new_links = dict(self.data["links"])
+        dead_links = []
+        for link_id, link in new_links.items():
+            if link["to"] == note_id or link["from"] == note_id:
+                dead_links.append(link_id)
+        for link_id in dead_links:
+            new_links.pop(link_id)
+        self._update(dict(
+            self.data,
+            notes=new_notes,
+            links=new_links
+        ))
+
+    def create_link(self, from_id, to_id):
+        link_id = genid()
+        self._update(dict(
+            self.data,
+            links=dict(
+                self.data["links"],
+                **{link_id: {
+                    "from": from_id,
+                    "to": to_id,
+                    "timestamp_created": utcnow_timestamp_string(),
+                }}
+            )
+        ))
+        return link_id
+
+    def delete_link(self, link_id):
+        self._ensure_link_id(link_id)
+        new_links = dict(self.data["links"])
+        new_links.pop(link_id)
+        self._update(dict(
+            self.data,
+            links=new_links
+        ))
+
+    def undo(self):
+        if self.undo_list:
+            self.redo_list.insert(0, self.data)
+            self.data = self.undo_list.pop(-1)
+
+    def redo(self):
+        if self.redo_list:
+            self.undo_list.append(self.data)
+            self.data = self.redo_list.pop(0)
+
+    def _update(self, data):
+        UNDO_LIST_SIZE = 20
+        self.undo_list.append(self.data)
+        self.undo_list = self.undo_list[-UNDO_LIST_SIZE:]
+        self.redo_list.clear()
+        self.data = data
+        write_json_file(self.path, self.data)
+
+    def _ensure_note_id(self, note_id):
+        if note_id not in self.data["notes"]:
+            raise NoteNotFound(str(note_id))
+
+    def _ensure_link_id(self, link_id):
+        if link_id not in self.data["links"]:
+            raise LinkNotFound(str(link_id))
+
+class NoteNotFound(ValueError):
+    pass
+
+class LinkNotFound(ValueError):
+    pass
+
+class NoteText(ExternalTextEntry):
+
+    def __init__(self, db, note_id=None):
+        self.db = db
+        self.note_id = note_id
+        ExternalTextEntry.__init__(self, self._note_to_text())
+
+    def _note_to_text(self):
+        data = self.db.get_note_data(self.note_id)
+        links = data.get("links", [])
+        tags = data.get("tags", [])
+        extra = []
+        if links or tags:
+            extra.append("\n")
+            extra.append("--\n")
+            for link in links:
+                extra.append("link: {}\n".format(link))
+            for tag in tags:
+                extra.append("tag: {}\n".format(tag))
+            extra.append("--\n")
+        return data["text"] + "".join(extra)
+
+    def _new_text(self):
+        self.db.update_note(self.note_id, **self._text_to_note_fields())
+
+    def _text_to_note_fields(self):
+        try:
+            return self._parse_footer()
+        except ParseError:
+            return {
+                "text": self.text,
+                "links": [],
+                "tags": [],
+            }
+
+    def _parse_footer(self):
+        data = {
+            "text": "",
+            "links": [],
+            "tags": [],
+        }
+        parts = self.text.splitlines(True)
+        if parts and parts.pop(-1).rstrip() == "--":
+            while parts and parts[-1].rstrip() != "--":
+                part = parts.pop(-1)
+                if part.startswith("link: "):
+                    data["links"].insert(0, part[6:].rstrip())
+                elif part.startswith("tag: "):
+                    data["tags"].insert(0, part[5:].rstrip())
+                else:
+                    raise ParseError("unknown field")
+            if parts:
+                parts.pop(-1)
+                while parts and parts[-1].strip() == "":
+                    parts.pop(-1)
+                data["text"] = "".join(parts)
+                return data
+        raise ParseError("no footer found")
+
+class ParseError(ValueError):
+    pass
+
 class Animation(object):
 
     def __init__(self):
@@ -1225,155 +1459,6 @@ class CairoCanvas(object):
             self.surface.get_height()
         )
 
-class NoteDb(object):
-
-    def __init__(self, path):
-        self.path = path
-        self.data = read_json_file(self.path, {
-            "version": 1,
-            "notes": {},
-            "links": {},
-        })
-        self.undo_list = []
-        self.redo_list = []
-
-    def get_notes(self, expression=""):
-        def match(item):
-            lower_text = item["text"].lower()
-            for part in expression.split(" "):
-                if part.startswith("#"):
-                    tagpart = part[1:]
-                    for tag in item.get("tags", []):
-                        if tagpart in tag:
-                            break
-                    else:
-                        return False
-                else:
-                    if part.lower() not in lower_text:
-                        return False
-            return True
-        return sorted(
-            (
-                item
-                for item in self.data["notes"].items()
-                if match(item[1])
-            ),
-            key=lambda item: item[1]["timestamp_created"],
-            reverse=True
-        )
-
-    def get_note_data(self, note_id):
-        self._ensure_note_id(note_id)
-        return self.data["notes"][note_id]
-
-    def get_outgoing_links(self, note_id):
-        return [
-            (link_id, link)
-            for link_id, link in self.data["links"].items()
-            if link["from"] == note_id
-        ]
-
-    def get_incoming_links(self, note_id):
-        return [
-            (link_id, link)
-            for link_id, link in self.data["links"].items()
-            if link["to"] == note_id
-        ]
-
-    def create_note(self, **params):
-        note_id = genid()
-        self._update(dict(
-            self.data,
-            notes=dict(
-                self.data["notes"],
-                **{note_id: dict(params, timestamp_created=utcnow_timestamp_string())}
-            )
-        ))
-        return note_id
-
-    def update_note(self, note_id, **params):
-        self._ensure_note_id(note_id)
-        self._update(dict(
-            self.data,
-            notes=dict(
-                self.data["notes"],
-                **{note_id: dict(self.data["notes"][note_id], **params)}
-            )
-        ))
-
-    def delete_note(self, note_id):
-        self._ensure_note_id(note_id)
-        new_notes = dict(self.data["notes"])
-        new_notes.pop(note_id)
-        new_links = dict(self.data["links"])
-        dead_links = []
-        for link_id, link in new_links.items():
-            if link["to"] == note_id or link["from"] == note_id:
-                dead_links.append(link_id)
-        for link_id in dead_links:
-            new_links.pop(link_id)
-        self._update(dict(
-            self.data,
-            notes=new_notes,
-            links=new_links
-        ))
-
-    def create_link(self, from_id, to_id):
-        link_id = genid()
-        self._update(dict(
-            self.data,
-            links=dict(
-                self.data["links"],
-                **{link_id: {
-                    "from": from_id,
-                    "to": to_id,
-                    "timestamp_created": utcnow_timestamp_string(),
-                }}
-            )
-        ))
-        return link_id
-
-    def delete_link(self, link_id):
-        self._ensure_link_id(link_id)
-        new_links = dict(self.data["links"])
-        new_links.pop(link_id)
-        self._update(dict(
-            self.data,
-            links=new_links
-        ))
-
-    def undo(self):
-        if self.undo_list:
-            self.redo_list.insert(0, self.data)
-            self.data = self.undo_list.pop(-1)
-
-    def redo(self):
-        if self.redo_list:
-            self.undo_list.append(self.data)
-            self.data = self.redo_list.pop(0)
-
-    def _update(self, data):
-        UNDO_LIST_SIZE = 20
-        self.undo_list.append(self.data)
-        self.undo_list = self.undo_list[-UNDO_LIST_SIZE:]
-        self.redo_list.clear()
-        self.data = data
-        write_json_file(self.path, self.data)
-
-    def _ensure_note_id(self, note_id):
-        if note_id not in self.data["notes"]:
-            raise NoteNotFound(str(note_id))
-
-    def _ensure_link_id(self, link_id):
-        if link_id not in self.data["links"]:
-            raise LinkNotFound(str(link_id))
-
-class NoteNotFound(ValueError):
-    pass
-
-class LinkNotFound(ValueError):
-    pass
-
 class ExternalTextEntries(object):
 
     def __init__(self):
@@ -1389,91 +1474,6 @@ class ExternalTextEntries(object):
             if entry.check()
         ]
 
-class ExternalTextEntry(object):
-
-    def __init__(self, text):
-        self.text = text
-        self.f = tempfile.NamedTemporaryFile(suffix="-smartnotes-external-")
-        self.f.write(self.text.encode("utf-8"))
-        self.f.flush()
-        self.p = subprocess.Popen(["gvim", "--nofork", self.f.name])
-
-    def check(self):
-        self.f.seek(0)
-        text = self.f.read().decode("utf-8")
-        if text != self.text:
-            self.text = text
-            self._new_text()
-        if self.p.poll() is not None:
-            self.f.close()
-            return False
-        return True
-
-    def _new_text(self):
-        pass
-
-class NoteText(ExternalTextEntry):
-
-    def __init__(self, db, note_id=None):
-        self.db = db
-        self.note_id = note_id
-        ExternalTextEntry.__init__(self, self._note_to_text())
-
-    def _note_to_text(self):
-        data = self.db.get_note_data(self.note_id)
-        links = data.get("links", [])
-        tags = data.get("tags", [])
-        extra = []
-        if links or tags:
-            extra.append("\n")
-            extra.append("--\n")
-            for link in links:
-                extra.append("link: {}\n".format(link))
-            for tag in tags:
-                extra.append("tag: {}\n".format(tag))
-            extra.append("--\n")
-        return data["text"] + "".join(extra)
-
-    def _new_text(self):
-        self.db.update_note(self.note_id, **self._text_to_note_fields())
-
-    def _text_to_note_fields(self):
-        try:
-            return self._parse_footer()
-        except ParseError:
-            return {
-                "text": self.text,
-                "links": [],
-                "tags": [],
-            }
-
-    def _parse_footer(self):
-        data = {
-            "text": "",
-            "links": [],
-            "tags": [],
-        }
-        parts = self.text.splitlines(True)
-        if parts and parts.pop(-1).rstrip() == "--":
-            while parts and parts[-1].rstrip() != "--":
-                part = parts.pop(-1)
-                if part.startswith("link: "):
-                    data["links"].insert(0, part[6:].rstrip())
-                elif part.startswith("tag: "):
-                    data["tags"].insert(0, part[5:].rstrip())
-                else:
-                    raise ParseError("unknown field")
-            if parts:
-                parts.pop(-1)
-                while parts and parts[-1].strip() == "":
-                    parts.pop(-1)
-                data["text"] = "".join(parts)
-                return data
-        raise ParseError("no footer found")
-
-class ParseError(ValueError):
-    pass
-
 def main():
     if len(sys.argv) < 2:
         sys.exit("Usage: smartnotes.py <file>")
@@ -1481,6 +1481,19 @@ def main():
         SmartNotesWidget,
         sys.argv[1]
     )
+
+def strip_last_word(text):
+    remaining_parts = text.rstrip().split(" ")[:-1]
+    if remaining_parts:
+        return " ".join(remaining_parts) + " "
+    else:
+        return ""
+
+def genid():
+    return uuid.uuid4().hex
+
+def utcnow_timestamp_string():
+    return datetime.datetime.utcnow().isoformat()
 
 def pygame_main(root_widget_cls, *args, **kwargs):
     pygame.init()
@@ -1510,13 +1523,6 @@ def pygame_main(root_widget_cls, *args, **kwargs):
         screen.blit(pygame_cairo_surface, (0, 0))
         pygame.display.flip()
         clock.tick(60)
-
-def strip_last_word(text):
-    remaining_parts = text.rstrip().split(" ")[:-1]
-    if remaining_parts:
-        return " ".join(remaining_parts) + " "
-    else:
-        return ""
 
 def create_pygame_cairo_surface(screen):
     return pygame.Surface(
@@ -1554,12 +1560,6 @@ def safe_write(path):
     with open(tmp_path, "w") as f:
         yield f
     os.rename(tmp_path, path)
-
-def genid():
-    return uuid.uuid4().hex
-
-def utcnow_timestamp_string():
-    return datetime.datetime.utcnow().isoformat()
 
 if __name__ == "__main__":
     main()
