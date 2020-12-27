@@ -3,12 +3,9 @@
 import cairo
 import contextlib
 import datetime
-import io
 import json
-import math
 import os
 import pygame
-import pygame.freetype
 import subprocess
 import sys
 import tempfile

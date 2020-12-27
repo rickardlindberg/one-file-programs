@@ -1573,7 +1573,7 @@
 ],
 "fragments":[
 {
-"text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport io\nimport json\nimport math\nimport os\nimport pygame\nimport pygame.freetype\nimport subprocess\nimport sys\nimport tempfile\nimport uuid\nimport webbrowser\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_TEXT_BORDER = os.environ.get(\"DEBUG_TEXT_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\nDEBUG = DEBUG_NOTE_BORDER or DEBUG_TEXT_BORDER or DEBUG_ANIMATIONS\n\nUSER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT\nUSER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1\n\n",
+"text":"#!/usr/bin/env python3\n\nimport cairo\nimport contextlib\nimport datetime\nimport json\nimport os\nimport pygame\nimport subprocess\nimport sys\nimport tempfile\nimport uuid\nimport webbrowser\n\nDEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_TEXT_BORDER = os.environ.get(\"DEBUG_TEXT_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\nDEBUG = DEBUG_NOTE_BORDER or DEBUG_TEXT_BORDER or DEBUG_ANIMATIONS\n\nUSER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT\nUSER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1\n\n",
 "type":"code"
 },
 {
