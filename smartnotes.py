@@ -321,10 +321,6 @@ class Immutable(object):
         self.redo_list = []
         self.transaction_count = 0
 
-    def set_data(self, data):
-        with self.transaction():
-            self.data = data
-
     @contextlib.contextmanager
     def transaction(self):
         current_data = self.data
@@ -353,6 +349,16 @@ class Immutable(object):
             self.undo_list.append(self.data)
             self.data = self.redo_list.pop(0)
             self._data_changed()
+
+    def _get(self, *path):
+        data = self.data
+        for part in path:
+            data = data[part]
+        return data
+
+    def _set(self, data):
+        with self.transaction():
+            self.data = data
 
     def _data_changed(self):
         pass
@@ -1091,7 +1097,7 @@ class NoteDb(Immutable):
         return sorted(
             (
                 item
-                for item in self.data["notes"].items()
+                for item in self._get("notes").items()
                 if match(item[1])
             ),
             key=lambda item: item[1]["timestamp_created"],
@@ -1100,87 +1106,81 @@ class NoteDb(Immutable):
 
     def get_note_data(self, note_id):
         self._ensure_note_id(note_id)
-        return self.data["notes"][note_id]
+        return self._get("notes", note_id)
 
     def get_outgoing_links(self, note_id):
         return [
             (link_id, link)
-            for link_id, link in self.data["links"].items()
+            for link_id, link in self._get("links").items()
             if link["from"] == note_id
         ]
 
     def get_incoming_links(self, note_id):
         return [
             (link_id, link)
-            for link_id, link in self.data["links"].items()
+            for link_id, link in self._get("links").items()
             if link["to"] == note_id
         ]
 
     def create_note(self, **params):
         note_id = genid()
-        self.set_data(dict(
-            self.data,
-            notes=dict(
-                self.data["notes"],
-                **{note_id: dict(params, timestamp_created=utcnow_timestamp_string())}
-            )
+        self._replace(notes=dict(
+            self._get("notes"),
+            **{note_id: dict(params, timestamp_created=utcnow_timestamp_string())}
         ))
         return note_id
 
     def update_note(self, note_id, **params):
         self._ensure_note_id(note_id)
-        self.set_data(dict(
-            self.data,
-            notes=dict(
-                self.data["notes"],
-                **{note_id: dict(self.data["notes"][note_id], **params)}
-            )
+        self._replace(notes=dict(
+            self._get("notes"),
+            **{note_id: dict(self._get("notes", note_id), **params)}
         ))
 
     def delete_note(self, note_id):
         self._ensure_note_id(note_id)
-        new_notes = dict(self.data["notes"])
+        new_notes = dict(self._get("notes"))
         new_notes.pop(note_id)
-        new_links = dict(self.data["links"])
+        new_links = dict(self._get("links"))
         dead_links = []
         for link_id, link in new_links.items():
             if link["to"] == note_id or link["from"] == note_id:
                 dead_links.append(link_id)
         for link_id in dead_links:
             new_links.pop(link_id)
-        self.set_data(dict(self.data, notes=new_notes, links=new_links))
+        self._replace(notes=new_notes, links=new_links)
 
     def create_link(self, from_id, to_id):
         link_id = genid()
-        self.set_data(dict(
-            self.data,
-            links=dict(
-                self.data["links"],
-                **{link_id: {
-                    "from": from_id,
-                    "to": to_id,
-                    "timestamp_created": utcnow_timestamp_string(),
-                }}
-            )
+        self._replace(links=dict(
+            self._get("links"),
+            **{link_id: {
+                "from": from_id,
+                "to": to_id,
+                "timestamp_created": utcnow_timestamp_string(),
+            }}
         ))
         return link_id
 
     def delete_link(self, link_id):
         self._ensure_link_id(link_id)
-        new_links = dict(self.data["links"])
+        new_links = dict(self._get("links"))
         new_links.pop(link_id)
-        self.set_data(dict(self.data, links=new_links))
+        self._replace(links=new_links)
 
     def _ensure_note_id(self, note_id):
-        if note_id not in self.data["notes"]:
+        if note_id not in self._get("notes"):
             raise NoteNotFound(str(note_id))
 
     def _ensure_link_id(self, link_id):
-        if link_id not in self.data["links"]:
+        if link_id not in self._get("links"):
             raise LinkNotFound(str(link_id))
 
+    def _replace(self, **kwargs):
+        self._set(dict(self._get(), **kwargs))
+
     def _data_changed(self):
-        write_json_file(self.path, self.data)
+        write_json_file(self.path, self._get())
 
 class NoteNotFound(ValueError):
     pass
