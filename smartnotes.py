@@ -1497,8 +1497,8 @@ def utcnow_timestamp_string():
 
 def pygame_main(root_widget_cls, *args, **kwargs):
     pygame.init()
-    pygame.display.set_caption("Smart Notes")
     root_widget = root_widget_cls(*args, **kwargs)
+    pygame.display.set_caption(format_title("Smart Notes", root_widget.db.path))
     screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     clock = pygame.time.Clock()
     external_text_entries = ExternalTextEntries()
@@ -1560,6 +1560,13 @@ def safe_write(path):
     with open(tmp_path, "w") as f:
         yield f
     os.rename(tmp_path, path)
+
+def format_title(name, path):
+    return "{} ({}) - {}".format(
+        os.path.basename(path),
+        os.path.abspath(os.path.dirname(path)),
+        name
+    )
 
 if __name__ == "__main__":
     main()
