@@ -938,7 +938,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, path):\n        self.path = path\n        self.data = ",
+"text":"(Immutable):\n\n    def __init__(self, path):\n        Immutable.__init__(self, ",
 "type":"code"
 },
 {
@@ -946,7 +946,7 @@
 "type":"variable"
 },
 {
-"text":"(self.path, {\n            \"version\": 1,\n            \"notes\": {},\n            \"links\": {},\n        })\n        self.undo_list = []\n        self.redo_list = []\n\n    def ",
+"text":"(path, {\n            \"version\": 1,\n            \"notes\": {},\n            \"links\": {},\n        }))\n        self.path = path\n\n    def ",
 "type":"code"
 },
 {
@@ -1050,7 +1050,7 @@
 "type":"variable"
 },
 {
-"text":"(self, link_id):\n        self._ensure_link_id(link_id)\n        new_links = dict(self.data[\"links\"])\n        new_links.pop(link_id)\n        self._update(dict(\n            self.data,\n            links=new_links\n        ))\n\n    def undo(self):\n        if self.undo_list:\n            self.redo_list.insert(0, self.data)\n            self.data = self.undo_list.pop(-1)\n\n    def redo(self):\n        if self.redo_list:\n            self.undo_list.append(self.data)\n            self.data = self.redo_list.pop(0)\n\n    def _update(self, data):\n        UNDO_LIST_SIZE = 20\n        self.undo_list.append(self.data)\n        self.undo_list = self.undo_list[-UNDO_LIST_SIZE:]\n        self.redo_list.clear()\n        self.data = data\n        ",
+"text":"(self, link_id):\n        self._ensure_link_id(link_id)\n        new_links = dict(self.data[\"links\"])\n        new_links.pop(link_id)\n        self._update(dict(\n            self.data,\n            links=new_links\n        ))\n\n    def _data_changed(self):\n        ",
 "type":"code"
 },
 {
@@ -1580,6 +1580,29 @@
 },
 {
 "children":[
+{
+"children":[],
+"id":"bad01d8dd67d4561bc1808229e4e7bdc",
+"paragraphs":[
+{
+"chunkpath":[
+"base classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class Immutable(object):\n\n    def __init__(self, data, undo_list_size=20):\n        self.undo_list_size = undo_list_size\n        self.data = data\n        self.undo_list = []\n        self.redo_list = []\n\n    def undo(self):\n        if self.undo_list:\n            self.redo_list.insert(0, self.data)\n            self.data = self.undo_list.pop(-1)\n\n    def redo(self):\n        if self.redo_list:\n            self.undo_list.append(self.data)\n            self.data = self.redo_list.pop(0)\n\n    def _update(self, data):\n        self.undo_list.append(self.data)\n        self.undo_list = self.undo_list[-self.undo_list_size:]\n        self.redo_list.clear()\n        self.data = data\n        self._data_changed()\n\n    def _data_changed(self):\n        pass\n",
+"type":"code"
+}
+],
+"id":"8d0dee3395be455bad18f6322eac6657",
+"type":"code"
+}
+],
+"title":"Immutable"
+},
 {
 "children":[],
 "id":"d2382bb409e441e781fb02e120e6e629",

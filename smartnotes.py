@@ -312,6 +312,34 @@ class TextField(Widget):
         if self.has_focus():
             canvas.draw_rect(self.rect, (74, 144, 217), 2)
 
+class Immutable(object):
+
+    def __init__(self, data, undo_list_size=20):
+        self.undo_list_size = undo_list_size
+        self.data = data
+        self.undo_list = []
+        self.redo_list = []
+
+    def undo(self):
+        if self.undo_list:
+            self.redo_list.insert(0, self.data)
+            self.data = self.undo_list.pop(-1)
+
+    def redo(self):
+        if self.redo_list:
+            self.undo_list.append(self.data)
+            self.data = self.redo_list.pop(0)
+
+    def _update(self, data):
+        self.undo_list.append(self.data)
+        self.undo_list = self.undo_list[-self.undo_list_size:]
+        self.redo_list.clear()
+        self.data = data
+        self._data_changed()
+
+    def _data_changed(self):
+        pass
+
 class ExternalTextEntry(object):
 
     def __init__(self, text):
@@ -1017,17 +1045,15 @@ class DebugBar(Widget):
             face="Monospace"
         )
 
-class NoteDb(object):
+class NoteDb(Immutable):
 
     def __init__(self, path):
-        self.path = path
-        self.data = read_json_file(self.path, {
+        Immutable.__init__(self, read_json_file(path, {
             "version": 1,
             "notes": {},
             "links": {},
-        })
-        self.undo_list = []
-        self.redo_list = []
+        }))
+        self.path = path
 
     def get_notes(self, expression=""):
         def match(item):
@@ -1134,22 +1160,7 @@ class NoteDb(object):
             links=new_links
         ))
 
-    def undo(self):
-        if self.undo_list:
-            self.redo_list.insert(0, self.data)
-            self.data = self.undo_list.pop(-1)
-
-    def redo(self):
-        if self.redo_list:
-            self.undo_list.append(self.data)
-            self.data = self.redo_list.pop(0)
-
-    def _update(self, data):
-        UNDO_LIST_SIZE = 20
-        self.undo_list.append(self.data)
-        self.undo_list = self.undo_list[-UNDO_LIST_SIZE:]
-        self.redo_list.clear()
-        self.data = data
+    def _data_changed(self):
         write_json_file(self.path, self.data)
 
     def _ensure_note_id(self, note_id):
