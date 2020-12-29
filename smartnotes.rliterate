@@ -1295,7 +1295,7 @@
 "type":"code"
 }
 ],
-"title":"App"
+"title":"Application"
 },
 {
 "children":[
@@ -1793,6 +1793,28 @@
 ],
 "id":"4b9f83dd3a9c454e917cf4c9431ea3ae",
 "paragraphs":[
+{
+"fragments":[
+{
+"text":"Smart Notes is implemented in layers. The application itself is written using a widget framework. The widget framework is designed to meet only the needs of the application, although it might be usable as a base for other projects as well. The widget framework is realized using pygame and Cairo. Neither the application nor the widget framework knows about pygame or Cairo. All layers might use utility functions. Utilities are considered fairly generic.",
+"type":"text"
+}
+],
+"id":"a59277814b3243af9108dac2b888f989",
+"type":"text"
+},
+{
+"chunkpath":[],
+"filepath":[],
+"fragments":[
+{
+"text":"+------------------------+\n|  Application           |\n+--------------------+-+-+\n|  Widget Framework  | |\n+----------------+-+-+ |\n                   |   |\n+----------------+ |   |\n|  Pygame/Cairo  | |   |\n+----------------+ |   |\n         v         v   v\n+------------------------+\n|      Utilities         |\n+------------------------+\n",
+"type":"code"
+}
+],
+"id":"d2d2fe22f9754c6e88fc576f3406abaf",
+"type":"code"
+},
 {
 "chunkpath":[],
 "filepath":[
