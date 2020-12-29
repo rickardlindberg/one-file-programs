@@ -823,7 +823,7 @@ class NetworkWidget(Widget):
             for rect in self.stripe_rects:
                 canvas.draw_rect(rect, (255, 255, 0), 2)
         if self.has_focus():
-            canvas.draw_rect(self.rect, (74, 144, 217), 2)
+            canvas.draw_rect(self.rect.inflate(-2, -2), (74, 144, 217), 2)
         for link in self.links:
             link.draw(canvas)
         for note in self.notes:
