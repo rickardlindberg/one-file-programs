@@ -52,7 +52,10 @@ class Widget(object):
         return Widget._focused_widget is self
 
     def focus(self):
-        Widget._focused_widget = self
+        if Widget._stable_focused_widget is None:
+            Widget._focused_widget = self
+        else:
+            Widget._stable_focused_widget = self
 
     def clear_quick_focus(self):
         if Widget._focused_widget is not None and Widget._stable_focused_widget is not None:
@@ -670,6 +673,8 @@ class NetworkWidget(Widget):
         if event.type == pygame.MOUSEMOTION:
             self.pos = event.pos
         if event.type == pygame.MOUSEBUTTONUP:
+            if self.rect.collidepoint(event.pos):
+                self.focus()
             for note in reversed(self.notes):
                 if note.rect.collidepoint(event.pos):
                     self.make_root(note)
