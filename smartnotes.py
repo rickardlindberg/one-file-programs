@@ -38,10 +38,6 @@ NEW_NOTE_TEXT        = "Enter note text...\n"
 
 class Widget(object):
 
-    _focused_widget = None
-    _stable_focused_widget = None
-    _stored_focus = None
-
     def __init__(self, window, width=-1, height=-1, visible=True):
         self._window = window
         self._width = width
@@ -60,43 +56,23 @@ class Widget(object):
     def draw(self, canvas):
         pass
 
-    def store_focus(self):
-        if Widget._stored_focus is None:
-            Widget._stored_focus = (
-                Widget._focused_widget,
-                Widget._stable_focused_widget
-            )
-            Widget._focused_widget = None
-            Widget._stable_focused_widget = None
-
-    def restore_focus(self):
-        if Widget._stored_focus is not None:
-            (
-                Widget._focused_widget,
-                Widget._stable_focused_widget
-            ) = Widget._stored_focus
-            Widget._stored_focus = None
-
-    def has_focus(self):
-        return Widget._focused_widget is self
-
     def focus(self):
-        if Widget._stable_focused_widget is None:
-            Widget._focused_widget = self
-        else:
-            Widget._stable_focused_widget = self
-
-    def clear_quick_focus(self):
-        if Widget._focused_widget is not None and Widget._stable_focused_widget is not None:
-            Widget._focused_widget = Widget._stable_focused_widget
-            Widget._stable_focused_widget = None
-            return True
-        return False
+        self._window.set_focus(self)
 
     def quick_focus(self):
-        if Widget._stable_focused_widget is None:
-            Widget._stable_focused_widget = Widget._focused_widget
-        Widget._focused_widget = self
+        self._window.set_quick_focus(self)
+
+    def clear_quick_focus(self):
+        return self._window.clear_quick_focus()
+
+    def has_focus(self):
+        return self._window.is_focused(self)
+
+    def save_focus(self):
+        self._window.save_focus()
+
+    def restore_focus(self):
+        self._window.restore_focus()
 
     def resize(self, width=None, height=None):
         if width is not None:
@@ -258,6 +234,43 @@ class NoteBaseWidget(Widget):
         else:
             target.center = alotted_rect.center
         return target
+
+class WindowFocusMixin(object):
+
+    def __init__(self):
+        self.focused_widget = None
+        self.quick_focused_widget = None
+        self.saved_focus = None
+
+    def set_focus(self, widget):
+        self.focused_widget = widget
+
+    def set_quick_focus(self, widget):
+        self.quick_focused_widget = widget
+
+    def clear_quick_focus(self):
+        if self.quick_focused_widget is not None:
+            self.quick_focused_widget = None
+            return True
+        else:
+            return False
+
+    def is_focused(self, widget):
+        if self.quick_focused_widget is None:
+            return widget is self.focused_widget
+        else:
+            return widget is self.quick_focused_widget
+
+    def save_focus(self):
+        if self.saved_focus is None:
+            self.saved_focus = (self.focused_widget, self.quick_focused_widget)
+            self.focused_widget = None
+            self.quick_focused_widget = None
+
+    def restore_focus(self):
+        if self.saved_focus is not None:
+            self.focused_widget, self.quick_focused_widget = self.saved_focus
+            self.saved_focus = None
 
 class Box(Widget):
 
@@ -501,7 +514,7 @@ class SmartNotesWidget(VBox):
             if event.gain:
                 self.restore_focus()
             else:
-                self.store_focus()
+                self.save_focus()
         if self.link_source and event.type == pygame.MOUSEBUTTONUP:
             if self.link_target:
                 self.db.create_link(
@@ -1369,10 +1382,7 @@ class Animation(object):
     def active(self):
         return self.progress < self.duration_ms or not self.last_consumed
 
-class PygameWindow(object):
-
-    def __init__(self):
-        pass
+class PygameWindow(WindowFocusMixin):
 
     def set_title(self, title):
         pygame.display.set_caption(title)
