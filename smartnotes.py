@@ -1111,16 +1111,17 @@ class DebugBar(Widget):
 
     def draw(self, canvas):
         canvas.blit(
-            canvas.create_image(self.rect.size, self._draw_bar),
+            canvas.create_image((self.rect.width, self.IDEAL_HEIGHT), self._draw_bar),
             self.rect,
             alpha=self.alpha
         )
 
     def _draw_bar(self, canvas):
-        canvas.fill_rect(pygame.Rect((0, 0), self.rect.size), color=(84, 106, 134))
+        rect = pygame.Rect((0, 0), (self.rect.width, self.IDEAL_HEIGHT))
+        canvas.fill_rect(rect, color=(84, 106, 134))
         canvas.render_text(
             f"elapsed_ms = {self.average_elapsed} | fps = {self.fps}",
-            pygame.Rect((0, 0), self.rect.size).inflate(-20, -20),
+            rect.inflate(-20, -20),
             boxalign="midleft",
             size=15,
             face="Monospace"

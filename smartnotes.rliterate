@@ -774,7 +774,7 @@
 "type":"variable"
 },
 {
-"text":"(self, canvas):\n        canvas.blit(\n            canvas.create_image(self.rect.size, self._draw_bar),\n            self.rect,\n            alpha=self.alpha\n        )\n\n    def _draw_bar(self, canvas):\n        canvas.fill_rect(pygame.Rect((0, 0), self.rect.size), color=(84, 106, 134))\n        canvas.render_text(\n            f\"elapsed_ms = {self.average_elapsed} | fps = {self.fps}\",\n            pygame.Rect((0, 0), self.rect.size).inflate(-20, -20),\n            boxalign=\"midleft\",\n            size=15,\n            face=\"Monospace\"\n        )\n",
+"text":"(self, canvas):\n        canvas.blit(\n            canvas.create_image((self.rect.width, self.IDEAL_HEIGHT), self._draw_bar),\n            self.rect,\n            alpha=self.alpha\n        )\n\n    def _draw_bar(self, canvas):\n        rect = pygame.Rect((0, 0), (self.rect.width, self.IDEAL_HEIGHT))\n        canvas.fill_rect(rect, color=(84, 106, 134))\n        canvas.render_text(\n            f\"elapsed_ms = {self.average_elapsed} | fps = {self.fps}\",\n            rect.inflate(-20, -20),\n            boxalign=\"midleft\",\n            size=15,\n            face=\"Monospace\"\n        )\n",
 "type":"code"
 }
 ],
