@@ -612,6 +612,7 @@ class SearchField(TextField):
     def __init__(self, search_results, dismiss_callback, **kwargs):
         TextField.__init__(self, search_results.update_search_text, **kwargs)
         self.search_results = search_results
+        self.dismiss_callback = dismiss_callback
 
     def process_event(self, event):
         if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
