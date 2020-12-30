@@ -40,6 +40,9 @@ KEY_UNDO             = "ctrl+z"
 KEY_REDO             = "ctrl+y"
 KEY_TOGGLE_DEBUG_BAR = "F1"
 KEY_CLEAR_FOCUS      = "escape"
+KEY_DISMISS          = "ctrl+g"
+KEY_INCREASE         = "ctrl+shift+="
+KEY_DECREASE         = "ctrl+-"
 
 class Widget(object):
 
@@ -657,20 +660,26 @@ class SearchField(TextField):
         self.dismiss_callback = dismiss_callback
 
     def process_event(self, event):
-        if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
-            self.dismiss_callback(close=True)
-        elif self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_w:
+        if self.has_focus() and self.process_event_when_in_focus(event):
+            return
+        TextField.process_event(self, event)
+
+    def process_event_when_in_focus(self, event):
+        if event.key_down("ctrl+w"):
             self.set_text(strip_last_word(self.text))
-        elif self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_EQUALS:
-            self.search_results.inc_results()
-        elif self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_MINUS:
-            self.search_results.dec_results()
-        elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
+        elif event.key_down("backspace"):
             self.set_text(self.text[:-1])
-        elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+        elif event.key_down(KEY_DISMISS):
+            self.dismiss_callback(close=True)
+        elif event.key_down(KEY_INCREASE):
+            self.search_results.inc_results()
+        elif event.key_down(KEY_DECREASE):
+            self.search_results.dec_results()
+        elif event.key_down(KEY_CLEAR_FOCUS):
             self.dismiss_callback(close=False)
         else:
-            TextField.process_event(self, event)
+            return False
+        return True
 
 class SearchResults(HBox):
 
