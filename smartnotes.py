@@ -657,7 +657,6 @@ class SearchResults(HBox):
                     hpadding=lambda rect: self.hpadding/2
                 ))
             by_id[note_id] = note
-            note.resize(height=self.wanted_height)
         while len(self.children) <= self.num_results:
             self.add(Widget())
         self.add(Widget(width=self.hpadding/2))
