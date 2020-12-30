@@ -35,6 +35,11 @@ FONT_TEXT            = "San-Serif"
 EDITOR_COMMAND       = ["gvim", "--nofork", None]
 NUM_SEARCH_RESULTS   = 6
 NEW_NOTE_TEXT        = "Enter note text...\n"
+KEY_QUIT             = "ctrl+q"
+KEY_UNDO             = "ctrl+z"
+KEY_REDO             = "ctrl+y"
+KEY_TOGGLE_DEBUG_BAR = "F1"
+KEY_CLEAR_FOCUS      = "escape"
 
 class Widget(object):
 
@@ -527,15 +532,15 @@ class SmartNotesWidget(VBox):
                 return
             self.set_link_source(None)
             self.set_link_target(None)
-        if event.key_down("ctrl+q"):
+        if event.key_down(KEY_QUIT):
             self.quit()
-        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_z:
+        elif event.key_down(KEY_UNDO):
             self.db.undo()
-        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_y:
+        elif event.key_down(KEY_REDO):
             self.db.redo()
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_F1:
+        elif event.key_down(KEY_TOGGLE_DEBUG_BAR):
             self.debug_bar.toggle()
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE and self.clear_quick_focus():
+        elif event.key_down(KEY_CLEAR_FOCUS) and self.clear_quick_focus():
             pass
         else:
             VBox.process_event(self, event)
