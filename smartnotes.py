@@ -362,8 +362,8 @@ class TextField(Widget):
         self.text_changed_callback(text)
 
     def process_event(self, event):
-        if self.has_focus() and event.type == pygame.KEYDOWN and event.unicode:
-            self.set_text(self.text + event.unicode)
+        if self.has_focus() and event.key_down_text():
+            self.set_text(self.text + event.key_down_text())
         elif event.left_mouse_up(rect=self.rect):
             self.focus()
 
@@ -1418,6 +1418,12 @@ class PygameEvent(object):
 
     def mouse_pos(self):
         return self.event.pos
+
+    def key_down_text(self):
+        return (
+            self.event.type == pygame.KEYDOWN and
+            self.event.unicode
+        )
 
 class CairoCanvas(object):
 

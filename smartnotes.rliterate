@@ -1403,7 +1403,7 @@
 ],
 "fragments":[
 {
-"text":"class TextField(Widget):\n\n    def __init__(self, window, text_changed_callback, text_size=10, **kwargs):\n        Widget.__init__(self, window, **kwargs)\n        self.text_size = text_size\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def set_text(self, text):\n        self.text = text\n        self.text_changed_callback(text)\n\n    def process_event(self, event):\n        if self.has_focus() and event.type == pygame.KEYDOWN and event.unicode:\n            self.set_text(self.text + event.unicode)\n        elif event.left_mouse_up(rect=self.rect):\n            self.focus()\n\n    def ",
+"text":"class TextField(Widget):\n\n    def __init__(self, window, text_changed_callback, text_size=10, **kwargs):\n        Widget.__init__(self, window, **kwargs)\n        self.text_size = text_size\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def set_text(self, text):\n        self.text = text\n        self.text_changed_callback(text)\n\n    def process_event(self, event):\n        if self.has_focus() and event.key_down_text():\n            self.set_text(self.text + event.key_down_text())\n        elif event.left_mouse_up(rect=self.rect):\n            self.focus()\n\n    def ",
 "type":"code"
 },
 {
@@ -1536,7 +1536,7 @@
 ],
 "fragments":[
 {
-"text":"class PygameEvent(object):\n\n    def __init__(self, event):\n        self.event = event\n        for x in [\"type\", \"pos\", \"unicode\", \"key\", \"state\", \"gain\", \"mod\"]:\n            if hasattr(event, x):\n                setattr(self, x, getattr(event, x))\n\n    def mouse_motion(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEMOTION and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def left_mouse_down(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEBUTTONDOWN and\n            self.event.button == 1 and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def left_mouse_up(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEBUTTONUP and\n            self.event.button == 1 and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def mouse_pos(self):\n        return self.event.pos\n",
+"text":"class PygameEvent(object):\n\n    def __init__(self, event):\n        self.event = event\n        for x in [\"type\", \"pos\", \"unicode\", \"key\", \"state\", \"gain\", \"mod\"]:\n            if hasattr(event, x):\n                setattr(self, x, getattr(event, x))\n\n    def mouse_motion(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEMOTION and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def left_mouse_down(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEBUTTONDOWN and\n            self.event.button == 1 and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def left_mouse_up(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEBUTTONUP and\n            self.event.button == 1 and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def mouse_pos(self):\n        return self.event.pos\n\n    def key_down_text(self):\n        return (\n            self.event.type == pygame.KEYDOWN and\n            self.event.unicode\n        )\n",
 "type":"code"
 }
 ],
