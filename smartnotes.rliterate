@@ -99,7 +99,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, window, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_target(self)\n                self.quick_focus()\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_source(self)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def update(self, rect, elapsed_ms):\n        ",
+"text":".__init__(self, window, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        elif event.left_mouse_down(rect=self.rect):\n            self.state.set_link_source(self)\n        elif event.left_mouse_up(rect=self.rect):\n            self.open_callback(self.note_id)\n\n    def update(self, rect, elapsed_ms):\n        ",
 "type":"code"
 },
 {
@@ -218,7 +218,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, window, db, note_id, state)\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def clear_hidden_links(self, visible_links):\n        self.incoming = [x for x in self.incoming if x in visible_links]\n        self.outgoing = [x for x in self.outgoing if x in visible_links]\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION and self.rect.collidepoint(event.pos):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        if not self.has_focus():\n            return\n        if event.type == pygame.KEYDOWN and event.unicode == \"e\":\n            self.clear_quick_focus()\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
+"text":".__init__(self, window, db, note_id, state)\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def clear_hidden_links(self, visible_links):\n        self.incoming = [x for x in self.incoming if x in visible_links]\n        self.outgoing = [x for x in self.outgoing if x in visible_links]\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        if not self.has_focus():\n            return\n        if event.type == pygame.KEYDOWN and event.unicode == \"e\":\n            self.clear_quick_focus()\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
 "type":"code"
 },
 {
@@ -234,7 +234,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, child_note_id)\n            )\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            self.state.set_link_source(self)\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
+"text":"(self.db, child_note_id)\n            )\n        elif event.left_mouse_down():\n            self.state.set_link_source(self)\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -1536,7 +1536,7 @@
 ],
 "fragments":[
 {
-"text":"class PygameEvent(object):\n\n    def __init__(self, event):\n        self.event = event\n        for x in [\"type\", \"pos\", \"unicode\", \"key\", \"state\", \"gain\", \"mod\"]:\n            if hasattr(event, x):\n                setattr(self, x, getattr(event, x))\n\n    def mouse_motion(self):\n        return self.event.type == pygame.MOUSEMOTION\n\n    def left_mouse_up(self):\n        return self.event.type == pygame.MOUSEBUTTONUP and self.event.button == 1\n\n    def mouse_pos(self):\n        return self.event.pos\n",
+"text":"class PygameEvent(object):\n\n    def __init__(self, event):\n        self.event = event\n        for x in [\"type\", \"pos\", \"unicode\", \"key\", \"state\", \"gain\", \"mod\"]:\n            if hasattr(event, x):\n                setattr(self, x, getattr(event, x))\n\n    def mouse_motion(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEMOTION and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def left_mouse_down(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEBUTTONDOWN and\n            self.event.button == 1 and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def left_mouse_up(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEBUTTONUP and\n            self.event.button == 1 and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def mouse_pos(self):\n        return self.event.pos\n",
 "type":"code"
 }
 ],

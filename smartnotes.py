@@ -725,16 +725,13 @@ class SearchNote(NoteBaseWidget):
         self.open_callback = open_callback
 
     def process_event(self, event):
-        if event.type == pygame.MOUSEMOTION:
-            if self.rect.collidepoint(event.pos):
-                self.state.set_link_target(self)
-                self.quick_focus()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if self.rect.collidepoint(event.pos):
-                self.state.set_link_source(self)
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if self.rect.collidepoint(event.pos):
-                self.open_callback(self.note_id)
+        if event.mouse_motion(rect=self.rect):
+            self.state.set_link_target(self)
+            self.quick_focus()
+        elif event.left_mouse_down(rect=self.rect):
+            self.state.set_link_source(self)
+        elif event.left_mouse_up(rect=self.rect):
+            self.open_callback(self.note_id)
 
     def update(self, rect, elapsed_ms):
         NoteBaseWidget.update(self, rect, elapsed_ms)
@@ -933,7 +930,7 @@ class NetworkNote(NoteBaseWidget):
         self.outgoing = [x for x in self.outgoing if x in visible_links]
 
     def process_event(self, event):
-        if event.type == pygame.MOUSEMOTION and self.rect.collidepoint(event.pos):
+        if event.mouse_motion(rect=self.rect):
             self.state.set_link_target(self)
             self.quick_focus()
         if not self.has_focus():
@@ -964,7 +961,7 @@ class NetworkNote(NoteBaseWidget):
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
                 entry=NoteText(self.db, child_note_id)
             )
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+        elif event.left_mouse_down():
             self.state.set_link_source(self)
 
     def update_incoming(self):
@@ -1398,11 +1395,25 @@ class PygameEvent(object):
             if hasattr(event, x):
                 setattr(self, x, getattr(event, x))
 
-    def mouse_motion(self):
-        return self.event.type == pygame.MOUSEMOTION
+    def mouse_motion(self, rect=None):
+        return (
+            self.event.type == pygame.MOUSEMOTION and
+            (rect is None or rect.collidepoint(self.event.pos))
+        )
 
-    def left_mouse_up(self):
-        return self.event.type == pygame.MOUSEBUTTONUP and self.event.button == 1
+    def left_mouse_down(self, rect=None):
+        return (
+            self.event.type == pygame.MOUSEBUTTONDOWN and
+            self.event.button == 1 and
+            (rect is None or rect.collidepoint(self.event.pos))
+        )
+
+    def left_mouse_up(self, rect=None):
+        return (
+            self.event.type == pygame.MOUSEBUTTONUP and
+            self.event.button == 1 and
+            (rect is None or rect.collidepoint(self.event.pos))
+        )
 
     def mouse_pos(self):
         return self.event.pos
