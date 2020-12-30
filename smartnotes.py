@@ -32,6 +32,7 @@ COLOR_NOTE_DATE_TEXT = (100, 100, 100)
 COLOR_NOTE_TAG_TEXT = (100, 100, 255)
 FONT_MONOSPACE = "Monospace"
 FONT_TEXT = "San-Serif"
+EDITOR_COMMAND = "gvim --nofork {}"
 
 class Widget(object):
 
@@ -419,7 +420,11 @@ class ExternalTextEntry(object):
         self.f = tempfile.NamedTemporaryFile(suffix="-smartnotes-external-")
         self.f.write(self.text.encode("utf-8"))
         self.f.flush()
-        self.p = subprocess.Popen(["gvim", "--nofork", self.f.name])
+        self.p = subprocess.Popen([
+            part.replace("{}", self.f.name)
+            for part
+            in EDITOR_COMMAND.split(" ")
+        ])
 
     def check(self):
         self.f.seek(0)
