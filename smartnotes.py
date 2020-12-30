@@ -525,11 +525,10 @@ class SmartNotesWidget(VBox):
             self.pos = event.mouse_pos()
             self.set_link_target(None)
             self.clear_quick_focus()
-        if event.type == pygame.ACTIVEEVENT and event.state == 1:
-            if event.gain:
-                self.restore_focus()
-            else:
-                self.save_focus()
+        if event.window_gained_focus():
+            self.restore_focus()
+        elif event.window_lost_focus():
+            self.save_focus()
         if self.link_source and event.left_mouse_up():
             if self.link_target:
                 self.db.create_link(
@@ -1468,6 +1467,20 @@ class PygameEvent(object):
             bool(self.event.mod & pygame.KMOD_CTRL) == ctrl and
             bool(self.event.mod & pygame.KMOD_SHIFT) == shift and
             bool(self.event.mod & pygame.KMOD_ALT) == alt
+        )
+
+    def window_gained_focus(self):
+        return (
+            self.event.type == pygame.ACTIVEEVENT and
+            self.event.state == 1 and
+            self.event.gain
+        )
+
+    def window_lost_focus(self):
+        return (
+            self.event.type == pygame.ACTIVEEVENT and
+            self.event.state == 1 and
+            not self.event.gain
         )
 
 class CairoCanvas(object):
