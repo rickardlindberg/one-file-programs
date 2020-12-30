@@ -1263,6 +1263,9 @@ class LinkNotFound(ValueError):
 
 class NoteText(ExternalTextEntry):
 
+    LINK_PREFIX = "link: "
+    TAG_PREFIX = "tag: "
+
     def __init__(self, db, note_id=None):
         self.db = db
         self.note_id = note_id
@@ -1276,12 +1279,12 @@ class NoteText(ExternalTextEntry):
         extra.append("\n")
         extra.append("--\n")
         for link in links:
-            extra.append("link: {}\n".format(link))
+            extra.append("{}{}\n".format(self.LINK_PREFIX, link))
         for tag in tags:
-            extra.append("tag: {}\n".format(tag))
+            extra.append("{}{}\n".format(self.TAG_PREFIX, tag))
         extra.append("# Usage:\n")
-        extra.append("# link: http://...\n")
-        extra.append("# tag: name\n")
+        extra.append("# {}http://...\n".format(self.LINK_PREFIX))
+        extra.append("# {}name\n".format(self.TAG_PREFIX))
         extra.append("--\n")
         return data["text"] + "".join(extra)
 
@@ -1308,10 +1311,10 @@ class NoteText(ExternalTextEntry):
         if parts and parts.pop(-1).rstrip() == "--":
             while parts and parts[-1].rstrip() != "--":
                 part = parts.pop(-1)
-                if part.startswith("link: "):
-                    data["links"].insert(0, part[6:].rstrip())
-                elif part.startswith("tag: "):
-                    data["tags"].insert(0, part[5:].rstrip())
+                if part.startswith(self.LINK_PREFIX):
+                    data["links"].insert(0, part[len(self.LINK_PREFIX):].rstrip())
+                elif part.startswith(self.TAG_PREFIX):
+                    data["tags"].insert(0, part[len(self.TAG_PREFIX):].rstrip())
                 elif part.startswith("#"):
                     pass
                 else:
