@@ -525,10 +525,6 @@ class SmartNotesWidget(VBox):
             self.pos = event.mouse_pos()
             self.set_link_target(None)
             self.clear_quick_focus()
-        if event.window_gained_focus():
-            self.restore_focus()
-        elif event.window_lost_focus():
-            self.save_focus()
         if self.link_source and event.left_mouse_up():
             if self.link_target:
                 self.db.create_link(
@@ -550,6 +546,10 @@ class SmartNotesWidget(VBox):
             self.debug_bar.toggle()
         elif event.key_down(KEY_CLEAR_FOCUS) and self.clear_quick_focus():
             pass
+        elif event.window_gained_focus():
+            self.restore_focus()
+        elif event.window_lost_focus():
+            self.save_focus()
         else:
             VBox.process_event(self, event)
 
