@@ -16,7 +16,7 @@
 ],
 "fragments":[
 {
-"text":"COLOR_SELECTION      = (214, 138, 208)\nCOLOR_SEARCH_BAR     = (108, 138, 173)\nCOLOR_BACKGROUND     = (134, 169, 214)\nCOLOR_ACTIVE         = (25, 204, 25)\nCOLOR_INACTIVE       = (204, 204, 204)\nCOLOR_LINE           = (114, 127, 178)\nCOLOR_NOTE_BG        = (250, 250, 250)\nCOLOR_NOTE_TEXT      = (20, 20, 20)\nCOLOR_NOTE_DATE_TEXT = (100, 100, 100)\nCOLOR_NOTE_TAG_TEXT  = (100, 100, 255)\nFONT_MONOSPACE       = \"Monospace\"\nFONT_TEXT            = \"San-Serif\"\nEDITOR_COMMAND       = [\"gvim\", \"--nofork\", \"{}\"]\n",
+"text":"COLOR_SELECTION      = (214, 138, 208)\nCOLOR_SEARCH_BAR     = (108, 138, 173)\nCOLOR_BACKGROUND     = (134, 169, 214)\nCOLOR_ACTIVE         = (25, 204, 25)\nCOLOR_INACTIVE       = (204, 204, 204)\nCOLOR_LINE           = (114, 127, 178)\nCOLOR_NOTE_BG        = (250, 250, 250)\nCOLOR_NOTE_TEXT      = (20, 20, 20)\nCOLOR_NOTE_DATE_TEXT = (100, 100, 100)\nCOLOR_NOTE_TAG_TEXT  = (100, 100, 255)\nFONT_MONOSPACE       = \"Monospace\"\nFONT_TEXT            = \"San-Serif\"\nEDITOR_COMMAND       = [\"gvim\", \"--nofork\", None]\n",
 "type":"code"
 }
 ],
@@ -1645,7 +1645,7 @@
 "type":"variable"
 },
 {
-"text":"(object):\n\n    def __init__(self, text, editor_command):\n        self.text = text\n        self.f = tempfile.NamedTemporaryFile(suffix=\"-smartnotes-external-\")\n        self.f.write(self.text.encode(\"utf-8\"))\n        self.f.flush()\n        self.p = subprocess.Popen([\n            part.replace(\"{}\", self.f.name)\n            for part\n            in editor_command\n        ])\n\n    def check(self):\n        self.f.seek(0)\n        text = self.f.read().decode(\"utf-8\")\n        if text != self.text:\n            self.text = text\n            self._new_text()\n        if self.p.poll() is not None:\n            self.f.close()\n            return False\n        return True\n\n    def _new_text(self):\n        pass\n",
+"text":"(object):\n\n    def __init__(self, text, editor_command):\n        self.text = text\n        self.f = tempfile.NamedTemporaryFile(suffix=\"-smartnotes-external-\")\n        self.f.write(self.text.encode(\"utf-8\"))\n        self.f.flush()\n        self.p = subprocess.Popen([\n            self.f.name if part is None else part\n            for part\n            in editor_command\n        ])\n\n    def check(self):\n        self.f.seek(0)\n        text = self.f.read().decode(\"utf-8\")\n        if text != self.text:\n            self.text = text\n            self._new_text()\n        if self.p.poll() is not None:\n            self.f.close()\n            return False\n        return True\n\n    def _new_text(self):\n        pass\n",
 "type":"code"
 }
 ],

@@ -32,7 +32,7 @@ COLOR_NOTE_DATE_TEXT = (100, 100, 100)
 COLOR_NOTE_TAG_TEXT  = (100, 100, 255)
 FONT_MONOSPACE       = "Monospace"
 FONT_TEXT            = "San-Serif"
-EDITOR_COMMAND       = ["gvim", "--nofork", "{}"]
+EDITOR_COMMAND       = ["gvim", "--nofork", None]
 
 class Widget(object):
 
@@ -421,7 +421,7 @@ class ExternalTextEntry(object):
         self.f.write(self.text.encode("utf-8"))
         self.f.flush()
         self.p = subprocess.Popen([
-            part.replace("{}", self.f.name)
+            self.f.name if part is None else part
             for part
             in editor_command
         ])
