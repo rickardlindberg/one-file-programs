@@ -27,6 +27,7 @@ COLOR_ACTIVE = (25, 204, 25)
 COLOR_INACTIVE = (204, 204, 204)
 COLOR_LINE = (114, 127, 178)
 COLOR_NOTE_BG = (250, 250, 250)
+COLOR_NOTE_TEXT = (20, 20, 20)
 COLOR_NOTE_DATE_TEXT = (100, 100, 100)
 COLOR_NOTE_TAG_TEXT = (100, 100, 255)
 
@@ -193,7 +194,8 @@ class NoteBaseWidget(Widget):
             rect,
             size=self.full_width/10,
             textalign="center" if self.is_title() else "left",
-            boxalign="center"
+            boxalign="center",
+            color=COLOR_NOTE_TEXT
         )
         rect = rect.inflate(border*2, 0)
         rect.height = status_height
