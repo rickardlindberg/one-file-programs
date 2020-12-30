@@ -611,6 +611,10 @@ class SearchField(TextField):
             self.dismiss_callback(close=True)
         elif self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_w:
             self.set_text(strip_last_word(self.text))
+        elif self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_EQUALS:
+            self.search_results.inc_results()
+        elif self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_MINUS:
+            self.search_results.dec_results()
         elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
             self.set_text(self.text[:-1])
         elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -627,9 +631,18 @@ class SearchResults(HBox):
         self.open_callback = open_callback
         self.hpadding = hpadding
         self.update_search_text("")
-        self.num_results = 6
+        self._set_num_results(6)
         self.notes = []
         self.by_id = {}
+
+    def inc_results(self):
+        self._set_num_results(self.num_results + 1)
+
+    def dec_results(self):
+        self._set_num_results(self.num_results - 1)
+
+    def _set_num_results(self, num):
+        self.num_results = max(3, min(12, num))
 
     def update_search_text(self, text):
         self.text = text
