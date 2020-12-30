@@ -30,6 +30,8 @@ COLOR_NOTE_BG = (250, 250, 250)
 COLOR_NOTE_TEXT = (20, 20, 20)
 COLOR_NOTE_DATE_TEXT = (100, 100, 100)
 COLOR_NOTE_TAG_TEXT = (100, 100, 255)
+FONT_MONOSPACE = "Monospace"
+FONT_TEXT = "San-Serif"
 
 class Widget(object):
 
@@ -195,7 +197,8 @@ class NoteBaseWidget(Widget):
             size=self.full_width/10,
             textalign="center" if self.is_title() else "left",
             boxalign="center",
-            color=COLOR_NOTE_TEXT
+            color=COLOR_NOTE_TEXT,
+            face=FONT_TEXT
         )
         rect = rect.inflate(border*2, 0)
         rect.height = status_height
@@ -206,7 +209,7 @@ class NoteBaseWidget(Widget):
             self.data["timestamp_created"][:10],
             rect,
             size=status_height,
-            face="Monospace",
+            face=FONT_MONOSPACE,
             boxalign="bottomleft",
             split=False,
             color=COLOR_NOTE_DATE_TEXT
@@ -220,7 +223,7 @@ class NoteBaseWidget(Widget):
                 " ".join("#{}".format(tag) for tag in self.data["tags"]),
                 rect,
                 size=status_height,
-                face="Monospace",
+                face=FONT_MONOSPACE,
                 boxalign="bottomright",
                 split=False,
                 color=COLOR_NOTE_TAG_TEXT
@@ -351,7 +354,7 @@ class TextField(Widget):
         canvas.render_text(
             "{}\u2302".format(self.text),
             self.rect.inflate(-4, -4),
-            face="Monospace",
+            face=FONT_MONOSPACE,
             size=self.text_size,
             boxalign="midleft"
         )
