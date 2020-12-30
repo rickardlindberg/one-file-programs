@@ -42,10 +42,17 @@ class Widget(object):
     _stable_focused_widget = None
     _stored_focus = None
 
-    def __init__(self, width=-1, height=-1, visible=True):
+    def __init__(self, window, width=-1, height=-1, visible=True):
+        self._window = window
         self._width = width
         self._height = height
         self._visible = visible
+
+    def set_title(self, title):
+        self._window.set_title(title)
+
+    def instantiate(self, cls, *args, **kwargs):
+        return cls(self._window, *args, **kwargs)
 
     def update(self, rect, elapsed_ms):
         pass
@@ -120,8 +127,8 @@ class Widget(object):
 
 class Padding(Widget):
 
-    def __init__(self, widget, hpadding=None, vpadding=None, **kwargs):
-        Widget.__init__(self, **kwargs)
+    def __init__(self, window, widget, hpadding=None, vpadding=None, **kwargs):
+        Widget.__init__(self, window, **kwargs)
         self.widget = widget
         self.hpadding = (lambda rect: 0) if hpadding is None else hpadding
         self.vpadding = (lambda rect: 0) if vpadding is None else vpadding
@@ -140,8 +147,8 @@ class Padding(Widget):
 
 class NoteBaseWidget(Widget):
 
-    def __init__(self, db, note_id, state):
-        Widget.__init__(self)
+    def __init__(self, window, db, note_id, state):
+        Widget.__init__(self, window)
         self.db = db
         self.note_id = note_id
         self.state = state
@@ -254,8 +261,8 @@ class NoteBaseWidget(Widget):
 
 class Box(Widget):
 
-    def __init__(self, **kwargs):
-        Widget.__init__(self, **kwargs)
+    def __init__(self, window, **kwargs):
+        Widget.__init__(self, window, **kwargs)
         self.clear()
 
     def clear(self):
@@ -330,8 +337,8 @@ class HBox(Box):
 
 class TextField(Widget):
 
-    def __init__(self, text_changed_callback, text_size=10, **kwargs):
-        Widget.__init__(self, **kwargs)
+    def __init__(self, window, text_changed_callback, text_size=10, **kwargs):
+        Widget.__init__(self, window, **kwargs)
         self.text_size = text_size
         self.text = ""
         self.text_changed_callback = text_changed_callback
@@ -444,25 +451,26 @@ class ExternalTextEntry(object):
 
 class SmartNotesWidget(VBox):
 
-    def __init__(self, path):
-        VBox.__init__(self)
+    def __init__(self, window, path):
+        VBox.__init__(self, window)
+        self.set_title(format_title("Smart Notes", path))
         self.link_source = None
         self.link_target = None
         self.full_note_width = 0
         self.db = NoteDb(path)
         self.pos = (0, 0)
-        self.search_bar = self.add(SearchBar(
+        self.search_bar = self.add(self.instantiate(SearchBar,
             self.db,
             self,
             open_callback=self._on_search_note_open,
             dismiss_callback=self._on_search_dismiss
         ))
-        self.network = self.add(NetworkWidget(
+        self.network = self.add(self.instantiate(NetworkWidget,
             self.db,
             self,
             request_search_callback=self._on_search_request
         ))
-        self.debug_bar = self.add(DebugBar())
+        self.debug_bar = self.add(self.instantiate(DebugBar))
         self.network.focus()
 
     def get_full_note_width(self):
@@ -551,31 +559,31 @@ class SearchBar(VBox):
     SEARCH_FIELD_HEIHGT = 50
     VPADDING = 8
 
-    def __init__(self, db, state, open_callback, dismiss_callback):
-        VBox.__init__(self, height=0, visible=False)
+    def __init__(self, window, db, state, open_callback, dismiss_callback):
+        VBox.__init__(self, window, height=0, visible=False)
         self.db = db
         self.state = state
         self.open_callback = open_callback
         self.dismiss_callback = dismiss_callback
         self.animation = Animation()
         self.notes = []
-        self.search_results = SearchResults(
+        self.search_results = self.instantiate(SearchResults,
             db, state, open_callback,
             hpadding=self.VPADDING
         )
-        self.search_field = SearchField(
+        self.search_field = self.instantiate(SearchField,
             self.search_results,
             self.dismiss_callback,
             text_size=20
         )
-        self.add(Padding(
+        self.add(self.instantiate(Padding,
             self.search_field,
             hpadding=lambda rect: int(rect.width*0.08),
             vpadding=lambda rect: self.VPADDING,
             height=self.SEARCH_FIELD_HEIHGT
         ))
         self.add(self.search_results)
-        self.add(Widget(height=self.VPADDING))
+        self.add(self.instantiate(Widget, height=self.VPADDING))
         self.ideal_height = 200
 
     def focus(self):
@@ -624,8 +632,8 @@ class SearchBar(VBox):
 
 class SearchField(TextField):
 
-    def __init__(self, search_results, dismiss_callback, **kwargs):
-        TextField.__init__(self, search_results.update_search_text, **kwargs)
+    def __init__(self, window, search_results, dismiss_callback, **kwargs):
+        TextField.__init__(self, window, search_results.update_search_text, **kwargs)
         self.search_results = search_results
         self.dismiss_callback = dismiss_callback
 
@@ -647,8 +655,8 @@ class SearchField(TextField):
 
 class SearchResults(HBox):
 
-    def __init__(self, db, state, open_callback, hpadding):
-        HBox.__init__(self)
+    def __init__(self, window, db, state, open_callback, hpadding):
+        HBox.__init__(self, window)
         self.db = db
         self.state = state
         self.open_callback = open_callback
@@ -677,13 +685,13 @@ class SearchResults(HBox):
     def _update_notes_list(self):
         by_id = {}
         self.clear()
-        self.add(Widget(width=self.hpadding/2))
+        self.add(self.instantiate(Widget, width=self.hpadding/2))
         for note_id, note_data in self.db.get_notes(self.text)[:self.num_results]:
             if note_id in self.by_id:
                 note = self.add(self.by_id[note_id])
             else:
-                note = self.add(Padding(
-                    SearchNote(
+                note = self.add(self.instantiate(Padding,
+                    self.instantiate(SearchNote,
                         self.db,
                         self.state,
                         note_id,
@@ -693,14 +701,14 @@ class SearchResults(HBox):
                 ))
             by_id[note_id] = note
         while len(self.children) <= self.num_results:
-            self.add(Widget())
-        self.add(Widget(width=self.hpadding/2))
+            self.add(self.instantiate(Widget))
+        self.add(self.instantiate(Widget, width=self.hpadding/2))
         self.by_id = by_id
 
 class SearchNote(NoteBaseWidget):
 
-    def __init__(self, db, state, note_id, open_callback):
-        NoteBaseWidget.__init__(self, db, note_id, state)
+    def __init__(self, window, db, state, note_id, open_callback):
+        NoteBaseWidget.__init__(self, window, db, note_id, state)
         self.open_callback = open_callback
 
     def process_event(self, event):
@@ -721,8 +729,8 @@ class SearchNote(NoteBaseWidget):
 
 class NetworkWidget(Widget):
 
-    def __init__(self, db, state, request_search_callback):
-        Widget.__init__(self)
+    def __init__(self, window, db, state, request_search_callback):
+        Widget.__init__(self, window)
         self.db = db
         self.state = state
         self.request_search_callback = request_search_callback
@@ -760,7 +768,7 @@ class NetworkWidget(Widget):
                 note.process_event(event)
 
     def open_note(self, note_id):
-        self.make_root(NetworkNote(self.db, note_id, self.state))
+        self.make_root(self.instantiate(NetworkNote, self.db, note_id, self.state))
 
     def make_root(self, node):
         if node is not self.root_note:
@@ -898,8 +906,8 @@ class NetworkWidget(Widget):
 
 class NetworkNote(NoteBaseWidget):
 
-    def __init__(self, db, note_id, state):
-        NoteBaseWidget.__init__(self, db, note_id, state)
+    def __init__(self, window, db, note_id, state):
+        NoteBaseWidget.__init__(self, window, db, note_id, state)
         self.incoming = []
         self.outgoing = []
         self.animation = Animation()
@@ -956,10 +964,10 @@ class NetworkNote(NoteBaseWidget):
             if link_id in by_id:
                 self.incoming.append(by_id.pop(link_id))
             else:
-                LinkWidget(
+                self.instantiate(LinkWidget,
                     self.db,
                     link_id,
-                    NetworkNote(self.db, link_data["from"], self.state),
+                    self.instantiate(NetworkNote, self.db, link_data["from"], self.state),
                     self
                 )
         return self.incoming
@@ -974,11 +982,11 @@ class NetworkNote(NoteBaseWidget):
             if link_id in by_id:
                 self.outgoing.append(by_id.pop(link_id))
             else:
-                LinkWidget(
+                self.instantiate(LinkWidget,
                     self.db,
                     link_id,
                     self,
-                    NetworkNote(self.db, link_data["to"], self.state)
+                    self.instantiate(NetworkNote, self.db, link_data["to"], self.state)
                 )
         return self.outgoing
 
@@ -1023,8 +1031,8 @@ class NetworkNote(NoteBaseWidget):
 
 class LinkWidget(Widget):
 
-    def __init__(self, db, link_id, start, end):
-        Widget.__init__(self)
+    def __init__(self, window, db, link_id, start, end):
+        Widget.__init__(self, window)
         self.db = db
         self.link_id = link_id
         self.start = start
@@ -1092,8 +1100,8 @@ class DebugBar(Widget):
 
     IDEAL_HEIGHT = 50
 
-    def __init__(self):
-        Widget.__init__(self, height=self.IDEAL_HEIGHT, visible=DEBUG)
+    def __init__(self, window):
+        Widget.__init__(self, window, height=self.IDEAL_HEIGHT, visible=DEBUG)
         self.animation = Animation()
         self.average_elapsed = 0
         self.tot_elapsed_time = 0
@@ -1361,6 +1369,14 @@ class Animation(object):
     def active(self):
         return self.progress < self.duration_ms or not self.last_consumed
 
+class PygameWindow(object):
+
+    def __init__(self):
+        pass
+
+    def set_title(self, title):
+        pygame.display.set_caption(title)
+
 class CairoCanvas(object):
 
     def __init__(self, surface):
@@ -1592,8 +1608,7 @@ def utcnow_timestamp_string():
 
 def pygame_main(root_widget_cls, *args, **kwargs):
     pygame.init()
-    root_widget = root_widget_cls(*args, **kwargs)
-    pygame.display.set_caption(format_title("Smart Notes", root_widget.db.path))
+    root_widget = root_widget_cls(PygameWindow(), *args, **kwargs)
     screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     clock = pygame.time.Clock()
     external_text_entries = ExternalTextEntries()
