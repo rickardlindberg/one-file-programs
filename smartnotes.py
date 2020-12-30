@@ -20,6 +20,13 @@ DEBUG = DEBUG_NOTE_BORDER or DEBUG_TEXT_BORDER or DEBUG_ANIMATIONS
 USER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT
 USER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1
 
+COLOR_SELECTION = (214, 138, 208)
+COLOR_SEARCH_BAR = (108, 138, 173)
+COLOR_BACKGROUND = (134, 169, 214)
+COLOR_ACTIVE = (25, 204, 25)
+COLOR_INACTIVE = (204, 204, 204)
+COLOR_LINE = (114, 127, 178)
+
 class Widget(object):
 
     _focused_widget = None
@@ -160,7 +167,7 @@ class NoteBaseWidget(Widget):
         canvas.fill_rect(border, color=(250, 250, 250))
         canvas.draw_rect(border, (120, 120, 120), 1)
         if self.has_focus():
-            canvas.draw_rect(border.inflate(-7, -7).move(1, 1), (74, 144, 217), 2)
+            canvas.draw_rect(border.inflate(-7, -7).move(1, 1), COLOR_SELECTION, 2)
         canvas.blit(
             canvas.create_image(
                 self.card_full_size,
@@ -344,7 +351,7 @@ class TextField(Widget):
             boxalign="midleft"
         )
         if self.has_focus():
-            canvas.draw_rect(self.rect, (74, 144, 217), 2)
+            canvas.draw_rect(self.rect, COLOR_SELECTION, 2)
 
 class Immutable(object):
 
@@ -512,15 +519,15 @@ class SmartNotesWidget(VBox):
         VBox.update(self, rect, elapsed_ms)
 
     def draw(self, canvas):
-        canvas.fill_rect(self.rect, color=(134, 169, 214))
+        canvas.fill_rect(self.rect, color=COLOR_BACKGROUND)
         VBox.draw(self, canvas)
         if self.link_source and not self.link_source.rect.collidepoint(self.pos):
             canvas.move_to(*self.link_source.rect.center)
             canvas.line_to(*self.pos)
             if self.link_target:
-                canvas.set_source_rgb(0.1, 0.8, 0.1)
+                canvas._set_color(COLOR_ACTIVE)
             else:
-                canvas.set_source_rgb(0.8, 0.8, 0.8)
+                canvas._set_color(COLOR_INACTIVE)
             canvas.set_line_width(5)
             canvas.stroke()
 
@@ -596,7 +603,7 @@ class SearchBar(VBox):
     def _draw_search_bar_image(self, canvas):
         canvas.fill_rect(
             pygame.Rect(0, 0, self.ideal_rect.width, self.ideal_rect.height),
-            color=(84, 106, 134)
+            color=COLOR_SEARCH_BAR
         )
         VBox.draw(self, canvas)
 
@@ -631,17 +638,16 @@ class SearchResults(HBox):
         self.open_callback = open_callback
         self.hpadding = hpadding
         self.update_search_text("")
-        self._set_num_results(6)
-        self.notes = []
+        self.set_num_results(6)
         self.by_id = {}
 
     def inc_results(self):
-        self._set_num_results(self.num_results + 1)
+        self.set_num_results(self.num_results + 1)
 
     def dec_results(self):
-        self._set_num_results(self.num_results - 1)
+        self.set_num_results(self.num_results - 1)
 
-    def _set_num_results(self, num):
+    def set_num_results(self, num):
         self.num_results = max(3, min(12, num))
 
     def update_search_text(self, text):
@@ -868,7 +874,7 @@ class NetworkWidget(Widget):
             for rect in self.stripe_rects:
                 canvas.draw_rect(rect, (255, 255, 0), 2)
         if self.has_focus():
-            canvas.draw_rect(self.rect.inflate(-2, -2), (74, 144, 217), 2)
+            canvas.draw_rect(self.rect.inflate(-2, -2), COLOR_SELECTION, 2)
         for link in self.links:
             link.draw(canvas)
         for note in self.notes:
@@ -1062,7 +1068,7 @@ class LinkWidget(Widget):
         canvas.line_to(startx+0.02*(endx-startx), starty)
         canvas.curve_to(c1x, c1y, c2x, c2y, endx-0.02*(endx-startx), endy)
         canvas.line_to(endx, endy)
-        canvas.set_source_rgb(0.45, 0.5, 0.7)
+        canvas._set_color(COLOR_LINE)
         canvas.set_line_width(1.5)
         canvas.stroke()
 
