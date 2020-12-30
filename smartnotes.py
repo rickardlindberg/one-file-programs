@@ -43,6 +43,7 @@ class Widget(object):
         self._width = width
         self._height = height
         self._visible = visible
+        self.rect = pygame.Rect(0, 0, 0, 0)
 
     def set_title(self, title):
         self._window.set_title(title)
@@ -363,7 +364,7 @@ class TextField(Widget):
     def process_event(self, event):
         if self.has_focus() and event.type == pygame.KEYDOWN and event.unicode:
             self.set_text(self.text + event.unicode)
-        elif event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos):
+        elif event.left_mouse_up(rect=self.rect):
             self.focus()
 
     def update(self, rect, elapsed_ms):
