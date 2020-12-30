@@ -34,6 +34,7 @@ FONT_MONOSPACE       = "Monospace"
 FONT_TEXT            = "San-Serif"
 EDITOR_COMMAND       = ["gvim", "--nofork", None]
 NUM_SEARCH_RESULTS   = 6
+NEW_NOTE_TEXT        = "Enter note text...\n"
 
 class Widget(object):
 
@@ -748,7 +749,7 @@ class NetworkWidget(Widget):
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH and self.has_focus():
             self.request_search_callback()
         elif event.type == pygame.KEYDOWN and event.unicode == "c" and self.has_focus():
-            note_id = self.db.create_note(text="Enter note text...\n")
+            note_id = self.db.create_note(text=NEW_NOTE_TEXT)
             self.open_note(note_id)
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
@@ -936,7 +937,7 @@ class NetworkNote(NoteBaseWidget):
         elif event.type == pygame.KEYDOWN and event.unicode == "c":
             self.clear_quick_focus()
             with self.db.transaction():
-                child_note_id = self.db.create_note(text="Enter note text...\n")
+                child_note_id = self.db.create_note(text=NEW_NOTE_TEXT)
                 self.db.create_link(self.note_id, child_note_id)
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
