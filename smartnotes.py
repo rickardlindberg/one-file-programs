@@ -1273,14 +1273,16 @@ class NoteText(ExternalTextEntry):
         links = data.get("links", [])
         tags = data.get("tags", [])
         extra = []
-        if links or tags:
-            extra.append("\n")
-            extra.append("--\n")
-            for link in links:
-                extra.append("link: {}\n".format(link))
-            for tag in tags:
-                extra.append("tag: {}\n".format(tag))
-            extra.append("--\n")
+        extra.append("\n")
+        extra.append("--\n")
+        for link in links:
+            extra.append("link: {}\n".format(link))
+        for tag in tags:
+            extra.append("tag: {}\n".format(tag))
+        extra.append("# Usage:\n")
+        extra.append("# link: http://...\n")
+        extra.append("# tag: name\n")
+        extra.append("--\n")
         return data["text"] + "".join(extra)
 
     def _new_text(self):
@@ -1310,6 +1312,8 @@ class NoteText(ExternalTextEntry):
                     data["links"].insert(0, part[6:].rstrip())
                 elif part.startswith("tag: "):
                     data["tags"].insert(0, part[5:].rstrip())
+                elif part.startswith("#"):
+                    pass
                 else:
                     raise ParseError("unknown field")
             if parts:
