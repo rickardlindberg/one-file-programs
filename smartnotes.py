@@ -1411,9 +1411,6 @@ class PygameEvent(object):
 
     def __init__(self, event):
         self.event = event
-        for x in ["type", "pos", "unicode", "key", "state", "gain", "mod"]:
-            if hasattr(event, x):
-                setattr(self, x, getattr(event, x))
 
     def mouse_motion(self, rect=None):
         return (
