@@ -1390,6 +1390,14 @@ class PygameWindow(WindowFocusMixin):
     def close(self):
         pygame.event.post(pygame.event.Event(pygame.QUIT))
 
+class PygameEvent(object):
+
+    def __init__(self, event):
+        self.event = event
+        for x in ["type", "pos", "unicode", "key", "state", "gain", "mod"]:
+            if hasattr(event, x):
+                setattr(self, x, getattr(event, x))
+
 class CairoCanvas(object):
 
     def __init__(self, surface):
@@ -1638,7 +1646,7 @@ def pygame_main(root_widget_cls, *args, **kwargs):
             elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:
                 external_text_entries.add(event.entry)
             else:
-                root_widget.process_event(event)
+                root_widget.process_event(PygameEvent(event))
         root_widget.update(screen.get_rect(), clock.get_time())
         pygame_cairo_surface.lock()
         root_widget.draw(CairoCanvas(create_cairo_image(pygame_cairo_surface)))
