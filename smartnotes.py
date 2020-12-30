@@ -93,7 +93,7 @@ class Widget(object):
         self._visible = not self._visible
 
     def quit(self):
-        self.post_event(pygame.QUIT)
+        self._window.close()
 
     def post_event(self, event_type, **kwargs):
         pygame.event.post(pygame.event.Event(event_type, **kwargs))
@@ -1386,6 +1386,9 @@ class PygameWindow(WindowFocusMixin):
 
     def set_title(self, title):
         pygame.display.set_caption(title)
+
+    def close(self):
+        pygame.event.post(pygame.event.Event(pygame.QUIT))
 
 class CairoCanvas(object):
 
