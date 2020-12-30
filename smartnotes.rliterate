@@ -559,7 +559,7 @@
 "type":"variable"
 },
 {
-"text":", 0.3)\n        if self.root_note.is_deleted():\n            self.open_last_note()\n        if self.root_note is None:\n            return\n        self.root_note.",
+"text":", 0.3)\n        if self.root_note and self.root_note.is_deleted():\n            self.open_last_note()\n        if self.root_note is None:\n            return\n        self.root_note.",
 "type":"code"
 },
 {

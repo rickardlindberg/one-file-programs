@@ -761,7 +761,7 @@ class NetworkWidget(Widget):
         self.notes = []
         self.links = []
         middle_stripe = self._stripe(rect, 0.3)
-        if self.root_note.is_deleted():
+        if self.root_note and self.root_note.is_deleted():
             self.open_last_note()
         if self.root_note is None:
             return
