@@ -16,7 +16,7 @@
 ],
 "fragments":[
 {
-"text":"COLOR_SELECTION      = (214, 138, 208)\nCOLOR_SEARCH_BAR     = (108, 138, 173)\nCOLOR_BACKGROUND     = (134, 169, 214)\nCOLOR_ACTIVE         = (25, 204, 25)\nCOLOR_INACTIVE       = (204, 204, 204)\nCOLOR_LINE           = (114, 127, 178)\nCOLOR_NOTE_BG        = (250, 250, 250)\nCOLOR_NOTE_TEXT      = (20, 20, 20)\nCOLOR_NOTE_DATE_TEXT = (100, 100, 100)\nCOLOR_NOTE_TAG_TEXT  = (100, 100, 255)\nFONT_MONOSPACE       = \"Monospace\"\nFONT_TEXT            = \"San-Serif\"\nEDITOR_COMMAND       = [\"gvim\", \"--nofork\", None]\n",
+"text":"COLOR_SELECTION      = (214, 138, 208)\nCOLOR_SEARCH_BAR     = (108, 138, 173)\nCOLOR_BACKGROUND     = (134, 169, 214)\nCOLOR_ACTIVE         = (25, 204, 25)\nCOLOR_INACTIVE       = (204, 204, 204)\nCOLOR_LINE           = (114, 127, 178)\nCOLOR_NOTE_BG        = (250, 250, 250)\nCOLOR_NOTE_TEXT      = (20, 20, 20)\nCOLOR_NOTE_DATE_TEXT = (100, 100, 100)\nCOLOR_NOTE_TAG_TEXT  = (100, 100, 255)\nFONT_MONOSPACE       = \"Monospace\"\nFONT_TEXT            = \"San-Serif\"\nEDITOR_COMMAND       = [\"gvim\", \"--nofork\", None]\nNUM_SEARCH_RESULTS   = 6\n",
 "type":"code"
 }
 ],
@@ -66,7 +66,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchResults(HBox):\n\n    def __init__(self, db, state, open_callback, hpadding):\n        HBox.__init__(self)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.hpadding = hpadding\n        self.update_search_text(\"\")\n        self.set_num_results(6)\n        self.by_id = {}\n\n    def inc_results(self):\n        self.set_num_results(self.num_results + 1)\n\n    def dec_results(self):\n        self.set_num_results(self.num_results - 1)\n\n    def set_num_results(self, num):\n        self.num_results = max(3, min(12, num))\n\n    def update_search_text(self, text):\n        self.text = text\n\n    def ",
+"text":"class SearchResults(HBox):\n\n    def __init__(self, db, state, open_callback, hpadding):\n        HBox.__init__(self)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.hpadding = hpadding\n        self.update_search_text(\"\")\n        self.set_num_results(NUM_SEARCH_RESULTS)\n        self.by_id = {}\n\n    def inc_results(self):\n        self.set_num_results(self.num_results + 1)\n\n    def dec_results(self):\n        self.set_num_results(self.num_results - 1)\n\n    def set_num_results(self, num):\n        self.num_results = max(3, min(12, num))\n\n    def update_search_text(self, text):\n        self.text = text\n\n    def ",
 "type":"code"
 },
 {

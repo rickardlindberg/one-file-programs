@@ -33,6 +33,7 @@ COLOR_NOTE_TAG_TEXT  = (100, 100, 255)
 FONT_MONOSPACE       = "Monospace"
 FONT_TEXT            = "San-Serif"
 EDITOR_COMMAND       = ["gvim", "--nofork", None]
+NUM_SEARCH_RESULTS   = 6
 
 class Widget(object):
 
@@ -652,7 +653,7 @@ class SearchResults(HBox):
         self.open_callback = open_callback
         self.hpadding = hpadding
         self.update_search_text("")
-        self.set_num_results(6)
+        self.set_num_results(NUM_SEARCH_RESULTS)
         self.by_id = {}
 
     def inc_results(self):
