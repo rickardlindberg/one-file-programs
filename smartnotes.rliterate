@@ -4,6 +4,29 @@
 {
 "children":[
 {
+"children":[],
+"id":"acfde4440fd247f18dfc45bc3dfa7e5b",
+"paragraphs":[
+{
+"chunkpath":[
+"constants"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"COLOR_SELECTION      = (214, 138, 208)\nCOLOR_SEARCH_BAR     = (108, 138, 173)\nCOLOR_BACKGROUND     = (134, 169, 214)\nCOLOR_ACTIVE         = (25, 204, 25)\nCOLOR_INACTIVE       = (204, 204, 204)\nCOLOR_LINE           = (114, 127, 178)\nCOLOR_NOTE_BG        = (250, 250, 250)\nCOLOR_NOTE_TEXT      = (20, 20, 20)\nCOLOR_NOTE_DATE_TEXT = (100, 100, 100)\nCOLOR_NOTE_TAG_TEXT  = (100, 100, 255)\nFONT_MONOSPACE       = \"Monospace\"\nFONT_TEXT            = \"San-Serif\"\nEDITOR_COMMAND       = \"gvim --nofork {}\"\n",
+"type":"code"
+}
+],
+"id":"72d23ce3a4134014b86bc49307e14d99",
+"type":"code"
+}
+],
+"title":"Settings"
+},
+{
 "children":[
 {
 "children":[
@@ -1206,7 +1229,7 @@
 ],
 "fragments":[
 {
-"text":"DEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_TEXT_BORDER = os.environ.get(\"DEBUG_TEXT_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\nDEBUG = DEBUG_NOTE_BORDER or DEBUG_TEXT_BORDER or DEBUG_ANIMATIONS\n\nUSER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT\nUSER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1\n\nCOLOR_SELECTION = (214, 138, 208)\nCOLOR_SEARCH_BAR = (108, 138, 173)\nCOLOR_BACKGROUND = (134, 169, 214)\nCOLOR_ACTIVE = (25, 204, 25)\nCOLOR_INACTIVE = (204, 204, 204)\nCOLOR_LINE = (114, 127, 178)\nCOLOR_NOTE_BG = (250, 250, 250)\nCOLOR_NOTE_TEXT = (20, 20, 20)\nCOLOR_NOTE_DATE_TEXT = (100, 100, 100)\nCOLOR_NOTE_TAG_TEXT = (100, 100, 255)\nFONT_MONOSPACE = \"Monospace\"\nFONT_TEXT = \"San-Serif\"\nEDITOR_COMMAND = \"gvim --nofork {}\"\n",
+"text":"DEBUG_NOTE_BORDER = os.environ.get(\"DEBUG_NOTE_BORDER\") == \"yes\"\nDEBUG_TEXT_BORDER = os.environ.get(\"DEBUG_TEXT_BORDER\") == \"yes\"\nDEBUG_ANIMATIONS = os.environ.get(\"DEBUG_ANIMATIONS\") == \"yes\"\nDEBUG = DEBUG_NOTE_BORDER or DEBUG_TEXT_BORDER or DEBUG_ANIMATIONS\n\nUSER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT\nUSER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1\n",
 "type":"code"
 }
 ],
