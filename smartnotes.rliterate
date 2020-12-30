@@ -26,22 +26,6 @@
 ],
 "id":"d3269ff2d7fc4237bd8d03ba444183a8",
 "type":"code"
-},
-{
-"chunkpath":[
-"functions"
-],
-"filepath":[
-"smartnotes.py"
-],
-"fragments":[
-{
-"text":"def strip_last_word(text):\n    remaining_parts = text.rstrip().split(\" \")[:-1]\n    if remaining_parts:\n        return \" \".join(remaining_parts) + \" \"\n    else:\n        return \"\"\n",
-"type":"code"
-}
-],
-"id":"6e6598d06118446594115047ecf5af5e",
-"type":"code"
 }
 ],
 "title":"Search Field"
@@ -1757,6 +1741,29 @@
 }
 ],
 "title":"Format Title"
+},
+{
+"children":[],
+"id":"ab484b553cad4ebea9802ed869b59550",
+"paragraphs":[
+{
+"chunkpath":[
+"functions"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def strip_last_word(text):\n    remaining_parts = text.rstrip().split(\" \")[:-1]\n    if remaining_parts:\n        return \" \".join(remaining_parts) + \" \"\n    else:\n        return \"\"\n",
+"type":"code"
+}
+],
+"id":"6e6598d06118446594115047ecf5af5e",
+"type":"code"
+}
+],
+"title":"Text Manipulation"
 }
 ],
 "id":"ec7b63d28b90469cbbbbb9221dec1ecf",

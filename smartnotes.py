@@ -1561,13 +1561,6 @@ def main():
         sys.argv[1]
     )
 
-def strip_last_word(text):
-    remaining_parts = text.rstrip().split(" ")[:-1]
-    if remaining_parts:
-        return " ".join(remaining_parts) + " "
-    else:
-        return ""
-
 def genid():
     return uuid.uuid4().hex
 
@@ -1646,6 +1639,13 @@ def format_title(name, path):
         os.path.abspath(os.path.dirname(path)),
         name
     )
+
+def strip_last_word(text):
+    remaining_parts = text.rstrip().split(" ")[:-1]
+    if remaining_parts:
+        return " ".join(remaining_parts) + " "
+    else:
+        return ""
 
 if __name__ == "__main__":
     main()
