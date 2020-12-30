@@ -487,7 +487,7 @@
 "type":"variable"
 },
 {
-"text":"(note_id)\n            break\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        if event.left_mouse_up():\n            if event.left_mouse_up(rect=self.rect):\n                self.focus()\n            for note in reversed(self.notes):\n                if event.left_mouse_up(note.rect):\n                    self.make_root(note)\n                    return\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH and self.has_focus():\n            self.request_search_callback()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\" and self.has_focus():\n            note_id = self.db.create_note(text=NEW_NOTE_TEXT)\n            self.",
+"text":"(note_id)\n            break\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        if event.left_mouse_up():\n            if event.left_mouse_up(rect=self.rect):\n                self.focus()\n            for note in reversed(self.notes):\n                if event.left_mouse_up(note.rect):\n                    self.make_root(note)\n                    return\n        elif event.key_down(KEY_OPEN_SEARCH) and self.has_focus():\n            self.request_search_callback()\n        elif event.key_down(KEY_CREATE_NOTE) and self.has_focus():\n            note_id = self.db.create_note(text=NEW_NOTE_TEXT)\n            self.",
 "type":"code"
 },
 {
@@ -1191,7 +1191,7 @@
 ],
 "fragments":[
 {
-"text":"COLOR_SELECTION      = (214, 138, 208)\nCOLOR_SEARCH_BAR     = (108, 138, 173)\nCOLOR_BACKGROUND     = (134, 169, 214)\nCOLOR_ACTIVE         = (25, 204, 25)\nCOLOR_INACTIVE       = (204, 204, 204)\nCOLOR_LINE           = (114, 127, 178)\nCOLOR_NOTE_BG        = (250, 250, 250)\nCOLOR_NOTE_TEXT      = (20, 20, 20)\nCOLOR_NOTE_DATE_TEXT = (100, 100, 100)\nCOLOR_NOTE_TAG_TEXT  = (100, 100, 255)\nFONT_MONOSPACE       = \"Monospace\"\nFONT_TEXT            = \"San-Serif\"\nEDITOR_COMMAND       = [\"gvim\", \"--nofork\", None]\nNUM_SEARCH_RESULTS   = 6\nNEW_NOTE_TEXT        = \"Enter note text...\\n\"\nKEY_QUIT             = \"ctrl+q\"\nKEY_UNDO             = \"ctrl+z\"\nKEY_REDO             = \"ctrl+y\"\nKEY_TOGGLE_DEBUG_BAR = \"F1\"\nKEY_CLEAR_FOCUS      = \"escape\"\nKEY_DISMISS          = \"ctrl+g\"\nKEY_INCREASE         = \"ctrl+shift+=\"\nKEY_DECREASE         = \"ctrl+-\"\n",
+"text":"COLOR_SELECTION      = (214, 138, 208)\nCOLOR_SEARCH_BAR     = (108, 138, 173)\nCOLOR_BACKGROUND     = (134, 169, 214)\nCOLOR_ACTIVE         = (25, 204, 25)\nCOLOR_INACTIVE       = (204, 204, 204)\nCOLOR_LINE           = (114, 127, 178)\nCOLOR_NOTE_BG        = (250, 250, 250)\nCOLOR_NOTE_TEXT      = (20, 20, 20)\nCOLOR_NOTE_DATE_TEXT = (100, 100, 100)\nCOLOR_NOTE_TAG_TEXT  = (100, 100, 255)\nFONT_MONOSPACE       = \"Monospace\"\nFONT_TEXT            = \"San-Serif\"\nEDITOR_COMMAND       = [\"gvim\", \"--nofork\", None]\nNUM_SEARCH_RESULTS   = 6\nNEW_NOTE_TEXT        = \"Enter note text...\\n\"\nKEY_QUIT             = \"ctrl+q\"\nKEY_UNDO             = \"ctrl+z\"\nKEY_REDO             = \"ctrl+y\"\nKEY_TOGGLE_DEBUG_BAR = \"F1\"\nKEY_CLEAR_FOCUS      = \"escape\"\nKEY_DISMISS          = \"ctrl+g\"\nKEY_INCREASE         = \"ctrl+shift+=\"\nKEY_DECREASE         = \"ctrl+-\"\nKEY_OPEN_SEARCH      = \"/\"\nKEY_CREATE_NOTE      = \"c\"\n",
 "type":"code"
 }
 ],

@@ -43,6 +43,8 @@ KEY_CLEAR_FOCUS      = "escape"
 KEY_DISMISS          = "ctrl+g"
 KEY_INCREASE         = "ctrl+shift+="
 KEY_DECREASE         = "ctrl+-"
+KEY_OPEN_SEARCH      = "/"
+KEY_CREATE_NOTE      = "c"
 
 class Widget(object):
 
@@ -779,9 +781,9 @@ class NetworkWidget(Widget):
                 if event.left_mouse_up(note.rect):
                     self.make_root(note)
                     return
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH and self.has_focus():
+        elif event.key_down(KEY_OPEN_SEARCH) and self.has_focus():
             self.request_search_callback()
-        elif event.type == pygame.KEYDOWN and event.unicode == "c" and self.has_focus():
+        elif event.key_down(KEY_CREATE_NOTE) and self.has_focus():
             note_id = self.db.create_note(text=NEW_NOTE_TEXT)
             self.open_note(note_id)
             self.post_event(
