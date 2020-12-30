@@ -102,6 +102,26 @@ class Widget(object):
     def process_event(self, event):
         pass
 
+class Padding(Widget):
+
+    def __init__(self, widget, hpadding=None, vpadding=None, **kwargs):
+        Widget.__init__(self, **kwargs)
+        self.widget = widget
+        self.hpadding = (lambda rect: 0) if hpadding is None else hpadding
+        self.vpadding = (lambda rect: 0) if vpadding is None else vpadding
+
+    def process_event(self, event):
+        self.widget.process_event(event)
+
+    def update(self, rect, elapsed_ms):
+        self.widget.update(
+            rect.inflate(-self.hpadding(rect)*2, -self.vpadding(rect)*2),
+            elapsed_ms
+        )
+
+    def draw(self, canvas):
+        self.widget.draw(canvas)
+
 class NoteBaseWidget(Widget):
 
     def __init__(self, db, note_id, state):
@@ -302,6 +322,8 @@ class TextField(Widget):
     def process_event(self, event):
         if self.has_focus() and event.type == pygame.KEYDOWN and event.unicode:
             self.set_text(self.text + event.unicode)
+        elif event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos):
+            self.focus()
 
     def update(self, rect, elapsed_ms):
         self.rect = rect
@@ -512,8 +534,17 @@ class SearchBar(VBox):
         self.animation = Animation()
         self.notes = []
         self.search_results = SearchResults(db, state, open_callback)
-        self.search_field = SearchField(self.search_results.update_search_text, self.dismiss_callback)
-        self.add(self.search_field)
+        self.search_field = SearchField(
+            self.search_results.update_search_text,
+            self.dismiss_callback,
+            text_size=20
+        )
+        self.add(Padding(
+            self.search_field,
+            hpadding=lambda rect: int(rect.width*0.08),
+            vpadding=lambda rect: 8,
+            height=50
+        ))
         self.add(self.search_results)
 
     def focus(self):
@@ -561,15 +592,9 @@ class SearchBar(VBox):
 
 class SearchField(TextField):
 
-    def __init__(self, text_changed_callback, dismiss_callback):
-        TextField.__init__(self, text_changed_callback, text_size=20, height=50)
+    def __init__(self, text_changed_callback, dismiss_callback, **kwargs):
+        TextField.__init__(self, text_changed_callback, **kwargs)
         self.dismiss_callback = dismiss_callback
-
-    def update(self, rect, elapsed_time):
-        self.rect = rect
-        x_shrink = int(rect.width * 0.1)
-        y_shrink = 15
-        TextField.update(self, rect.inflate(-x_shrink, -y_shrink), elapsed_time)
 
     def process_event(self, event):
         if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:
@@ -580,8 +605,6 @@ class SearchField(TextField):
             self.set_text(self.text[:-1])
         elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
             self.dismiss_callback(close=False)
-        elif event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos):
-            self.focus()
         else:
             TextField.process_event(self, event)
 

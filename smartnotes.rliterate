@@ -66,7 +66,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchBar(VBox):\n\n    IDEAL_HEIGHT = 200\n\n    def __init__(self, db, state, open_callback, dismiss_callback):\n        VBox.__init__(self, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_results = SearchResults(db, state, open_callback)\n        self.search_field = SearchField(self.search_results.update_search_text, self.dismiss_callback)\n        self.add(self.search_field)\n        self.add(self.search_results)\n\n    def focus(self):\n        self.search_field.focus()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n\n    def ",
+"text":"class SearchBar(VBox):\n\n    IDEAL_HEIGHT = 200\n\n    def __init__(self, db, state, open_callback, dismiss_callback):\n        VBox.__init__(self, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_results = SearchResults(db, state, open_callback)\n        self.search_field = SearchField(\n            self.search_results.update_search_text,\n            self.dismiss_callback,\n            text_size=20\n        )\n        self.add(Padding(\n            self.search_field,\n            hpadding=lambda rect: int(rect.width*0.08),\n            vpadding=lambda rect: 8,\n            height=50\n        ))\n        self.add(self.search_results)\n\n    def focus(self):\n        self.search_field.focus()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -122,7 +122,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchField(TextField):\n\n    def __init__(self, text_changed_callback, dismiss_callback):\n        TextField.__init__(self, text_changed_callback, text_size=20, height=50)\n        self.dismiss_callback = dismiss_callback\n\n    def update(self, rect, elapsed_time):\n        self.rect = rect\n        x_shrink = int(rect.width * 0.1)\n        y_shrink = 15\n        TextField.update(self, rect.inflate(-x_shrink, -y_shrink), elapsed_time)\n\n    def process_event(self, event):\n        if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:\n            self.dismiss_callback(close=True)\n        elif self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_w:\n            self.set_text(strip_last_word(self.text))\n        elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:\n            self.set_text(self.text[:-1])\n        elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.dismiss_callback(close=False)\n        elif event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos):\n            self.focus()\n        else:\n            TextField.process_event(self, event)\n",
+"text":"class SearchField(TextField):\n\n    def __init__(self, text_changed_callback, dismiss_callback, **kwargs):\n        TextField.__init__(self, text_changed_callback, **kwargs)\n        self.dismiss_callback = dismiss_callback\n\n    def process_event(self, event):\n        if self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_g:\n            self.dismiss_callback(close=True)\n        elif self.has_focus() and event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_w:\n            self.set_text(strip_last_word(self.text))\n        elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:\n            self.set_text(self.text[:-1])\n        elif self.has_focus() and event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:\n            self.dismiss_callback(close=False)\n        else:\n            TextField.process_event(self, event)\n",
 "type":"code"
 }
 ],
@@ -1284,6 +1284,29 @@
 },
 {
 "children":[],
+"id":"7b735f9619c14dc7b04190f311fa868f",
+"paragraphs":[
+{
+"chunkpath":[
+"base base classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class Padding(Widget):\n\n    def __init__(self, widget, hpadding=None, vpadding=None, **kwargs):\n        Widget.__init__(self, **kwargs)\n        self.widget = widget\n        self.hpadding = (lambda rect: 0) if hpadding is None else hpadding\n        self.vpadding = (lambda rect: 0) if vpadding is None else vpadding\n\n    def process_event(self, event):\n        self.widget.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        self.widget.update(\n            rect.inflate(-self.hpadding(rect)*2, -self.vpadding(rect)*2),\n            elapsed_ms\n        )\n\n    def draw(self, canvas):\n        self.widget.draw(canvas)\n",
+"type":"code"
+}
+],
+"id":"ac24784994a74b8dbf84a2cff60abfe4",
+"type":"code"
+}
+],
+"title":"Padding"
+},
+{
+"children":[],
 "id":"eaaf7fa4b90c4a9ab387fa4a908f49df",
 "paragraphs":[
 {
@@ -1350,7 +1373,7 @@
 ],
 "fragments":[
 {
-"text":"class TextField(Widget):\n\n    def __init__(self, text_changed_callback, text_size=10, **kwargs):\n        Widget.__init__(self, **kwargs)\n        self.text_size = text_size\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def set_text(self, text):\n        self.text = text\n        self.text_changed_callback(text)\n\n    def process_event(self, event):\n        if self.has_focus() and event.type == pygame.KEYDOWN and event.unicode:\n            self.set_text(self.text + event.unicode)\n\n    def ",
+"text":"class TextField(Widget):\n\n    def __init__(self, text_changed_callback, text_size=10, **kwargs):\n        Widget.__init__(self, **kwargs)\n        self.text_size = text_size\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def set_text(self, text):\n        self.text = text\n        self.text_changed_callback(text)\n\n    def process_event(self, event):\n        if self.has_focus() and event.type == pygame.KEYDOWN and event.unicode:\n            self.set_text(self.text + event.unicode)\n        elif event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos):\n            self.focus()\n\n    def ",
 "type":"code"
 },
 {
