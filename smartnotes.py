@@ -527,7 +527,7 @@ class SmartNotesWidget(VBox):
                 return
             self.set_link_source(None)
             self.set_link_target(None)
-        if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_q:
+        if event.key_down("ctrl+q"):
             self.quit()
         if event.type == pygame.KEYDOWN and event.mod & pygame.KMOD_CTRL and event.key == pygame.K_z:
             self.db.undo()
@@ -1423,6 +1423,31 @@ class PygameEvent(object):
         return (
             self.event.type == pygame.KEYDOWN and
             self.event.unicode
+        )
+
+    def key_down(self, description):
+        parts = description.split("+")
+        ctrl = False
+        shift = False
+        alt = False
+        while parts:
+            part = parts.pop(0)
+            if part == "ctrl":
+                ctrl = True
+            elif part == "shift":
+                shift = True
+            elif part == "alt":
+                alt = True
+            elif not parts:
+                key = pygame.key.key_code(part)
+            else:
+                raise ValueError("unknown part {}".format(part))
+        return (
+            self.event.type == pygame.KEYDOWN and
+            self.event.key == key and
+            bool(self.event.mod & pygame.KMOD_CTRL) == ctrl and
+            bool(self.event.mod & pygame.KMOD_SHIFT) == shift and
+            bool(self.event.mod & pygame.KMOD_ALT) == alt
         )
 
 class CairoCanvas(object):
