@@ -1355,8 +1355,8 @@ class CairoCanvas(object):
         self.ctx.translate(pos[0], pos[1])
         if scale_to_fit:
             self.ctx.scale(
-                scale_to_fit[0] / image.get_width(),
-                scale_to_fit[1] / image.get_height()
+                max(0.001, scale_to_fit[0] / image.get_width()),
+                max(0.001, scale_to_fit[1] / image.get_height())
             )
         self.ctx.set_source_surface(image, 0, 0)
         self.ctx.paint_with_alpha(alpha/255)
