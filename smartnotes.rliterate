@@ -210,7 +210,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, window, db, note_id, state):\n        ",
+"text":"):\n\n    def __init__(self, window, network, db, note_id, state):\n        ",
 "type":"code"
 },
 {
@@ -218,7 +218,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, window, db, note_id, state)\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def clear_hidden_links(self, visible_links):\n        self.incoming = [x for x in self.incoming if x in visible_links]\n        self.outgoing = [x for x in self.outgoing if x in visible_links]\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        if not self.has_focus():\n            return\n        if event.key_down(KEY_EDIT_NOTE):\n            self.clear_quick_focus()\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
+"text":".__init__(self, window, db, note_id, state)\n        self.network = network\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def clear_hidden_links(self, visible_links):\n        self.incoming = [x for x in self.incoming if x in visible_links]\n        self.outgoing = [x for x in self.outgoing if x in visible_links]\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        if not self.has_focus():\n            return\n        if event.key_down(KEY_EDIT_NOTE):\n            self.clear_quick_focus()\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
 "type":"code"
 },
 {
@@ -234,7 +234,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, child_note_id)\n            )\n        elif event.left_mouse_down():\n            self.state.set_link_source(self)\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
+"text":"(self.db, child_note_id)\n            )\n        elif event.key_down(KEY_OPEN_SEARCH):\n            self.clear_quick_focus()\n            self.network.request_search_callback()\n        elif event.left_mouse_down():\n            self.state.set_link_source(self)\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -258,7 +258,7 @@
 "type":"variable"
 },
 {
-"text":", self.db, link_data[\"from\"], self.state),\n                    self\n                )\n        return self.incoming\n\n    def update_outgoing(self):\n        by_id = {\n            link.link_id: link\n            for link in self.outgoing\n        }\n        self.outgoing = []\n        for link_id, link_data in self.db.",
+"text":", self, self.db, link_data[\"from\"], self.state),\n                    self\n                )\n        return self.incoming\n\n    def update_outgoing(self):\n        by_id = {\n            link.link_id: link\n            for link in self.outgoing\n        }\n        self.outgoing = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -282,7 +282,7 @@
 "type":"variable"
 },
 {
-"text":", self.db, link_data[\"to\"], self.state)\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def ",
+"text":", self, self.db, link_data[\"to\"], self.state)\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def ",
 "type":"code"
 },
 {
@@ -519,7 +519,7 @@
 "type":"variable"
 },
 {
-"text":", self.db, note_id, self.state))\n\n    def make_root(self, node):\n        if node is not self.root_note:\n            self.root_note = node\n            self.clear_quick_focus()\n\n    def ",
+"text":", self, self.db, note_id, self.state))\n\n    def make_root(self, node):\n        if node is not self.root_note:\n            self.root_note = node\n            self.clear_quick_focus()\n\n    def ",
 "type":"code"
 },
 {

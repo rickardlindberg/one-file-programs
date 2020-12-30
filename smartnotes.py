@@ -798,7 +798,7 @@ class NetworkWidget(Widget):
                 note.process_event(event)
 
     def open_note(self, note_id):
-        self.make_root(self.instantiate(NetworkNote, self.db, note_id, self.state))
+        self.make_root(self.instantiate(NetworkNote, self, self.db, note_id, self.state))
 
     def make_root(self, node):
         if node is not self.root_note:
@@ -936,8 +936,9 @@ class NetworkWidget(Widget):
 
 class NetworkNote(NoteBaseWidget):
 
-    def __init__(self, window, db, note_id, state):
+    def __init__(self, window, network, db, note_id, state):
         NoteBaseWidget.__init__(self, window, db, note_id, state)
+        self.network = network
         self.incoming = []
         self.outgoing = []
         self.animation = Animation()
@@ -981,6 +982,9 @@ class NetworkNote(NoteBaseWidget):
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
                 entry=NoteText(self.db, child_note_id)
             )
+        elif event.key_down(KEY_OPEN_SEARCH):
+            self.clear_quick_focus()
+            self.network.request_search_callback()
         elif event.left_mouse_down():
             self.state.set_link_source(self)
 
@@ -997,7 +1001,7 @@ class NetworkNote(NoteBaseWidget):
                 self.instantiate(LinkWidget,
                     self.db,
                     link_id,
-                    self.instantiate(NetworkNote, self.db, link_data["from"], self.state),
+                    self.instantiate(NetworkNote, self, self.db, link_data["from"], self.state),
                     self
                 )
         return self.incoming
@@ -1016,7 +1020,7 @@ class NetworkNote(NoteBaseWidget):
                     self.db,
                     link_id,
                     self,
-                    self.instantiate(NetworkNote, self.db, link_data["to"], self.state)
+                    self.instantiate(NetworkNote, self, self.db, link_data["to"], self.state)
                 )
         return self.outgoing
 
