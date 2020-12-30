@@ -45,6 +45,10 @@ KEY_INCREASE         = "ctrl+shift+="
 KEY_DECREASE         = "ctrl+-"
 KEY_OPEN_SEARCH      = "/"
 KEY_CREATE_NOTE      = "c"
+KEY_EDIT_NOTE        = "e"
+KEY_DELETE_NOTE      = "d"
+KEY_UNLINK_NOTE      = "u"
+KEY_OPEN_LINKS       = "g"
 
 class Widget(object):
 
@@ -952,24 +956,24 @@ class NetworkNote(NoteBaseWidget):
             self.quick_focus()
         if not self.has_focus():
             return
-        if event.type == pygame.KEYDOWN and event.unicode == "e":
+        if event.key_down(KEY_EDIT_NOTE):
             self.clear_quick_focus()
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
                 entry=NoteText(self.db, self.note_id)
             )
-        elif event.type == pygame.KEYDOWN and event.unicode == "d":
+        elif event.key_down(KEY_DELETE_NOTE):
             self.clear_quick_focus()
             self.db.delete_note(self.note_id)
-        elif event.type == pygame.KEYDOWN and event.unicode == "u":
+        elif event.key_down(KEY_UNLINK_NOTE):
             link_id = self.get_link_id()
             if link_id:
                 self.db.delete_link(link_id)
                 self.clear_quick_focus()
-        elif event.type == pygame.KEYDOWN and event.unicode == "g":
+        elif event.key_down(KEY_OPEN_LINKS):
             for link in self.data.get("links", []):
                 webbrowser.open(link)
-        elif event.type == pygame.KEYDOWN and event.unicode == "c":
+        elif event.key_down(KEY_CREATE_NOTE):
             self.clear_quick_focus()
             with self.db.transaction():
                 child_note_id = self.db.create_note(text=NEW_NOTE_TEXT)
