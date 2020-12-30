@@ -487,7 +487,7 @@
 "type":"variable"
 },
 {
-"text":"(note_id)\n            break\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            self.pos = event.pos\n        if event.type == pygame.MOUSEBUTTONUP:\n            if self.rect.collidepoint(event.pos):\n                self.focus()\n            for note in reversed(self.notes):\n                if note.rect.collidepoint(event.pos):\n                    self.make_root(note)\n                    return\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH and self.has_focus():\n            self.request_search_callback()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\" and self.has_focus():\n            note_id = self.db.create_note(text=NEW_NOTE_TEXT)\n            self.",
+"text":"(note_id)\n            break\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        if event.left_mouse_up():\n            if event.left_mouse_up(rect=self.rect):\n                self.focus()\n            for note in reversed(self.notes):\n                if event.left_mouse_up(note.rect):\n                    self.make_root(note)\n                    return\n        elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH and self.has_focus():\n            self.request_search_callback()\n        elif event.type == pygame.KEYDOWN and event.unicode == \"c\" and self.has_focus():\n            note_id = self.db.create_note(text=NEW_NOTE_TEXT)\n            self.",
 "type":"code"
 },
 {

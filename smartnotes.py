@@ -756,13 +756,13 @@ class NetworkWidget(Widget):
             break
 
     def process_event(self, event):
-        if event.type == pygame.MOUSEMOTION:
-            self.pos = event.pos
-        if event.type == pygame.MOUSEBUTTONUP:
-            if self.rect.collidepoint(event.pos):
+        if event.mouse_motion():
+            self.pos = event.mouse_pos()
+        if event.left_mouse_up():
+            if event.left_mouse_up(rect=self.rect):
                 self.focus()
             for note in reversed(self.notes):
-                if note.rect.collidepoint(event.pos):
+                if event.left_mouse_up(note.rect):
                     self.make_root(note)
                     return
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SLASH and self.has_focus():
