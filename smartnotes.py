@@ -31,6 +31,12 @@ class Widget(object):
         self._height = height
         self._visible = visible
 
+    def update(self, rect, elapsed_ms):
+        pass
+
+    def draw(self, canvas):
+        pass
+
     def store_focus(self):
         if Widget._stored_focus is None:
             Widget._stored_focus = (
@@ -268,7 +274,7 @@ class VBox(Box):
 class HBox(Box):
 
     def get_widget_size(self, widget):
-        return widget.get_widget_size()
+        return widget.get_width()
 
     def get_rect_size(self, thing):
         return thing.width
@@ -579,56 +585,43 @@ class SearchField(TextField):
         else:
             TextField.process_event(self, event)
 
-class SearchResults(Widget):
+class SearchResults(HBox):
 
     def __init__(self, db, state, open_callback):
-        Widget.__init__(self)
+        HBox.__init__(self)
         self.db = db
         self.state = state
         self.open_callback = open_callback
-        self.notes = []
         self.update_search_text("")
 
     def update_search_text(self, text):
         self.text = text
 
-    def process_event(self, event):
-        for note in self.notes:
-            note.process_event(event)
-
     def update(self, rect, elapsed_ms):
         self._update_notes_list()
-        self.rect = rect
-        rect = self.rect.inflate(-10, -10)
-        single_width = rect.width/max(1, len(self.notes))
-        rect.x += 5
-        rect.width = single_width - 10
-        for note in self.notes:
-            note.update(rect, elapsed_ms)
-            rect = rect.copy()
-            rect.x += single_width
+        HBox.update(self, rect, elapsed_ms)
 
     def _update_notes_list(self):
         by_id = {}
-        for note in self.notes:
-            by_id[note.note_id] = note
-        self.notes = []
+        for note in self.children:
+            if isinstance(note, SearchNote):
+                by_id[note.note_id] = note
+        self.children = [Widget(width=5)]
         for note_id, note_data in self.db.get_notes(self.text):
             if note_id in by_id:
-                self.notes.append(by_id[note_id])
+                self.children.append(by_id[note_id])
             else:
-                self.notes.append(SearchNote(
+                note = SearchNote(
                     self.db,
                     self.state,
                     note_id,
                     self.open_callback
-                ))
-            if len(self.notes) >= 5:
+                )
+                note.resize(width=200)
+                self.children.append(note)
+            if len(self.children) >= 5:
                 break
-
-    def draw(self, canvas):
-        for note in self.notes:
-            note.draw(canvas)
+        self.children.append(Widget(width=5))
 
 class SearchNote(NoteBaseWidget):
 
@@ -649,6 +642,7 @@ class SearchNote(NoteBaseWidget):
                 self.open_callback(self.note_id)
 
     def update(self, rect, elapsed_ms):
+        rect = rect.inflate(-10, -10)
         NoteBaseWidget.update(self, rect, elapsed_ms)
         self.rect = self._get_target(rect, align="center")
 
