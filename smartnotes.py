@@ -665,7 +665,6 @@ class SearchNote(NoteBaseWidget):
                 self.open_callback(self.note_id)
 
     def update(self, rect, elapsed_ms):
-        rect = rect.inflate(-10, -10)
         NoteBaseWidget.update(self, rect, elapsed_ms)
         self.rect = self._get_target(rect, align="center")
 

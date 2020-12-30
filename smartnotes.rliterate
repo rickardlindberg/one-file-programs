@@ -115,7 +115,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_target(self)\n                self.quick_focus()\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_source(self)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def update(self, rect, elapsed_ms):\n        rect = rect.inflate(-10, -10)\n        ",
+"text":".__init__(self, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.type == pygame.MOUSEMOTION:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_target(self)\n                self.quick_focus()\n        elif event.type == pygame.MOUSEBUTTONDOWN:\n            if self.rect.collidepoint(event.pos):\n                self.state.set_link_source(self)\n        elif event.type == pygame.MOUSEBUTTONUP:\n            if self.rect.collidepoint(event.pos):\n                self.open_callback(self.note_id)\n\n    def update(self, rect, elapsed_ms):\n        ",
 "type":"code"
 },
 {
