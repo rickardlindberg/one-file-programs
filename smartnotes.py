@@ -32,7 +32,7 @@ COLOR_NOTE_DATE_TEXT = (100, 100, 100)
 COLOR_NOTE_TAG_TEXT  = (100, 100, 255)
 FONT_MONOSPACE       = "Monospace"
 FONT_TEXT            = "San-Serif"
-EDITOR_COMMAND       = "gvim --nofork {}"
+EDITOR_COMMAND       = ["gvim", "--nofork", "{}"]
 
 class Widget(object):
 
@@ -415,7 +415,7 @@ class Immutable(object):
 
 class ExternalTextEntry(object):
 
-    def __init__(self, text):
+    def __init__(self, text, editor_command):
         self.text = text
         self.f = tempfile.NamedTemporaryFile(suffix="-smartnotes-external-")
         self.f.write(self.text.encode("utf-8"))
@@ -423,7 +423,7 @@ class ExternalTextEntry(object):
         self.p = subprocess.Popen([
             part.replace("{}", self.f.name)
             for part
-            in EDITOR_COMMAND.split(" ")
+            in editor_command
         ])
 
     def check(self):
@@ -1264,7 +1264,7 @@ class NoteText(ExternalTextEntry):
     def __init__(self, db, note_id=None):
         self.db = db
         self.note_id = note_id
-        ExternalTextEntry.__init__(self, self._note_to_text())
+        ExternalTextEntry.__init__(self, self._note_to_text(), EDITOR_COMMAND)
 
     def _note_to_text(self):
         data = self.db.get_note_data(self.note_id)
