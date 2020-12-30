@@ -26,6 +26,9 @@ COLOR_BACKGROUND = (134, 169, 214)
 COLOR_ACTIVE = (25, 204, 25)
 COLOR_INACTIVE = (204, 204, 204)
 COLOR_LINE = (114, 127, 178)
+COLOR_NOTE_BG = (250, 250, 250)
+COLOR_NOTE_DATE_TEXT = (100, 100, 100)
+COLOR_NOTE_TAG_TEXT = (100, 100, 255)
 
 class Widget(object):
 
@@ -164,8 +167,8 @@ class NoteBaseWidget(Widget):
         canvas.fill_rect(border, color=(0, 0, 0, 50))
         border.x -= border_size
         border.y -= border_size
-        canvas.fill_rect(border, color=(250, 250, 250))
-        canvas.draw_rect(border, (120, 120, 120), 1)
+        canvas.fill_rect(border, color=COLOR_NOTE_BG)
+        canvas.draw_rect(border, (0, 0, 0, 120), 1)
         if self.has_focus():
             canvas.draw_rect(border.inflate(-7, -7).move(1, 1), COLOR_SELECTION, 2)
         canvas.blit(
@@ -204,7 +207,7 @@ class NoteBaseWidget(Widget):
             face="Monospace",
             boxalign="bottomleft",
             split=False,
-            color=(100, 100, 100)
+            color=COLOR_NOTE_DATE_TEXT
         )
         tags = self.data.get("tags", [])
         links = self.data.get("links", [])
@@ -218,7 +221,7 @@ class NoteBaseWidget(Widget):
                 face="Monospace",
                 boxalign="bottomright",
                 split=False,
-                color=(100, 100, 255)
+                color=COLOR_NOTE_TAG_TEXT
             )
             rect.width = rect.height
             rect.right = right
