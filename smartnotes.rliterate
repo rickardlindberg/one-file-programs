@@ -4,29 +4,6 @@
 {
 "children":[
 {
-"children":[],
-"id":"acfde4440fd247f18dfc45bc3dfa7e5b",
-"paragraphs":[
-{
-"chunkpath":[
-"constants"
-],
-"filepath":[
-"smartnotes.py"
-],
-"fragments":[
-{
-"text":"COLOR_SELECTION      = (214, 138, 208)\nCOLOR_SEARCH_BAR     = (108, 138, 173)\nCOLOR_BACKGROUND     = (134, 169, 214)\nCOLOR_ACTIVE         = (25, 204, 25)\nCOLOR_INACTIVE       = (204, 204, 204)\nCOLOR_LINE           = (114, 127, 178)\nCOLOR_NOTE_BG        = (250, 250, 250)\nCOLOR_NOTE_TEXT      = (20, 20, 20)\nCOLOR_NOTE_DATE_TEXT = (100, 100, 100)\nCOLOR_NOTE_TAG_TEXT  = (100, 100, 255)\nFONT_MONOSPACE       = \"Monospace\"\nFONT_TEXT            = \"San-Serif\"\nEDITOR_COMMAND       = [\"gvim\", \"--nofork\", None]\nNUM_SEARCH_RESULTS   = 6\nNEW_NOTE_TEXT        = \"Enter note text...\\n\"\n",
-"type":"code"
-}
-],
-"id":"72d23ce3a4134014b86bc49307e14d99",
-"type":"code"
-}
-],
-"title":"Settings"
-},
-{
 "children":[
 {
 "children":[
@@ -1120,7 +1097,7 @@
 "type":"code"
 }
 ],
-"title":"Data model"
+"title":"Note Database"
 },
 {
 "children":[],
@@ -1200,6 +1177,29 @@
 }
 ],
 "title":"Note External Edit"
+},
+{
+"children":[],
+"id":"acfde4440fd247f18dfc45bc3dfa7e5b",
+"paragraphs":[
+{
+"chunkpath":[
+"constants"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"COLOR_SELECTION      = (214, 138, 208)\nCOLOR_SEARCH_BAR     = (108, 138, 173)\nCOLOR_BACKGROUND     = (134, 169, 214)\nCOLOR_ACTIVE         = (25, 204, 25)\nCOLOR_INACTIVE       = (204, 204, 204)\nCOLOR_LINE           = (114, 127, 178)\nCOLOR_NOTE_BG        = (250, 250, 250)\nCOLOR_NOTE_TEXT      = (20, 20, 20)\nCOLOR_NOTE_DATE_TEXT = (100, 100, 100)\nCOLOR_NOTE_TAG_TEXT  = (100, 100, 255)\nFONT_MONOSPACE       = \"Monospace\"\nFONT_TEXT            = \"San-Serif\"\nEDITOR_COMMAND       = [\"gvim\", \"--nofork\", None]\nNUM_SEARCH_RESULTS   = 6\nNEW_NOTE_TEXT        = \"Enter note text...\\n\"\n",
+"type":"code"
+}
+],
+"id":"72d23ce3a4134014b86bc49307e14d99",
+"type":"code"
+}
+],
+"title":"Settings"
 }
 ],
 "id":"5b3057938889498f908a3eac28cd7ca7",
