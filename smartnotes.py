@@ -238,6 +238,9 @@ class Box(Widget):
 
     def __init__(self, **kwargs):
         Widget.__init__(self, **kwargs)
+        self.clear()
+
+    def clear(self):
         self.children = []
 
     def add(self, child):
@@ -258,7 +261,7 @@ class Box(Widget):
             else:
                 sizes.append(self.get_widget_size(child))
         if divide_indices:
-            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)
+            divide_size = int(round((self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)))
             for divide_index in divide_indices:
                 sizes[divide_index] = divide_size
         for child, size in zip(self.visible_children(), sizes):
@@ -523,7 +526,8 @@ class SmartNotesWidget(VBox):
 
 class SearchBar(VBox):
 
-    IDEAL_HEIGHT = 200
+    SEARCH_FIELD_HEIHGT = 50
+    VPADDING = 8
 
     def __init__(self, db, state, open_callback, dismiss_callback):
         VBox.__init__(self, height=0, visible=False)
@@ -533,7 +537,10 @@ class SearchBar(VBox):
         self.dismiss_callback = dismiss_callback
         self.animation = Animation()
         self.notes = []
-        self.search_results = SearchResults(db, state, open_callback)
+        self.search_results = SearchResults(
+            db, state, open_callback,
+            hpadding=self.VPADDING
+        )
         self.search_field = SearchField(
             self.search_results.update_search_text,
             self.dismiss_callback,
@@ -542,10 +549,12 @@ class SearchBar(VBox):
         self.add(Padding(
             self.search_field,
             hpadding=lambda rect: int(rect.width*0.08),
-            vpadding=lambda rect: 8,
-            height=50
+            vpadding=lambda rect: self.VPADDING,
+            height=self.SEARCH_FIELD_HEIHGT
         ))
         self.add(self.search_results)
+        self.add(Widget(height=self.VPADDING))
+        self.ideal_height = 200
 
     def focus(self):
         self.search_field.focus()
@@ -566,20 +575,21 @@ class SearchBar(VBox):
 
     def update(self, rect, elapsed_ms):
         self.ideal_rect = rect.copy()
-        self.ideal_rect.height = self.IDEAL_HEIGHT
+        self.ideal_rect.height = self.ideal_height
         VBox.update(self, self.ideal_rect, elapsed_ms)
+        self.ideal_height = self.SEARCH_FIELD_HEIHGT + self.VPADDING + self.search_results.wanted_height
         percent = self.animation.advance(elapsed_ms)
         if Widget.is_visible(self):
             self.alpha = int(255 * percent)
-            self.resize(height=int(self.IDEAL_HEIGHT * percent))
+            self.resize(height=int(self.ideal_height * percent))
         else:
             self.alpha = 255 - int(255 * percent)
-            self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))
+            self.resize(height=self.ideal_height - int(self.ideal_height * percent))
 
     def draw(self, canvas):
         canvas.blit(
             canvas.create_image(self.ideal_rect.size, self._draw_search_bar_image),
-            (0, -self.IDEAL_HEIGHT+self.get_height()),
+            (0, -self.ideal_height+self.get_height()),
             alpha=self.alpha
         )
 
@@ -610,41 +620,48 @@ class SearchField(TextField):
 
 class SearchResults(HBox):
 
-    def __init__(self, db, state, open_callback):
+    def __init__(self, db, state, open_callback, hpadding):
         HBox.__init__(self)
         self.db = db
         self.state = state
         self.open_callback = open_callback
+        self.hpadding = hpadding
         self.update_search_text("")
+        self.num_results = 6
+        self.notes = []
+        self.by_id = {}
 
     def update_search_text(self, text):
         self.text = text
 
     def update(self, rect, elapsed_ms):
+        self.wanted_height = int(round((rect.width-self.hpadding)/self.num_results*3/5))
         self._update_notes_list()
         HBox.update(self, rect, elapsed_ms)
 
     def _update_notes_list(self):
         by_id = {}
-        for note in self.children:
-            if isinstance(note, SearchNote):
-                by_id[note.note_id] = note
-        self.children = [Widget(width=5)]
-        for note_id, note_data in self.db.get_notes(self.text):
-            if note_id in by_id:
-                self.children.append(by_id[note_id])
+        self.clear()
+        self.add(Widget(width=self.hpadding/2))
+        for note_id, note_data in self.db.get_notes(self.text)[:self.num_results]:
+            if note_id in self.by_id:
+                note = self.add(self.by_id[note_id])
             else:
-                note = SearchNote(
-                    self.db,
-                    self.state,
-                    note_id,
-                    self.open_callback
-                )
-                note.resize(width=200)
-                self.children.append(note)
-            if len(self.children) >= 5:
-                break
-        self.children.append(Widget(width=5))
+                note = self.add(Padding(
+                    SearchNote(
+                        self.db,
+                        self.state,
+                        note_id,
+                        self.open_callback
+                    ),
+                    hpadding=lambda rect: self.hpadding/2
+                ))
+            by_id[note_id] = note
+            note.resize(height=self.wanted_height)
+        while len(self.children) <= self.num_results:
+            self.add(Widget())
+        self.add(Widget(width=self.hpadding/2))
+        self.by_id = by_id
 
 class SearchNote(NoteBaseWidget):
 

@@ -59,7 +59,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchResults(HBox):\n\n    def __init__(self, db, state, open_callback):\n        HBox.__init__(self)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.update_search_text(\"\")\n\n    def update_search_text(self, text):\n        self.text = text\n\n    def ",
+"text":"class SearchResults(HBox):\n\n    def __init__(self, db, state, open_callback, hpadding):\n        HBox.__init__(self)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.hpadding = hpadding\n        self.update_search_text(\"\")\n        self.num_results = 6\n        self.notes = []\n        self.by_id = {}\n\n    def update_search_text(self, text):\n        self.text = text\n\n    def ",
 "type":"code"
 },
 {
@@ -83,7 +83,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        self._update_notes_list()\n        HBox.update(self, rect, elapsed_ms)\n\n    def _update_notes_list(self):\n        by_id = {}\n        for note in self.children:\n            if isinstance(note, SearchNote):\n                by_id[note.note_id] = note\n        self.children = [Widget(width=5)]\n        for note_id, note_data in self.db.get_notes(self.text):\n            if note_id in by_id:\n                self.children.append(by_id[note_id])\n            else:\n                note = SearchNote(\n                    self.db,\n                    self.state,\n                    note_id,\n                    self.open_callback\n                )\n                note.resize(width=200)\n                self.children.append(note)\n            if len(self.children) >= 5:\n                break\n        self.children.append(Widget(width=5))\n",
+"text":"):\n        self.wanted_height = int(round((rect.width-self.hpadding)/self.num_results*3/5))\n        self._update_notes_list()\n        HBox.update(self, rect, elapsed_ms)\n\n    def _update_notes_list(self):\n        by_id = {}\n        self.clear()\n        self.add(Widget(width=self.hpadding/2))\n        for note_id, note_data in self.db.get_notes(self.text)[:self.num_results]:\n            if note_id in self.by_id:\n                note = self.add(self.by_id[note_id])\n            else:\n                note = self.add(Padding(\n                    SearchNote(\n                        self.db,\n                        self.state,\n                        note_id,\n                        self.open_callback\n                    ),\n                    hpadding=lambda rect: self.hpadding/2\n                ))\n            by_id[note_id] = note\n            note.resize(height=self.wanted_height)\n        while len(self.children) <= self.num_results:\n            self.add(Widget())\n        self.add(Widget(width=self.hpadding/2))\n        self.by_id = by_id\n",
 "type":"code"
 }
 ],
@@ -145,7 +145,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchBar(VBox):\n\n    IDEAL_HEIGHT = 200\n\n    def __init__(self, db, state, open_callback, dismiss_callback):\n        VBox.__init__(self, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_results = SearchResults(db, state, open_callback)\n        self.search_field = SearchField(\n            self.search_results.update_search_text,\n            self.dismiss_callback,\n            text_size=20\n        )\n        self.add(Padding(\n            self.search_field,\n            hpadding=lambda rect: int(rect.width*0.08),\n            vpadding=lambda rect: 8,\n            height=50\n        ))\n        self.add(self.search_results)\n\n    def focus(self):\n        self.search_field.focus()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n\n    def ",
+"text":"class SearchBar(VBox):\n\n    SEARCH_FIELD_HEIHGT = 50\n    VPADDING = 8\n\n    def __init__(self, db, state, open_callback, dismiss_callback):\n        VBox.__init__(self, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_results = SearchResults(\n            db, state, open_callback,\n            hpadding=self.VPADDING\n        )\n        self.search_field = SearchField(\n            self.search_results.update_search_text,\n            self.dismiss_callback,\n            text_size=20\n        )\n        self.add(Padding(\n            self.search_field,\n            hpadding=lambda rect: int(rect.width*0.08),\n            vpadding=lambda rect: self.VPADDING,\n            height=self.SEARCH_FIELD_HEIHGT\n        ))\n        self.add(self.search_results)\n        self.add(Widget(height=self.VPADDING))\n        self.ideal_height = 200\n\n    def focus(self):\n        self.search_field.focus()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -169,7 +169,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.ideal_rect = rect.copy()\n        self.ideal_rect.height = self.IDEAL_HEIGHT\n        VBox.update(self, self.ideal_rect, elapsed_ms)\n        percent = self.animation.advance(",
+"text":"):\n        self.ideal_rect = rect.copy()\n        self.ideal_rect.height = self.ideal_height\n        VBox.update(self, self.ideal_rect, elapsed_ms)\n        self.ideal_height = self.SEARCH_FIELD_HEIHGT + self.VPADDING + self.search_results.wanted_height\n        percent = self.animation.advance(",
 "type":"code"
 },
 {
@@ -177,7 +177,7 @@
 "type":"variable"
 },
 {
-"text":")\n        if Widget.is_visible(self):\n            self.alpha = int(255 * percent)\n            self.resize(height=int(self.IDEAL_HEIGHT * percent))\n        else:\n            self.alpha = 255 - int(255 * percent)\n            self.resize(height=self.IDEAL_HEIGHT - int(self.IDEAL_HEIGHT * percent))\n\n    def ",
+"text":")\n        if Widget.is_visible(self):\n            self.alpha = int(255 * percent)\n            self.resize(height=int(self.ideal_height * percent))\n        else:\n            self.alpha = 255 - int(255 * percent)\n            self.resize(height=self.ideal_height - int(self.ideal_height * percent))\n\n    def ",
 "type":"code"
 },
 {
@@ -185,7 +185,7 @@
 "type":"variable"
 },
 {
-"text":"(self, canvas):\n        canvas.blit(\n            canvas.create_image(self.ideal_rect.size, self._draw_search_bar_image),\n            (0, -self.IDEAL_HEIGHT+self.get_height()),\n            alpha=self.alpha\n        )\n\n    def _draw_search_bar_image(self, canvas):\n        canvas.fill_rect(\n            pygame.Rect(0, 0, self.ideal_rect.width, self.ideal_rect.height),\n            color=(84, 106, 134)\n        )\n        VBox.draw(self, canvas)\n",
+"text":"(self, canvas):\n        canvas.blit(\n            canvas.create_image(self.ideal_rect.size, self._draw_search_bar_image),\n            (0, -self.ideal_height+self.get_height()),\n            alpha=self.alpha\n        )\n\n    def _draw_search_bar_image(self, canvas):\n        canvas.fill_rect(\n            pygame.Rect(0, 0, self.ideal_rect.width, self.ideal_rect.height),\n            color=(84, 106, 134)\n        )\n        VBox.draw(self, canvas)\n",
 "type":"code"
 }
 ],
@@ -1325,7 +1325,7 @@
 ],
 "fragments":[
 {
-"text":"class Box(Widget):\n\n    def __init__(self, **kwargs):\n        Widget.__init__(self, **kwargs)\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n        return child\n\n    def process_event(self, event):\n        for child in self.visible_children():\n            child.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = (self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n",
+"text":"class Box(Widget):\n\n    def __init__(self, **kwargs):\n        Widget.__init__(self, **kwargs)\n        self.clear()\n\n    def clear(self):\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n        return child\n\n    def process_event(self, event):\n        for child in self.visible_children():\n            child.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = int(round((self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)))\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n",
 "type":"code"
 }
 ],
