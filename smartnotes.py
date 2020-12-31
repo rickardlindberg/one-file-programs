@@ -49,6 +49,9 @@ KEY_EDIT_NOTE        = "e"
 KEY_DELETE_NOTE      = "d"
 KEY_UNLINK_NOTE      = "u"
 KEY_OPEN_LINKS       = "g"
+TAG_ATTRIBUTES       = [
+    {"name": "title", "textalign": "center"},
+]
 
 class Widget(object):
 
@@ -151,9 +154,6 @@ class NoteBaseWidget(Widget):
         except NoteNotFound:
             return True
 
-    def is_title(self):
-        return "title" in self.data.get("tags", [])
-
     def update(self, rect, elapsed_ms):
         self.data = self.db.get_note_data(self.note_id)
         self.full_width = self.state.get_full_note_width()
@@ -192,11 +192,19 @@ class NoteBaseWidget(Widget):
         rect.top = border
         if DEBUG_NOTE_BORDER:
             canvas.draw_rect(rect, (200, 50, 50), 1)
+        attributes = {
+            "textalign": "left",
+        }
+        for tag in TAG_ATTRIBUTES:
+            if tag["name"] in self.data.get("tags", []):
+                for key in list(attributes.keys()):
+                    if key in tag:
+                        attributes[key] = tag[key]
         canvas.render_text(
             self.data["text"],
             rect,
             size=self.full_width/10,
-            textalign="center" if self.is_title() else "left",
+            textalign=attributes["textalign"],
             boxalign="center",
             color=COLOR_NOTE_TEXT,
             face=FONT_TEXT
@@ -1327,6 +1335,10 @@ class NoteText(ExternalTextEntry):
         extra.append("# Usage:\n")
         extra.append("# {}http://...\n".format(self.LINK_PREFIX))
         extra.append("# {}name\n".format(self.TAG_PREFIX))
+        extra.append("#\n")
+        extra.append("# Tags with special formatting:\n")
+        for tag in TAG_ATTRIBUTES:
+            extra.append("# {}{}\n".format(self.TAG_PREFIX, tag["name"]))
         extra.append("--\n")
         return data["text"] + "".join(extra)
 
