@@ -20,36 +20,37 @@ DEBUG = DEBUG_NOTE_BORDER or DEBUG_TEXT_BORDER or DEBUG_ANIMATIONS
 USER_EVENT_CHECK_EXTERNAL      = pygame.USEREVENT
 USER_EVENT_EXTERNAL_TEXT_ENTRY = pygame.USEREVENT + 1
 
-COLOR_SELECTION      = (214, 138, 208)
-COLOR_SEARCH_BAR     = (108, 138, 173)
-COLOR_BACKGROUND     = (134, 169, 214)
-COLOR_ACTIVE         = (25, 204, 25)
-COLOR_INACTIVE       = (204, 204, 204)
-COLOR_LINE           = (114, 127, 178)
-COLOR_NOTE_BG        = (250, 250, 250)
-COLOR_NOTE_TEXT      = (20, 20, 20)
-COLOR_NOTE_DATE_TEXT = (100, 100, 100)
-COLOR_NOTE_TAG_TEXT  = (100, 100, 255)
-FONT_MONOSPACE       = "Monospace"
-FONT_TEXT            = "San-Serif"
-EDITOR_COMMAND       = ["gvim", "--nofork", None]
-NUM_SEARCH_RESULTS   = 6
-NEW_NOTE_TEXT        = "Enter note text...\n"
-KEY_QUIT             = "ctrl+q"
-KEY_UNDO             = "ctrl+z"
-KEY_REDO             = "ctrl+y"
-KEY_TOGGLE_DEBUG_BAR = "f1"
-KEY_CLEAR_FOCUS      = "escape"
-KEY_DISMISS          = "ctrl+g"
-KEY_INCREASE         = "ctrl+shift+="
-KEY_DECREASE         = "ctrl+-"
-KEY_OPEN_SEARCH      = "/"
-KEY_CREATE_NOTE      = "c"
-KEY_EDIT_NOTE        = "e"
-KEY_DELETE_NOTE      = "d"
-KEY_UNLINK_NOTE      = "u"
-KEY_OPEN_LINKS       = "g"
-TAG_ATTRIBUTES       = [
+COLOR_SELECTION          = (214, 138, 208)
+COLOR_SEARCH_BAR         = (108, 138, 173)
+COLOR_BACKGROUND         = (134, 169, 214)
+COLOR_ACTIVE             = (25, 204, 25)
+COLOR_INACTIVE           = (204, 204, 204)
+COLOR_LINE               = (114, 127, 178)
+COLOR_NOTE_BG            = (250, 250, 250)
+COLOR_NOTE_TEXT          = (20, 20, 20)
+COLOR_NOTE_DATE_TEXT     = (100, 100, 100)
+COLOR_NOTE_TAG_TEXT      = (100, 100, 255)
+FONT_MONOSPACE           = "Monospace"
+FONT_TEXT                = "San-Serif"
+EDITOR_COMMAND           = ["gvim", "--nofork", None]
+NUM_SEARCH_RESULTS       = 6
+NEW_NOTE_TEXT            = "Enter note text...\n"
+KEY_QUIT                 = "ctrl+q"
+KEY_UNDO                 = "ctrl+z"
+KEY_REDO                 = "ctrl+y"
+KEY_TOGGLE_DEBUG_BAR     = "f1"
+KEY_CLEAR_FOCUS          = "escape"
+KEY_DISMISS              = "ctrl+g"
+KEY_INCREASE             = "ctrl+shift+="
+KEY_DECREASE             = "ctrl+-"
+KEY_OPEN_SEARCH          = "/"
+KEY_CREATE_NOTE          = "c"
+KEY_EDIT_NOTE            = "e"
+KEY_DELETE_NOTE          = "d"
+KEY_UNLINK_NOTE          = "u"
+KEY_OPEN_LINKS           = "g"
+KEY_TOGGLE_TABLE_NETWORK = "t"
+TAG_ATTRIBUTES           = [
     {"name": "title", "textalign": "center"},
 ]
 
@@ -493,6 +494,7 @@ class SmartNotesWidget(VBox):
         self.link_source = None
         self.link_target = None
         self.full_note_width = 0
+        self.toggle_table_network_after_event_processing = False
         self.db = NoteDb(path)
         self.pos = (0, 0)
         self.search_bar = self.add(self.instantiate(SearchBar,
@@ -506,8 +508,17 @@ class SmartNotesWidget(VBox):
             self,
             request_search_callback=self._on_search_request
         ))
+        self.table = self.add(self.instantiate(TableWidget,
+            self.db,
+            self,
+            request_search_callback=self._on_search_request
+        ))
+        self.table.toggle_visible()
         self.debug_bar = self.add(self.instantiate(DebugBar))
         self.network.focus()
+
+    def toggle_table_network(self):
+        self.toggle_table_network_after_event_processing = True
 
     def get_full_note_width(self):
         return max(100, self.full_note_width)
@@ -560,6 +571,14 @@ class SmartNotesWidget(VBox):
             self.save_focus()
         else:
             VBox.process_event(self, event)
+        if self.toggle_table_network_after_event_processing:
+            self.network.toggle_visible()
+            self.table.toggle_visible()
+            if self.network.is_visible():
+                self.network.focus()
+            else:
+                self.table.focus()
+            self.toggle_table_network_after_event_processing = False
 
     def _on_search_note_open(self, note_id):
         self.network.open_note(note_id)
@@ -794,6 +813,8 @@ class NetworkWidget(Widget):
                     return
         elif event.key_down(KEY_OPEN_SEARCH) and self.has_focus():
             self.request_search_callback()
+        elif event.key_down(KEY_TOGGLE_TABLE_NETWORK) and self.has_focus():
+            self.state.toggle_table_network()
         elif event.key_down(KEY_CREATE_NOTE) and self.has_focus():
             note_id = self.db.create_note(text=NEW_NOTE_TEXT)
             self.open_note(note_id)
@@ -1137,6 +1158,25 @@ class LinkWidget(Widget):
         canvas._set_color(COLOR_LINE)
         canvas.set_line_width(1.5)
         canvas.stroke()
+
+class TableWidget(Widget):
+
+    def __init__(self, window, db, state, request_search_callback):
+        Widget.__init__(self, window)
+        self.db = db
+        self.state = state
+        self.request_search_callback = request_search_callback
+
+    def process_event(self, event):
+        if event.key_down(KEY_TOGGLE_TABLE_NETWORK) and self.has_focus():
+            self.state.toggle_table_network()
+
+    def update(self, rect, elapsed_ms):
+        self.rect = rect
+
+    def draw(self, canvas):
+        if self.has_focus():
+            canvas.draw_rect(self.rect.inflate(-2, -2), COLOR_SELECTION, 2)
 
 class DebugBar(Widget):
 
