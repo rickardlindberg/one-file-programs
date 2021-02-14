@@ -1009,7 +1009,7 @@ class NetworkNote(NoteBaseWidget):
                 self.instantiate(LinkWidget,
                     self.db,
                     link_id,
-                    self.instantiate(NetworkNote, self, self.db, link_data["from"], self.state),
+                    self.instantiate(NetworkNote, self.network, self.db, link_data["from"], self.state),
                     self
                 )
         return self.incoming
@@ -1028,7 +1028,7 @@ class NetworkNote(NoteBaseWidget):
                     self.db,
                     link_id,
                     self,
-                    self.instantiate(NetworkNote, self, self.db, link_data["to"], self.state)
+                    self.instantiate(NetworkNote, self.network, self.db, link_data["to"], self.state)
                 )
         return self.outgoing
 

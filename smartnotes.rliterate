@@ -258,7 +258,7 @@
 "type":"variable"
 },
 {
-"text":", self, self.db, link_data[\"from\"], self.state),\n                    self\n                )\n        return self.incoming\n\n    def update_outgoing(self):\n        by_id = {\n            link.link_id: link\n            for link in self.outgoing\n        }\n        self.outgoing = []\n        for link_id, link_data in self.db.",
+"text":", self.network, self.db, link_data[\"from\"], self.state),\n                    self\n                )\n        return self.incoming\n\n    def update_outgoing(self):\n        by_id = {\n            link.link_id: link\n            for link in self.outgoing\n        }\n        self.outgoing = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -282,7 +282,7 @@
 "type":"variable"
 },
 {
-"text":", self, self.db, link_data[\"to\"], self.state)\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def ",
+"text":", self.network, self.db, link_data[\"to\"], self.state)\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def ",
 "type":"code"
 },
 {
