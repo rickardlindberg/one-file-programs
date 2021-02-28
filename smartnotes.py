@@ -69,12 +69,6 @@ class Widget(object):
     def instantiate(self, cls, *args, **kwargs):
         return cls(self._window, *args, **kwargs)
 
-    def update(self, rect, elapsed_ms):
-        pass
-
-    def draw(self, canvas):
-        pass
-
     def focus(self):
         self._window.set_focus(self)
 
@@ -118,6 +112,12 @@ class Widget(object):
         pygame.event.post(pygame.event.Event(event_type, **kwargs))
 
     def process_event(self, event):
+        pass
+
+    def update(self, rect, elapsed_ms):
+        pass
+
+    def draw(self, canvas):
         pass
 
 class Padding(Widget):
