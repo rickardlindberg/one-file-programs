@@ -62,6 +62,7 @@ class Widget(object):
         self._height = height
         self._visible = visible
         self.rect = pygame.Rect(0, 0, 0, 0)
+        self.parent = None
 
     def set_title(self, title):
         self._window.set_title(title)
@@ -113,6 +114,10 @@ class Widget(object):
 
     def process_event(self, event):
         pass
+
+    def bubble_event(self, event):
+        if self.parent:
+            self.parent.bubble_event(event)
 
     def update(self, rect, elapsed_ms):
         pass
@@ -517,6 +522,12 @@ class SmartNotesWidget(VBox):
         self.debug_bar = self.add(self.instantiate(DebugBar))
         self.network.focus()
 
+    def bubble_event(self, event):
+        if event.key_down(KEY_TOGGLE_TABLE_NETWORK):
+            self.toggle_table_network()
+        else:
+            VBox.bubble_event(self, event)
+
     def toggle_table_network(self):
         self.toggle_table_network_after_event_processing = True
 
@@ -578,6 +589,7 @@ class SmartNotesWidget(VBox):
                 self.network.focus()
             else:
                 self.table.focus()
+            self.clear_quick_focus()
             self.toggle_table_network_after_event_processing = False
 
     def _on_search_note_open(self, note_id):
@@ -790,6 +802,7 @@ class NetworkWidget(Widget):
         Widget.__init__(self, window)
         self.db = db
         self.state = state
+        self.parent = state
         self.request_search_callback = request_search_callback
         self.pos = (-1, -1)
         self.notes = []
@@ -813,8 +826,6 @@ class NetworkWidget(Widget):
                     return
         elif event.key_down(KEY_OPEN_SEARCH) and self.has_focus():
             self.request_search_callback()
-        elif event.key_down(KEY_TOGGLE_TABLE_NETWORK) and self.has_focus():
-            self.state.toggle_table_network()
         elif event.key_down(KEY_CREATE_NOTE) and self.has_focus():
             note_id = self.db.create_note(text=NEW_NOTE_TEXT)
             self.open_note(note_id)
@@ -825,6 +836,8 @@ class NetworkWidget(Widget):
         else:
             for note in self.notes:
                 note.process_event(event)
+        if self.has_focus():
+            self.bubble_event(event)
 
     def open_note(self, note_id):
         self.make_root(self.instantiate(NetworkNote, self, self.db, note_id, self.state))
@@ -878,6 +891,7 @@ class NetworkWidget(Widget):
             link.update(None, elapsed_ms)
         for note in self.notes:
             note.clear_hidden_links(self.links)
+            note.parent = self.state
 
     def _stripe_recursive(self, note, parent_rect, widths, elapsed_ms, padding, direction):
         if not widths:
@@ -1016,6 +1030,8 @@ class NetworkNote(NoteBaseWidget):
             self.network.request_search_callback()
         elif event.left_mouse_down():
             self.state.set_link_source(self)
+        else:
+            self.bubble_event(event)
 
     def update_incoming(self):
         by_id = {
@@ -1166,10 +1182,11 @@ class TableWidget(Widget):
         self.db = db
         self.state = state
         self.request_search_callback = request_search_callback
+        self.parent = state
 
     def process_event(self, event):
-        if event.key_down(KEY_TOGGLE_TABLE_NETWORK) and self.has_focus():
-            self.state.toggle_table_network()
+        if self.has_focus():
+            self.bubble_event(event)
 
     def update(self, rect, elapsed_ms):
         self.rect = rect
