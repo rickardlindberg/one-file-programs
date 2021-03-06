@@ -56,19 +56,19 @@ TAG_ATTRIBUTES           = [
 
 class Widget(object):
 
-    def __init__(self, window, width=-1, height=-1, visible=True):
+    def __init__(self, window, parent, width=-1, height=-1, visible=True):
         self._window = window
+        self._parent = parent
         self._width = width
         self._height = height
         self._visible = visible
         self.rect = pygame.Rect(0, 0, 0, 0)
-        self.parent = None
 
     def set_title(self, title):
         self._window.set_title(title)
 
     def instantiate(self, cls, *args, **kwargs):
-        return cls(self._window, *args, **kwargs)
+        return cls(self._window, self, *args, **kwargs)
 
     def focus(self):
         self._window.set_focus(self)
@@ -116,8 +116,8 @@ class Widget(object):
         pass
 
     def bubble_event(self, event):
-        if self.parent:
-            self.parent.bubble_event(event)
+        if self._parent:
+            self._parent.bubble_event(event)
 
     def update(self, rect, elapsed_ms):
         pass
@@ -127,8 +127,8 @@ class Widget(object):
 
 class Padding(Widget):
 
-    def __init__(self, window, widget, hpadding=None, vpadding=None, **kwargs):
-        Widget.__init__(self, window, **kwargs)
+    def __init__(self, window, parent, widget, hpadding=None, vpadding=None, **kwargs):
+        Widget.__init__(self, window, parent, **kwargs)
         self.widget = widget
         self.hpadding = (lambda rect: 0) if hpadding is None else hpadding
         self.vpadding = (lambda rect: 0) if vpadding is None else vpadding
@@ -147,8 +147,8 @@ class Padding(Widget):
 
 class NoteBaseWidget(Widget):
 
-    def __init__(self, window, db, note_id, state):
-        Widget.__init__(self, window)
+    def __init__(self, window, parent, db, note_id, state):
+        Widget.__init__(self, window, parent)
         self.db = db
         self.note_id = note_id
         self.state = state
@@ -303,8 +303,8 @@ class WindowFocusMixin(object):
 
 class Box(Widget):
 
-    def __init__(self, window, **kwargs):
-        Widget.__init__(self, window, **kwargs)
+    def __init__(self, window, parent, **kwargs):
+        Widget.__init__(self, window, parent, **kwargs)
         self.clear()
 
     def clear(self):
@@ -379,8 +379,8 @@ class HBox(Box):
 
 class TextField(Widget):
 
-    def __init__(self, window, text_changed_callback, text_size=10, **kwargs):
-        Widget.__init__(self, window, **kwargs)
+    def __init__(self, window, parent, text_changed_callback, text_size=10, **kwargs):
+        Widget.__init__(self, window, parent, **kwargs)
         self.text_size = text_size
         self.text = ""
         self.text_changed_callback = text_changed_callback
@@ -493,8 +493,8 @@ class ExternalTextEntry(object):
 
 class SmartNotesWidget(VBox):
 
-    def __init__(self, window, path):
-        VBox.__init__(self, window)
+    def __init__(self, window, parent, path):
+        VBox.__init__(self, window, parent)
         self.set_title(format_title("Smart Notes", path))
         self.link_source = None
         self.link_target = None
@@ -625,8 +625,8 @@ class SearchBar(VBox):
     SEARCH_FIELD_HEIHGT = 50
     VPADDING = 8
 
-    def __init__(self, window, db, state, open_callback, dismiss_callback):
-        VBox.__init__(self, window, height=0, visible=False)
+    def __init__(self, window, parent, db, state, open_callback, dismiss_callback):
+        VBox.__init__(self, window, parent, height=0, visible=False)
         self.db = db
         self.state = state
         self.open_callback = open_callback
@@ -698,8 +698,8 @@ class SearchBar(VBox):
 
 class SearchField(TextField):
 
-    def __init__(self, window, search_results, dismiss_callback, **kwargs):
-        TextField.__init__(self, window, search_results.update_search_text, **kwargs)
+    def __init__(self, window, parent, search_results, dismiss_callback, **kwargs):
+        TextField.__init__(self, window, parent, search_results.update_search_text, **kwargs)
         self.search_results = search_results
         self.dismiss_callback = dismiss_callback
 
@@ -727,8 +727,8 @@ class SearchField(TextField):
 
 class SearchResults(HBox):
 
-    def __init__(self, window, db, state, open_callback, hpadding):
-        HBox.__init__(self, window)
+    def __init__(self, window, parent, db, state, open_callback, hpadding):
+        HBox.__init__(self, window, parent)
         self.db = db
         self.state = state
         self.open_callback = open_callback
@@ -779,8 +779,8 @@ class SearchResults(HBox):
 
 class SearchNote(NoteBaseWidget):
 
-    def __init__(self, window, db, state, note_id, open_callback):
-        NoteBaseWidget.__init__(self, window, db, note_id, state)
+    def __init__(self, window, parent, db, state, note_id, open_callback):
+        NoteBaseWidget.__init__(self, window, parent, db, note_id, state)
         self.open_callback = open_callback
 
     def process_event(self, event):
@@ -798,11 +798,10 @@ class SearchNote(NoteBaseWidget):
 
 class NetworkWidget(Widget):
 
-    def __init__(self, window, db, state, request_search_callback):
-        Widget.__init__(self, window)
+    def __init__(self, window, parent, db, state, request_search_callback):
+        Widget.__init__(self, window, parent)
         self.db = db
         self.state = state
-        self.parent = state
         self.request_search_callback = request_search_callback
         self.pos = (-1, -1)
         self.notes = []
@@ -891,7 +890,6 @@ class NetworkWidget(Widget):
             link.update(None, elapsed_ms)
         for note in self.notes:
             note.clear_hidden_links(self.links)
-            note.parent = self.state
 
     def _stripe_recursive(self, note, parent_rect, widths, elapsed_ms, padding, direction):
         if not widths:
@@ -979,8 +977,8 @@ class NetworkWidget(Widget):
 
 class NetworkNote(NoteBaseWidget):
 
-    def __init__(self, window, network, db, note_id, state):
-        NoteBaseWidget.__init__(self, window, db, note_id, state)
+    def __init__(self, window, parent, network, db, note_id, state):
+        NoteBaseWidget.__init__(self, window, parent, db, note_id, state)
         self.network = network
         self.incoming = []
         self.outgoing = []
@@ -1110,8 +1108,8 @@ class NetworkNote(NoteBaseWidget):
 
 class LinkWidget(Widget):
 
-    def __init__(self, window, db, link_id, start, end):
-        Widget.__init__(self, window)
+    def __init__(self, window, parent, db, link_id, start, end):
+        Widget.__init__(self, window, parent)
         self.db = db
         self.link_id = link_id
         self.start = start
@@ -1177,12 +1175,11 @@ class LinkWidget(Widget):
 
 class TableWidget(Widget):
 
-    def __init__(self, window, db, state, request_search_callback):
-        Widget.__init__(self, window)
+    def __init__(self, window, parent, db, state, request_search_callback):
+        Widget.__init__(self, window, parent)
         self.db = db
         self.state = state
         self.request_search_callback = request_search_callback
-        self.parent = state
 
     def process_event(self, event):
         if self.has_focus():
@@ -1199,8 +1196,8 @@ class DebugBar(Widget):
 
     IDEAL_HEIGHT = 50
 
-    def __init__(self, window):
-        Widget.__init__(self, window, height=self.IDEAL_HEIGHT, visible=DEBUG)
+    def __init__(self, window, parent):
+        Widget.__init__(self, window, parent, height=self.IDEAL_HEIGHT, visible=DEBUG)
         self.animation = Animation()
         self.average_elapsed = 0
         self.tot_elapsed_time = 0
@@ -1784,7 +1781,7 @@ def utcnow_timestamp_string():
 
 def pygame_main(root_widget_cls, *args, **kwargs):
     pygame.init()
-    root_widget = root_widget_cls(PygameWindow(), *args, **kwargs)
+    root_widget = root_widget_cls(PygameWindow(), None, *args, **kwargs)
     screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     clock = pygame.time.Clock()
     external_text_entries = ExternalTextEntries()

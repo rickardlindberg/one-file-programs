@@ -20,7 +20,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchField(TextField):\n\n    def __init__(self, window, search_results, dismiss_callback, **kwargs):\n        TextField.__init__(self, window, search_results.update_search_text, **kwargs)\n        self.search_results = search_results\n        self.dismiss_callback = dismiss_callback\n\n    def process_event(self, event):\n        if self.has_focus() and self.process_event_when_in_focus(event):\n            return\n        TextField.process_event(self, event)\n\n    def process_event_when_in_focus(self, event):\n        if event.key_down(\"ctrl+w\"):\n            self.set_text(strip_last_word(self.text))\n        elif event.key_down(\"backspace\"):\n            self.set_text(self.text[:-1])\n        elif event.key_down(KEY_DISMISS):\n            self.dismiss_callback(close=True)\n        elif event.key_down(KEY_INCREASE):\n            self.search_results.inc_results()\n        elif event.key_down(KEY_DECREASE):\n            self.search_results.dec_results()\n        elif event.key_down(KEY_CLEAR_FOCUS):\n            self.dismiss_callback(close=False)\n        else:\n            return False\n        return True\n",
+"text":"class SearchField(TextField):\n\n    def __init__(self, window, parent, search_results, dismiss_callback, **kwargs):\n        TextField.__init__(self, window, parent, search_results.update_search_text, **kwargs)\n        self.search_results = search_results\n        self.dismiss_callback = dismiss_callback\n\n    def process_event(self, event):\n        if self.has_focus() and self.process_event_when_in_focus(event):\n            return\n        TextField.process_event(self, event)\n\n    def process_event_when_in_focus(self, event):\n        if event.key_down(\"ctrl+w\"):\n            self.set_text(strip_last_word(self.text))\n        elif event.key_down(\"backspace\"):\n            self.set_text(self.text[:-1])\n        elif event.key_down(KEY_DISMISS):\n            self.dismiss_callback(close=True)\n        elif event.key_down(KEY_INCREASE):\n            self.search_results.inc_results()\n        elif event.key_down(KEY_DECREASE):\n            self.search_results.dec_results()\n        elif event.key_down(KEY_CLEAR_FOCUS):\n            self.dismiss_callback(close=False)\n        else:\n            return False\n        return True\n",
 "type":"code"
 }
 ],
@@ -43,7 +43,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchResults(HBox):\n\n    def __init__(self, window, db, state, open_callback, hpadding):\n        HBox.__init__(self, window)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.hpadding = hpadding\n        self.update_search_text(\"\")\n        self.set_num_results(NUM_SEARCH_RESULTS)\n        self.by_id = {}\n\n    def inc_results(self):\n        self.set_num_results(self.num_results + 1)\n\n    def dec_results(self):\n        self.set_num_results(self.num_results - 1)\n\n    def set_num_results(self, num):\n        self.num_results = max(3, min(12, num))\n\n    def update_search_text(self, text):\n        self.text = text\n\n    def ",
+"text":"class SearchResults(HBox):\n\n    def __init__(self, window, parent, db, state, open_callback, hpadding):\n        HBox.__init__(self, window, parent)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.hpadding = hpadding\n        self.update_search_text(\"\")\n        self.set_num_results(NUM_SEARCH_RESULTS)\n        self.by_id = {}\n\n    def inc_results(self):\n        self.set_num_results(self.num_results + 1)\n\n    def dec_results(self):\n        self.set_num_results(self.num_results - 1)\n\n    def set_num_results(self, num):\n        self.num_results = max(3, min(12, num))\n\n    def update_search_text(self, text):\n        self.text = text\n\n    def ",
 "type":"code"
 },
 {
@@ -91,7 +91,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, window, db, state, note_id, open_callback):\n        ",
+"text":"):\n\n    def __init__(self, window, parent, db, state, note_id, open_callback):\n        ",
 "type":"code"
 },
 {
@@ -99,7 +99,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, window, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        elif event.left_mouse_down(rect=self.rect):\n            self.state.set_link_source(self)\n        elif event.left_mouse_up(rect=self.rect):\n            self.open_callback(self.note_id)\n\n    def update(self, rect, elapsed_ms):\n        ",
+"text":".__init__(self, window, parent, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        elif event.left_mouse_down(rect=self.rect):\n            self.state.set_link_source(self)\n        elif event.left_mouse_up(rect=self.rect):\n            self.open_callback(self.note_id)\n\n    def update(self, rect, elapsed_ms):\n        ",
 "type":"code"
 },
 {
@@ -129,7 +129,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchBar(VBox):\n\n    SEARCH_FIELD_HEIHGT = 50\n    VPADDING = 8\n\n    def __init__(self, window, db, state, open_callback, dismiss_callback):\n        VBox.__init__(self, window, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_results = self.instantiate(SearchResults,\n            db, state, open_callback,\n            hpadding=self.VPADDING\n        )\n        self.search_field = self.instantiate(SearchField,\n            self.search_results,\n            self.dismiss_callback,\n            text_size=20\n        )\n        self.add(self.instantiate(Padding,\n            self.search_field,\n            hpadding=lambda rect: int(rect.width*0.08),\n            vpadding=lambda rect: self.VPADDING,\n            height=self.SEARCH_FIELD_HEIHGT\n        ))\n        self.add(self.search_results)\n        self.add(self.instantiate(Widget, height=self.VPADDING))\n        self.ideal_height = 200\n\n    def focus(self):\n        self.search_field.focus()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n\n    def ",
+"text":"class SearchBar(VBox):\n\n    SEARCH_FIELD_HEIHGT = 50\n    VPADDING = 8\n\n    def __init__(self, window, parent, db, state, open_callback, dismiss_callback):\n        VBox.__init__(self, window, parent, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_results = self.instantiate(SearchResults,\n            db, state, open_callback,\n            hpadding=self.VPADDING\n        )\n        self.search_field = self.instantiate(SearchField,\n            self.search_results,\n            self.dismiss_callback,\n            text_size=20\n        )\n        self.add(self.instantiate(Padding,\n            self.search_field,\n            hpadding=lambda rect: int(rect.width*0.08),\n            vpadding=lambda rect: self.VPADDING,\n            height=self.SEARCH_FIELD_HEIHGT\n        ))\n        self.add(self.search_results)\n        self.add(self.instantiate(Widget, height=self.VPADDING))\n        self.ideal_height = 200\n\n    def focus(self):\n        self.search_field.focus()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -210,7 +210,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, window, network, db, note_id, state):\n        ",
+"text":"):\n\n    def __init__(self, window, parent, network, db, note_id, state):\n        ",
 "type":"code"
 },
 {
@@ -218,7 +218,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, window, db, note_id, state)\n        self.network = network\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def clear_hidden_links(self, visible_links):\n        self.incoming = [x for x in self.incoming if x in visible_links]\n        self.outgoing = [x for x in self.outgoing if x in visible_links]\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        if not self.has_focus():\n            return\n        if event.key_down(KEY_EDIT_NOTE):\n            self.clear_quick_focus()\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
+"text":".__init__(self, window, parent, db, note_id, state)\n        self.network = network\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def clear_hidden_links(self, visible_links):\n        self.incoming = [x for x in self.incoming if x in visible_links]\n        self.outgoing = [x for x in self.outgoing if x in visible_links]\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        if not self.has_focus():\n            return\n        if event.key_down(KEY_EDIT_NOTE):\n            self.clear_quick_focus()\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
 "type":"code"
 },
 {
@@ -417,7 +417,7 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, window, db, link_id, start, end):\n        Widget.__init__(self, window)\n        self.db = db\n        self.link_id = link_id\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n        self.start_pos = None\n        self.end_pos = None\n\n    def ",
+"text":"(Widget):\n\n    def __init__(self, window, parent, db, link_id, start, end):\n        Widget.__init__(self, window, parent)\n        self.db = db\n        self.link_id = link_id\n        self.start = start\n        self.end = end\n        self.start.outgoing.append(self)\n        self.end.incoming.append(self)\n        self.start_pos = None\n        self.end_pos = None\n\n    def ",
 "type":"code"
 },
 {
@@ -479,7 +479,7 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, window, db, state, request_search_callback):\n        Widget.__init__(self, window)\n        self.db = db\n        self.state = state\n        self.parent = state\n        self.request_search_callback = request_search_callback\n        self.pos = (-1, -1)\n        self.notes = []\n        self.open_last_note()\n\n    def open_last_note(self):\n        self.root_note = None\n        for note_id, note_data in self.db.get_notes():\n            self.",
+"text":"(Widget):\n\n    def __init__(self, window, parent, db, state, request_search_callback):\n        Widget.__init__(self, window, parent)\n        self.db = db\n        self.state = state\n        self.request_search_callback = request_search_callback\n        self.pos = (-1, -1)\n        self.notes = []\n        self.open_last_note()\n\n    def open_last_note(self):\n        self.root_note = None\n        for note_id, note_data in self.db.get_notes():\n            self.",
 "type":"code"
 },
 {
@@ -639,7 +639,7 @@
 "type":"variable"
 },
 {
-"text":")\n        for note in self.notes:\n            note.clear_hidden_links(self.links)\n            note.parent = self.state\n\n    def _stripe_recursive(self, note, parent_rect, widths, ",
+"text":")\n        for note in self.notes:\n            note.clear_hidden_links(self.links)\n\n    def _stripe_recursive(self, note, parent_rect, widths, ",
 "type":"code"
 },
 {
@@ -718,7 +718,7 @@
 ],
 "fragments":[
 {
-"text":"class TableWidget(Widget):\n\n    def __init__(self, window, db, state, request_search_callback):\n        Widget.__init__(self, window)\n        self.db = db\n        self.state = state\n        self.request_search_callback = request_search_callback\n        self.parent = state\n\n    def process_event(self, event):\n        if self.has_focus():\n            self.bubble_event(event)\n\n    def update(self, rect, elapsed_ms):\n        self.rect = rect\n\n    def draw(self, canvas):\n        if self.has_focus():\n            canvas.draw_rect(self.rect.inflate(-2, -2), COLOR_SELECTION, 2)\n",
+"text":"class TableWidget(Widget):\n\n    def __init__(self, window, parent, db, state, request_search_callback):\n        Widget.__init__(self, window, parent)\n        self.db = db\n        self.state = state\n        self.request_search_callback = request_search_callback\n\n    def process_event(self, event):\n        if self.has_focus():\n            self.bubble_event(event)\n\n    def update(self, rect, elapsed_ms):\n        self.rect = rect\n\n    def draw(self, canvas):\n        if self.has_focus():\n            canvas.draw_rect(self.rect.inflate(-2, -2), COLOR_SELECTION, 2)\n",
 "type":"code"
 }
 ],
@@ -741,7 +741,7 @@
 ],
 "fragments":[
 {
-"text":"class DebugBar(Widget):\n\n    IDEAL_HEIGHT = 50\n\n    def __init__(self, window):\n        Widget.__init__(self, window, height=self.IDEAL_HEIGHT, visible=DEBUG)\n        self.animation = Animation()\n        self.average_elapsed = 0\n        self.tot_elapsed_time = 0\n        self.frame_count = 0\n        self.fps = 0\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.reverse(200)\n\n    def ",
+"text":"class DebugBar(Widget):\n\n    IDEAL_HEIGHT = 50\n\n    def __init__(self, window, parent):\n        Widget.__init__(self, window, parent, height=self.IDEAL_HEIGHT, visible=DEBUG)\n        self.animation = Animation()\n        self.average_elapsed = 0\n        self.tot_elapsed_time = 0\n        self.frame_count = 0\n        self.fps = 0\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def toggle(self):\n        self.toggle_visible()\n        self.animation.reverse(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -827,7 +827,7 @@
 "type":"variable"
 },
 {
-"text":"(VBox):\n\n    def __init__(self, window, path):\n        VBox.__init__(self, window)\n        self.set_title(format_title(\"Smart Notes\", path))\n        self.link_source = None\n        self.link_target = None\n        self.full_note_width = 0\n        self.toggle_table_network_after_event_processing = False\n        self.db = ",
+"text":"(VBox):\n\n    def __init__(self, window, parent, path):\n        VBox.__init__(self, window, parent)\n        self.set_title(format_title(\"Smart Notes\", path))\n        self.link_source = None\n        self.link_target = None\n        self.full_note_width = 0\n        self.toggle_table_network_after_event_processing = False\n        self.db = ",
 "type":"code"
 },
 {
@@ -876,7 +876,7 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, window, db, note_id, state):\n        Widget.__init__(self, window)\n        self.db = db\n        self.note_id = note_id\n        self.state = state\n\n    def is_deleted(self):\n        try:\n            self.db.get_note_data(self.note_id)\n            return False\n        except NoteNotFound:\n            return True\n\n    def update(self, rect, elapsed_ms):\n        self.data = self.db.get_note_data(self.note_id)\n        self.full_width = self.state.get_full_note_width()\n        self.full_height = int(self.full_width*3/5)\n        self.card_full_size = (self.full_width, self.full_height)\n        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)\n\n    def draw(self, canvas):\n        border_size = 3\n        border = self.rect.copy()\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        canvas.fill_rect(border, color=(0, 0, 0, 50))\n        border.x -= border_size\n        border.y -= border_size\n        canvas.fill_rect(border, color=COLOR_NOTE_BG)\n        canvas.draw_rect(border, (0, 0, 0, 120), 1)\n        if self.has_focus():\n            canvas.draw_rect(border.inflate(-7, -7).move(1, 1), COLOR_SELECTION, 2)\n        canvas.blit(\n            canvas.create_image(\n                self.card_full_size,\n                self._draw_card\n            ),\n            self.rect,\n            scale_to_fit=self.rect.size\n        )\n\n    def _draw_card(self, canvas):\n        border = 8\n        status_height = self.full_width/20\n        rect = self.card_full_rect\n        rect = rect.inflate(-border*4, -border*3-status_height)\n        rect.top = border\n        if DEBUG_NOTE_BORDER:\n            canvas.draw_rect(rect, (200, 50, 50), 1)\n        attributes = {\n            \"textalign\": \"left\",\n        }\n        for tag in TAG_ATTRIBUTES:\n            if tag[\"name\"] in self.data.get(\"tags\", []):\n                for key in list(attributes.keys()):\n                    if key in tag:\n                        attributes[key] = tag[key]\n        canvas.render_text(\n            self.data[\"text\"],\n            rect,\n            size=self.full_width/10,\n            textalign=attributes[\"textalign\"],\n            boxalign=\"center\",\n            color=COLOR_NOTE_TEXT,\n            face=FONT_TEXT\n        )\n        rect = rect.inflate(border*2, 0)\n        rect.height = status_height\n        rect.bottom = self.card_full_rect.bottom - border\n        if DEBUG_NOTE_BORDER:\n            canvas.draw_rect(rect, (200, 50, 50), 1)\n        canvas.render_text(\n            self.data[\"timestamp_created\"][:10],\n            rect,\n            size=status_height,\n            face=FONT_MONOSPACE,\n            boxalign=\"bottomleft\",\n            split=False,\n            color=COLOR_NOTE_DATE_TEXT\n        )\n        tags = self.data.get(\"tags\", [])\n        links = self.data.get(\"links\", [])\n        if tags or links:\n            right = rect.right\n            rect.width -= (rect.height*1.3) * len(links)\n            canvas.render_text(\n                \" \".join(\"#{}\".format(tag) for tag in self.data[\"tags\"]),\n                rect,\n                size=status_height,\n                face=FONT_MONOSPACE,\n                boxalign=\"bottomright\",\n                split=False,\n                color=COLOR_NOTE_TAG_TEXT\n            )\n            rect.width = rect.height\n            rect.right = right\n            for link in links:\n                canvas.draw_rect(\n                    rect,\n                    (50, 150, 50),\n                    1\n                )\n                rect = rect.move(-rect.height*1.3, 0)\n\n    def _get_target(self, alotted_rect, align=\"center\"):\n        target = self.card_full_rect\n        target = target.fit(alotted_rect)\n        if align == \"left\":\n            target.midright = alotted_rect.midright\n        elif align == \"right\":\n            target.midleft = alotted_rect.midleft\n        else:\n            target.center = alotted_rect.center\n        return target\n",
+"text":"(Widget):\n\n    def __init__(self, window, parent, db, note_id, state):\n        Widget.__init__(self, window, parent)\n        self.db = db\n        self.note_id = note_id\n        self.state = state\n\n    def is_deleted(self):\n        try:\n            self.db.get_note_data(self.note_id)\n            return False\n        except NoteNotFound:\n            return True\n\n    def update(self, rect, elapsed_ms):\n        self.data = self.db.get_note_data(self.note_id)\n        self.full_width = self.state.get_full_note_width()\n        self.full_height = int(self.full_width*3/5)\n        self.card_full_size = (self.full_width, self.full_height)\n        self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)\n\n    def draw(self, canvas):\n        border_size = 3\n        border = self.rect.copy()\n        border.width -= border_size\n        border.height -= border_size\n        border.x += border_size\n        border.y += border_size\n        canvas.fill_rect(border, color=(0, 0, 0, 50))\n        border.x -= border_size\n        border.y -= border_size\n        canvas.fill_rect(border, color=COLOR_NOTE_BG)\n        canvas.draw_rect(border, (0, 0, 0, 120), 1)\n        if self.has_focus():\n            canvas.draw_rect(border.inflate(-7, -7).move(1, 1), COLOR_SELECTION, 2)\n        canvas.blit(\n            canvas.create_image(\n                self.card_full_size,\n                self._draw_card\n            ),\n            self.rect,\n            scale_to_fit=self.rect.size\n        )\n\n    def _draw_card(self, canvas):\n        border = 8\n        status_height = self.full_width/20\n        rect = self.card_full_rect\n        rect = rect.inflate(-border*4, -border*3-status_height)\n        rect.top = border\n        if DEBUG_NOTE_BORDER:\n            canvas.draw_rect(rect, (200, 50, 50), 1)\n        attributes = {\n            \"textalign\": \"left\",\n        }\n        for tag in TAG_ATTRIBUTES:\n            if tag[\"name\"] in self.data.get(\"tags\", []):\n                for key in list(attributes.keys()):\n                    if key in tag:\n                        attributes[key] = tag[key]\n        canvas.render_text(\n            self.data[\"text\"],\n            rect,\n            size=self.full_width/10,\n            textalign=attributes[\"textalign\"],\n            boxalign=\"center\",\n            color=COLOR_NOTE_TEXT,\n            face=FONT_TEXT\n        )\n        rect = rect.inflate(border*2, 0)\n        rect.height = status_height\n        rect.bottom = self.card_full_rect.bottom - border\n        if DEBUG_NOTE_BORDER:\n            canvas.draw_rect(rect, (200, 50, 50), 1)\n        canvas.render_text(\n            self.data[\"timestamp_created\"][:10],\n            rect,\n            size=status_height,\n            face=FONT_MONOSPACE,\n            boxalign=\"bottomleft\",\n            split=False,\n            color=COLOR_NOTE_DATE_TEXT\n        )\n        tags = self.data.get(\"tags\", [])\n        links = self.data.get(\"links\", [])\n        if tags or links:\n            right = rect.right\n            rect.width -= (rect.height*1.3) * len(links)\n            canvas.render_text(\n                \" \".join(\"#{}\".format(tag) for tag in self.data[\"tags\"]),\n                rect,\n                size=status_height,\n                face=FONT_MONOSPACE,\n                boxalign=\"bottomright\",\n                split=False,\n                color=COLOR_NOTE_TAG_TEXT\n            )\n            rect.width = rect.height\n            rect.right = right\n            for link in links:\n                canvas.draw_rect(\n                    rect,\n                    (50, 150, 50),\n                    1\n                )\n                rect = rect.move(-rect.height*1.3, 0)\n\n    def _get_target(self, alotted_rect, align=\"center\"):\n        target = self.card_full_rect\n        target = target.fit(alotted_rect)\n        if align == \"left\":\n            target.midright = alotted_rect.midright\n        elif align == \"right\":\n            target.midleft = alotted_rect.midleft\n        else:\n            target.center = alotted_rect.center\n        return target\n",
 "type":"code"
 }
 ],
@@ -1313,7 +1313,7 @@
 ],
 "fragments":[
 {
-"text":"def process_event(self, event):\n    pass\n\ndef bubble_event(self, event):\n    if self.parent:\n        self.parent.bubble_event(event)\n\ndef update(self, rect, elapsed_ms):\n    pass\n\ndef draw(self, canvas):\n    pass\n",
+"text":"def process_event(self, event):\n    pass\n\ndef bubble_event(self, event):\n    if self._parent:\n        self._parent.bubble_event(event)\n\ndef update(self, rect, elapsed_ms):\n    pass\n\ndef draw(self, canvas):\n    pass\n",
 "type":"code"
 }
 ],
@@ -1335,7 +1335,7 @@
 ],
 "fragments":[
 {
-"text":"class Widget(object):\n\n    def __init__(self, window, width=-1, height=-1, visible=True):\n        self._window = window\n        self._width = width\n        self._height = height\n        self._visible = visible\n        self.rect = pygame.Rect(0, 0, 0, 0)\n        self.parent = None\n\n    def set_title(self, title):\n        self._window.set_title(title)\n\n    def instantiate(self, cls, *args, **kwargs):\n        return cls(self._window, *args, **kwargs)\n\n    def focus(self):\n        self._window.set_focus(self)\n\n    def quick_focus(self):\n        self._window.set_quick_focus(self)\n\n    def clear_quick_focus(self):\n        return self._window.clear_quick_focus()\n\n    def has_focus(self):\n        return self._window.is_focused(self)\n\n    def save_focus(self):\n        self._window.save_focus()\n\n    def restore_focus(self):\n        self._window.restore_focus()\n\n    def resize(self, width=None, height=None):\n        if width is not None:\n            self._width = width\n        if height is not None:\n            self._height = height\n\n    def get_width(self):\n        return self._width\n\n    def get_height(self):\n        return self._height\n\n    def is_visible(self):\n        return self._visible\n\n    def toggle_visible(self):\n        self._visible = not self._visible\n\n    def quit(self):\n        self._window.close()\n\n    def post_event(self, event_type, **kwargs):\n        pygame.event.post(pygame.event.Event(event_type, **kwargs))\n\n",
+"text":"class Widget(object):\n\n    def __init__(self, window, parent, width=-1, height=-1, visible=True):\n        self._window = window\n        self._parent = parent\n        self._width = width\n        self._height = height\n        self._visible = visible\n        self.rect = pygame.Rect(0, 0, 0, 0)\n\n    def set_title(self, title):\n        self._window.set_title(title)\n\n    def instantiate(self, cls, *args, **kwargs):\n        return cls(self._window, self, *args, **kwargs)\n\n    def focus(self):\n        self._window.set_focus(self)\n\n    def quick_focus(self):\n        self._window.set_quick_focus(self)\n\n    def clear_quick_focus(self):\n        return self._window.clear_quick_focus()\n\n    def has_focus(self):\n        return self._window.is_focused(self)\n\n    def save_focus(self):\n        self._window.save_focus()\n\n    def restore_focus(self):\n        self._window.restore_focus()\n\n    def resize(self, width=None, height=None):\n        if width is not None:\n            self._width = width\n        if height is not None:\n            self._height = height\n\n    def get_width(self):\n        return self._width\n\n    def get_height(self):\n        return self._height\n\n    def is_visible(self):\n        return self._visible\n\n    def toggle_visible(self):\n        self._visible = not self._visible\n\n    def quit(self):\n        self._window.close()\n\n    def post_event(self, event_type, **kwargs):\n        pygame.event.post(pygame.event.Event(event_type, **kwargs))\n\n",
 "type":"code"
 },
 {
@@ -1383,7 +1383,7 @@
 ],
 "fragments":[
 {
-"text":"class Padding(Widget):\n\n    def __init__(self, window, widget, hpadding=None, vpadding=None, **kwargs):\n        Widget.__init__(self, window, **kwargs)\n        self.widget = widget\n        self.hpadding = (lambda rect: 0) if hpadding is None else hpadding\n        self.vpadding = (lambda rect: 0) if vpadding is None else vpadding\n\n    def process_event(self, event):\n        self.widget.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        self.widget.update(\n            rect.inflate(-self.hpadding(rect)*2, -self.vpadding(rect)*2),\n            elapsed_ms\n        )\n\n    def draw(self, canvas):\n        self.widget.draw(canvas)\n",
+"text":"class Padding(Widget):\n\n    def __init__(self, window, parent, widget, hpadding=None, vpadding=None, **kwargs):\n        Widget.__init__(self, window, parent, **kwargs)\n        self.widget = widget\n        self.hpadding = (lambda rect: 0) if hpadding is None else hpadding\n        self.vpadding = (lambda rect: 0) if vpadding is None else vpadding\n\n    def process_event(self, event):\n        self.widget.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        self.widget.update(\n            rect.inflate(-self.hpadding(rect)*2, -self.vpadding(rect)*2),\n            elapsed_ms\n        )\n\n    def draw(self, canvas):\n        self.widget.draw(canvas)\n",
 "type":"code"
 }
 ],
@@ -1406,7 +1406,7 @@
 ],
 "fragments":[
 {
-"text":"class Box(Widget):\n\n    def __init__(self, window, **kwargs):\n        Widget.__init__(self, window, **kwargs)\n        self.clear()\n\n    def clear(self):\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n        return child\n\n    def process_event(self, event):\n        for child in self.visible_children():\n            child.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = int(round((self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)))\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n",
+"text":"class Box(Widget):\n\n    def __init__(self, window, parent, **kwargs):\n        Widget.__init__(self, window, parent, **kwargs)\n        self.clear()\n\n    def clear(self):\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n        return child\n\n    def process_event(self, event):\n        for child in self.visible_children():\n            child.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = int(round((self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)))\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n",
 "type":"code"
 }
 ],
@@ -1461,7 +1461,7 @@
 ],
 "fragments":[
 {
-"text":"class TextField(Widget):\n\n    def __init__(self, window, text_changed_callback, text_size=10, **kwargs):\n        Widget.__init__(self, window, **kwargs)\n        self.text_size = text_size\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def set_text(self, text):\n        self.text = text\n        self.text_changed_callback(text)\n\n    def process_event(self, event):\n        if self.has_focus() and event.key_down_text():\n            self.set_text(self.text + event.key_down_text())\n        elif event.left_mouse_up(rect=self.rect):\n            self.focus()\n\n    def ",
+"text":"class TextField(Widget):\n\n    def __init__(self, window, parent, text_changed_callback, text_size=10, **kwargs):\n        Widget.__init__(self, window, parent, **kwargs)\n        self.text_size = text_size\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def set_text(self, text):\n        self.text = text\n        self.text_changed_callback(text)\n\n    def process_event(self, event):\n        if self.has_focus() and event.key_down_text():\n            self.set_text(self.text + event.key_down_text())\n        elif event.left_mouse_up(rect=self.rect):\n            self.focus()\n\n    def ",
 "type":"code"
 },
 {
@@ -1554,7 +1554,7 @@
 "type":"variable"
 },
 {
-"text":"(root_widget_cls, *args, **kwargs):\n    pygame.init()\n    root_widget = root_widget_cls(PygameWindow(), *args, **kwargs)\n    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)\n    clock = pygame.time.Clock()\n    external_text_entries = ",
+"text":"(root_widget_cls, *args, **kwargs):\n    pygame.init()\n    root_widget = root_widget_cls(PygameWindow(), None, *args, **kwargs)\n    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)\n    clock = pygame.time.Clock()\n    external_text_entries = ",
 "type":"code"
 },
 {
