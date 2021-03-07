@@ -113,7 +113,8 @@ class Widget(object):
         pygame.event.post(pygame.event.Event(event_type, **kwargs))
 
     def process_event(self, event):
-        pass
+        if self.has_focus() and event.key_down():
+            self.bubble_event(event)
 
     def update(self, rect, elapsed_ms):
         pass
@@ -833,10 +834,9 @@ class NetworkWidget(Widget):
                 entry=NoteText(self.db, note_id)
             )
         else:
+            Widget.process_event(self, event)
             for note in self.notes:
                 note.process_event(event)
-        if self.has_focus():
-            self.bubble_event(event)
 
     def open_note(self, note_id):
         self.make_root(self.instantiate(NetworkNote, self, self.db, note_id, self.state))
@@ -1029,7 +1029,7 @@ class NetworkNote(NoteBaseWidget):
         elif event.left_mouse_down():
             self.state.set_link_source(self)
         else:
-            self.bubble_event(event)
+            NoteBaseWidget.process_event(self, event)
 
     def update_incoming(self):
         by_id = {
@@ -1180,10 +1180,6 @@ class TableWidget(Widget):
         self.db = db
         self.state = state
         self.request_search_callback = request_search_callback
-
-    def process_event(self, event):
-        if self.has_focus():
-            self.bubble_event(event)
 
     def update(self, rect, elapsed_ms):
         self.rect = rect
@@ -1511,7 +1507,9 @@ class PygameEvent(object):
             self.event.unicode
         )
 
-    def key_down(self, description):
+    def key_down(self, description=None):
+        if description is None:
+            return self.event.type == pygame.KEYDOWN
         parts = description.split("+")
         ctrl = False
         shift = False

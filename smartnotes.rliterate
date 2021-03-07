@@ -234,7 +234,15 @@
 "type":"variable"
 },
 {
-"text":"(self.db, child_note_id)\n            )\n        elif event.key_down(KEY_OPEN_SEARCH):\n            self.clear_quick_focus()\n            self.network.request_search_callback()\n        elif event.left_mouse_down():\n            self.state.set_link_source(self)\n        else:\n            self.bubble_event(event)\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
+"text":"(self.db, child_note_id)\n            )\n        elif event.key_down(KEY_OPEN_SEARCH):\n            self.clear_quick_focus()\n            self.network.request_search_callback()\n        elif event.left_mouse_down():\n            self.state.set_link_source(self)\n        else:\n            ",
+"type":"code"
+},
+{
+"id":"137180d5603e43c7a4a6224ea4c709fc",
+"type":"variable"
+},
+{
+"text":".process_event(self, event)\n\n    def update_incoming(self):\n        by_id = {\n            link.link_id: link\n            for link in self.incoming\n        }\n        self.incoming = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -503,7 +511,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, note_id)\n            )\n        else:\n            for note in self.notes:\n                note.process_event(event)\n        if self.has_focus():\n            self.bubble_event(event)\n\n    def ",
+"text":"(self.db, note_id)\n            )\n        else:\n            Widget.process_event(self, event)\n            for note in self.notes:\n                note.process_event(event)\n\n    def ",
 "type":"code"
 },
 {
@@ -718,7 +726,7 @@
 ],
 "fragments":[
 {
-"text":"class TableWidget(Widget):\n\n    def __init__(self, window, parent, db, state, request_search_callback):\n        Widget.__init__(self, window, parent)\n        self.db = db\n        self.state = state\n        self.request_search_callback = request_search_callback\n\n    def process_event(self, event):\n        if self.has_focus():\n            self.bubble_event(event)\n\n    def update(self, rect, elapsed_ms):\n        self.rect = rect\n\n    def draw(self, canvas):\n        if self.has_focus():\n            canvas.draw_rect(self.rect.inflate(-2, -2), COLOR_SELECTION, 2)\n",
+"text":"class TableWidget(Widget):\n\n    def __init__(self, window, parent, db, state, request_search_callback):\n        Widget.__init__(self, window, parent)\n        self.db = db\n        self.state = state\n        self.request_search_callback = request_search_callback\n\n    def update(self, rect, elapsed_ms):\n        self.rect = rect\n\n    def draw(self, canvas):\n        if self.has_focus():\n            canvas.draw_rect(self.rect.inflate(-2, -2), COLOR_SELECTION, 2)\n",
 "type":"code"
 }
 ],
@@ -1514,7 +1522,7 @@
 ],
 "fragments":[
 {
-"text":"def process_event(self, event):\n    pass\n",
+"text":"def process_event(self, event):\n    if self.has_focus() and event.key_down():\n        self.bubble_event(event)\n",
 "type":"code"
 }
 ],
@@ -1849,7 +1857,7 @@
 ],
 "fragments":[
 {
-"text":"class PygameEvent(object):\n\n    def __init__(self, event):\n        self.event = event\n\n    def mouse_motion(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEMOTION and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def left_mouse_down(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEBUTTONDOWN and\n            self.event.button == 1 and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def left_mouse_up(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEBUTTONUP and\n            self.event.button == 1 and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def mouse_pos(self):\n        return self.event.pos\n\n    def key_down_text(self):\n        return (\n            self.event.type == pygame.KEYDOWN and\n            self.event.unicode\n        )\n\n    def key_down(self, description):\n        parts = description.split(\"+\")\n        ctrl = False\n        shift = False\n        alt = False\n        while parts:\n            part = parts.pop(0)\n            if part == \"ctrl\":\n                ctrl = True\n            elif part == \"shift\":\n                shift = True\n            elif part == \"alt\":\n                alt = True\n            elif not parts:\n                key = pygame.key.key_code(part)\n            else:\n                raise ValueError(\"unknown part {}\".format(part))\n        return (\n            self.event.type == pygame.KEYDOWN and\n            self.event.key == key and\n            bool(self.event.mod & pygame.KMOD_CTRL) == ctrl and\n            bool(self.event.mod & pygame.KMOD_SHIFT) == shift and\n            bool(self.event.mod & pygame.KMOD_ALT) == alt\n        )\n\n    def window_gained_focus(self):\n        return (\n            self.event.type == pygame.ACTIVEEVENT and\n            self.event.state == 1 and\n            self.event.gain\n        )\n\n    def window_lost_focus(self):\n        return (\n            self.event.type == pygame.ACTIVEEVENT and\n            self.event.state == 1 and\n            not self.event.gain\n        )\n",
+"text":"class PygameEvent(object):\n\n    def __init__(self, event):\n        self.event = event\n\n    def mouse_motion(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEMOTION and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def left_mouse_down(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEBUTTONDOWN and\n            self.event.button == 1 and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def left_mouse_up(self, rect=None):\n        return (\n            self.event.type == pygame.MOUSEBUTTONUP and\n            self.event.button == 1 and\n            (rect is None or rect.collidepoint(self.event.pos))\n        )\n\n    def mouse_pos(self):\n        return self.event.pos\n\n    def key_down_text(self):\n        return (\n            self.event.type == pygame.KEYDOWN and\n            self.event.unicode\n        )\n\n    def key_down(self, description=None):\n        if description is None:\n            return self.event.type == pygame.KEYDOWN\n        parts = description.split(\"+\")\n        ctrl = False\n        shift = False\n        alt = False\n        while parts:\n            part = parts.pop(0)\n            if part == \"ctrl\":\n                ctrl = True\n            elif part == \"shift\":\n                shift = True\n            elif part == \"alt\":\n                alt = True\n            elif not parts:\n                key = pygame.key.key_code(part)\n            else:\n                raise ValueError(\"unknown part {}\".format(part))\n        return (\n            self.event.type == pygame.KEYDOWN and\n            self.event.key == key and\n            bool(self.event.mod & pygame.KMOD_CTRL) == ctrl and\n            bool(self.event.mod & pygame.KMOD_SHIFT) == shift and\n            bool(self.event.mod & pygame.KMOD_ALT) == alt\n        )\n\n    def window_gained_focus(self):\n        return (\n            self.event.type == pygame.ACTIVEEVENT and\n            self.event.state == 1 and\n            self.event.gain\n        )\n\n    def window_lost_focus(self):\n        return (\n            self.event.type == pygame.ACTIVEEVENT and\n            self.event.state == 1 and\n            not self.event.gain\n        )\n",
 "type":"code"
 }
 ],
