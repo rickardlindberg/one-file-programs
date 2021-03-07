@@ -115,15 +115,15 @@ class Widget(object):
     def process_event(self, event):
         pass
 
-    def bubble_event(self, event):
-        if self._parent:
-            self._parent.bubble_event(event)
-
     def update(self, rect, elapsed_ms):
         pass
 
     def draw(self, canvas):
         pass
+
+    def bubble_event(self, event):
+        if self._parent:
+            self._parent.bubble_event(event)
 
 class Padding(Widget):
 

@@ -1303,6 +1303,207 @@
 "id":"c8f8dbff514c42c7b0ee0fa16fbe6476",
 "paragraphs":[
 {
+"fragments":[
+{
+"text":"The main interaction with widgets happen in three method calls: ",
+"type":"text"
+},
+{
+"text":"process_event",
+"type":"code"
+},
+{
+"text":", ",
+"type":"text"
+},
+{
+"text":"update",
+"type":"code"
+},
+{
+"text":", and ",
+"type":"text"
+},
+{
+"text":"draw",
+"type":"code"
+},
+{
+"text":". You can see in ",
+"type":"text"
+},
+{
+"page_id":"7cc2cbc359ee45d7b20b75890f97870d",
+"text":null,
+"type":"reference"
+},
+{
+"text":" how they are invoked. This architecture is inspired by a game loop.",
+"type":"text"
+}
+],
+"id":"cbee0e6c031449b78af2b76f50205641",
+"type":"text"
+},
+{
+"fragments":[
+{
+"text":"This architecture has a few consequences documented below.",
+"type":"text"
+}
+],
+"id":"caae8f3ebfc44a81a022643241a0d0f9",
+"type":"text"
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"process_event",
+"type":"code"
+},
+{
+"text":" should not call methods that change focus or any other attributes that affects ",
+"type":"text"
+},
+{
+"text":"process_event",
+"type":"code"
+},
+{
+"text":" calls in other widgets. To solve a situation like this, you can set a flag in the ",
+"type":"text"
+},
+{
+"text":"process_event",
+"type":"code"
+},
+{
+"text":" call and act on that flag in the ",
+"type":"text"
+},
+{
+"text":"update",
+"type":"code"
+},
+{
+"text":" call.",
+"type":"text"
+}
+]
+},
+{
+"child_type":"unordered",
+"children":[
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"Box.update",
+"type":"code"
+},
+{
+"text":" gets passed a rect.",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"It calculates a rect for each child and calls ",
+"type":"text"
+},
+{
+"text":"child.update",
+"type":"code"
+},
+{
+"text":" with the new rect.",
+"type":"text"
+}
+]
+},
+{
+"child_type":null,
+"children":[],
+"fragments":[
+{
+"text":"The child resizes itself causing it to possibly get a different rect in the next ",
+"type":"text"
+},
+{
+"text":"update",
+"type":"code"
+},
+{
+"text":" call.",
+"type":"text"
+}
+]
+}
+],
+"fragments":[
+{
+"text":"If a child widget in a ",
+"type":"text"
+},
+{
+"text":"Box",
+"type":"code"
+},
+{
+"text":" is resized in the ",
+"type":"text"
+},
+{
+"text":"update",
+"type":"code"
+},
+{
+"text":" method, the new size will not be used until the next game loop iteration.",
+"type":"text"
+}
+]
+}
+],
+"id":"7b1d34b4f0e644fb8669ba4a96fe2628",
+"type":"list"
+},
+{
+"fragments":[
+{
+"text":"I'm not sure if the game loop pattern is the ideal one. I'm also not sure if the division into the three methods are ideal. Another way to look at it is that it is all events. ",
+"type":"text"
+},
+{
+"text":"update",
+"type":"code"
+},
+{
+"text":" and ",
+"type":"text"
+},
+{
+"text":"draw",
+"type":"code"
+},
+{
+"text":" could be passed as events instead. But this is what we've got for now.",
+"type":"text"
+}
+],
+"id":"1d973e19eab54045817543bfc84305f3",
+"type":"text"
+},
+{
 "chunkpath":[
 "base base classes",
 "BaseWidget",
@@ -1313,11 +1514,65 @@
 ],
 "fragments":[
 {
-"text":"def process_event(self, event):\n    pass\n\ndef bubble_event(self, event):\n    if self._parent:\n        self._parent.bubble_event(event)\n\ndef update(self, rect, elapsed_ms):\n    pass\n\ndef draw(self, canvas):\n    pass\n",
+"text":"def process_event(self, event):\n    pass\n",
 "type":"code"
 }
 ],
 "id":"70a8c98564044998be6a3ff4242f964e",
+"type":"code"
+},
+{
+"chunkpath":[
+"base base classes",
+"BaseWidget",
+"interaction"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def update(self, rect, elapsed_ms):\n    pass\n",
+"type":"code"
+}
+],
+"id":"34140099f3484efaa4a8839e637134a0",
+"type":"code"
+},
+{
+"chunkpath":[
+"base base classes",
+"BaseWidget",
+"interaction"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def draw(self, canvas):\n    pass\n",
+"type":"code"
+}
+],
+"id":"423e588128034288a3ed196d6eddaa85",
+"type":"code"
+},
+{
+"chunkpath":[
+"base base classes",
+"BaseWidget",
+"interaction"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"def bubble_event(self, event):\n    if self._parent:\n        self._parent.bubble_event(event)\n",
+"type":"code"
+}
+],
+"id":"8814c79b15ca4843b18c71ce47cf1888",
 "type":"code"
 }
 ],
@@ -1339,7 +1594,7 @@
 "type":"code"
 },
 {
-"blank_lines_before":0,
+"blank_lines_before":1,
 "path":[
 "BaseWidget",
 "interaction"
