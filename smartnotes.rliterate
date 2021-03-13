@@ -567,7 +567,7 @@
 "type":"variable"
 },
 {
-"text":".width * 0.3))\n        self.old_nodes = self.notes\n        self.notes = []\n        self.links = []\n        middle_stripe = self._stripe(",
+"text":".width * 0.3))\n        self.old_notes = self.notes\n        self.notes = []\n        self.links = []\n        middle_stripe = self._stripe(",
 "type":"code"
 },
 {
@@ -679,7 +679,7 @@
 "type":"variable"
 },
 {
-"text":",\n                    direction,\n                    note.get_center() if linked not in self.old_nodes else None\n                )\n                self.notes.insert(0, linked)\n                self.links.append(link)\n                self._stripe_recursive(linked, stripe, widths[1:], ",
+"text":",\n                    direction,\n                    note.get_center() if linked not in self.old_notes else None\n                )\n                self.notes.insert(0, linked)\n                self.links.append(link)\n                self._stripe_recursive(linked, stripe, widths[1:], ",
 "type":"code"
 },
 {

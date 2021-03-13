@@ -867,7 +867,7 @@ class NetworkWidget(Widget):
         self.stripe_rects = []
         padding = 8
         self.state.set_full_note_width(int(rect.width * 0.3))
-        self.old_nodes = self.notes
+        self.old_notes = self.notes
         self.notes = []
         self.links = []
         middle_stripe = self._stripe(rect, 0.3)
@@ -936,7 +936,7 @@ class NetworkWidget(Widget):
                     stripe.inflate(0, -padding),
                     elapsed_ms,
                     direction,
-                    note.get_center() if linked not in self.old_nodes else None
+                    note.get_center() if linked not in self.old_notes else None
                 )
                 self.notes.insert(0, linked)
                 self.links.append(link)
