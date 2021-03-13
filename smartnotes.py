@@ -930,7 +930,7 @@ class NetworkWidget(Widget):
                     stripe.inflate(0, -padding),
                     elapsed_ms,
                     direction,
-                    note.rect if linked not in self.old_nodes else None
+                    note.get_center() if linked not in self.old_nodes else None
                 )
                 self.notes.insert(0, linked)
                 self.links.append(link)
@@ -1084,14 +1084,17 @@ class NetworkNote(NoteBaseWidget):
         if self.side == "right" and len(self.incoming) == 1:
             return self.incoming[0].link_id
 
-    def update(self, rect, elapsed_ms, side, fade_from_rect):
+    def get_center(self):
+        return self.rect.center
+
+    def update(self, rect, elapsed_ms, side, center_position):
         NoteBaseWidget.update(self, rect, elapsed_ms)
         self.side = side
         self.true_rect = rect
         target = self._get_target(rect, side)
-        if fade_from_rect:
+        if center_position:
             x = target.copy()
-            x.center = fade_from_rect.center
+            x.center = center_position
             self.rect = self.target = self.previous = x
         if self.rect is None:
             self.rect = self.target = self.previous = target

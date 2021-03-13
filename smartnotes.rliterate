@@ -298,7 +298,7 @@
 "type":"variable"
 },
 {
-"text":", self.network, self.db, link_data[\"to\"], self.state)\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def ",
+"text":", self.network, self.db, link_data[\"to\"], self.state)\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def get_center(self):\n        return self.rect.center\n\n    def ",
 "type":"code"
 },
 {
@@ -322,7 +322,7 @@
 "type":"variable"
 },
 {
-"text":", side, fade_from_rect):\n        ",
+"text":", side, center_position):\n        ",
 "type":"code"
 },
 {
@@ -370,7 +370,7 @@
 "type":"variable"
 },
 {
-"text":", side)\n        if fade_from_rect:\n            x = target.copy()\n            x.center = fade_from_rect.center\n            self.rect = self.target = self.previous = x\n        if self.rect is None:\n            self.rect = self.target = self.previous = target\n        if target != self.target:\n            if self.animation.active():\n                self.rect = self.target\n            self.target = target\n            self.previous = self.rect\n            self.animation.start(300)\n        if self.animation.active():\n            x_diff = self.target.width - self.previous.width\n            y_diff = self.target.height - self.previous.height\n            percent = self.animation.advance(",
+"text":", side)\n        if center_position:\n            x = target.copy()\n            x.center = center_position\n            self.rect = self.target = self.previous = x\n        if self.rect is None:\n            self.rect = self.target = self.previous = target\n        if target != self.target:\n            if self.animation.active():\n                self.rect = self.target\n            self.target = target\n            self.previous = self.rect\n            self.animation.start(300)\n        if self.animation.active():\n            x_diff = self.target.width - self.previous.width\n            y_diff = self.target.height - self.previous.height\n            percent = self.animation.advance(",
 "type":"code"
 },
 {
@@ -679,7 +679,7 @@
 "type":"variable"
 },
 {
-"text":",\n                    direction,\n                    note.rect if linked not in self.old_nodes else None\n                )\n                self.notes.insert(0, linked)\n                self.links.append(link)\n                self._stripe_recursive(linked, stripe, widths[1:], ",
+"text":",\n                    direction,\n                    note.get_center() if linked not in self.old_nodes else None\n                )\n                self.notes.insert(0, linked)\n                self.links.append(link)\n                self._stripe_recursive(linked, stripe, widths[1:], ",
 "type":"code"
 },
 {
