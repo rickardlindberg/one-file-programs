@@ -99,7 +99,15 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, window, parent, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        elif event.left_mouse_down(rect=self.rect):\n            self.state.set_link_source(self)\n        elif event.left_mouse_up(rect=self.rect):\n            self.open_callback(self.note_id)\n\n    def update(self, rect, elapsed_ms):\n        ",
+"text":".__init__(self, window, parent, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        if event.left_mouse_down(rect=self.rect):\n            self.state.set_link_source(self)\n        elif event.left_mouse_up(rect=self.rect):\n            self.open_callback(self.note_id)\n        else:\n            ",
+"type":"code"
+},
+{
+"id":"137180d5603e43c7a4a6224ea4c709fc",
+"type":"variable"
+},
+{
+"text":".process_event(self, event)\n\n    def update(self, rect, elapsed_ms):\n        ",
 "type":"code"
 },
 {
@@ -218,7 +226,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, window, parent, db, note_id, state)\n        self.network = network\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def clear_hidden_links(self, visible_links):\n        self.incoming = [x for x in self.incoming if x in visible_links]\n        self.outgoing = [x for x in self.outgoing if x in visible_links]\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        if not self.has_focus():\n            return\n        if event.key_down(KEY_EDIT_NOTE):\n            self.clear_quick_focus()\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
+"text":".__init__(self, window, parent, db, note_id, state)\n        self.network = network\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def clear_hidden_links(self, visible_links):\n        self.incoming = [x for x in self.incoming if x in visible_links]\n        self.outgoing = [x for x in self.outgoing if x in visible_links]\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        if self.has_focus() and event.key_down(KEY_EDIT_NOTE):\n            self.clear_quick_focus()\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
 "type":"code"
 },
 {
@@ -226,7 +234,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, self.note_id)\n            )\n        elif event.key_down(KEY_DELETE_NOTE):\n            self.clear_quick_focus()\n            self.db.delete_note(self.note_id)\n        elif event.key_down(KEY_UNLINK_NOTE):\n            link_id = self.get_link_id()\n            if link_id:\n                self.db.delete_link(link_id)\n                self.clear_quick_focus()\n        elif event.key_down(KEY_OPEN_LINKS):\n            for link in self.data.get(\"links\", []):\n                webbrowser.open(link)\n        elif event.key_down(KEY_CREATE_NOTE):\n            self.clear_quick_focus()\n            with self.db.transaction():\n                child_note_id = self.db.create_note(text=NEW_NOTE_TEXT)\n                self.db.create_link(self.note_id, child_note_id)\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
+"text":"(self.db, self.note_id)\n            )\n        elif self.has_focus() and event.key_down(KEY_DELETE_NOTE):\n            self.clear_quick_focus()\n            self.db.delete_note(self.note_id)\n        elif self.has_focus() and event.key_down(KEY_UNLINK_NOTE):\n            link_id = self.get_link_id()\n            if link_id:\n                self.db.delete_link(link_id)\n                self.clear_quick_focus()\n        elif self.has_focus() and event.key_down(KEY_OPEN_LINKS):\n            for link in self.data.get(\"links\", []):\n                webbrowser.open(link)\n        elif self.has_focus() and event.key_down(KEY_CREATE_NOTE):\n            self.clear_quick_focus()\n            with self.db.transaction():\n                child_note_id = self.db.create_note(text=NEW_NOTE_TEXT)\n                self.db.create_link(self.note_id, child_note_id)\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
 "type":"code"
 },
 {
@@ -234,7 +242,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, child_note_id)\n            )\n        elif event.key_down(KEY_OPEN_SEARCH):\n            self.clear_quick_focus()\n            self.network.request_search_callback()\n        elif event.left_mouse_down():\n            self.state.set_link_source(self)\n        else:\n            ",
+"text":"(self.db, child_note_id)\n            )\n        elif self.has_focus() and event.key_down(KEY_OPEN_SEARCH):\n            self.clear_quick_focus()\n            self.network.request_search_callback()\n        elif self.has_focus() and event.left_mouse_down():\n            self.state.set_link_source(self)\n        else:\n            ",
 "type":"code"
 },
 {
@@ -1646,7 +1654,7 @@
 ],
 "fragments":[
 {
-"text":"class Padding(Widget):\n\n    def __init__(self, window, parent, widget, hpadding=None, vpadding=None, **kwargs):\n        Widget.__init__(self, window, parent, **kwargs)\n        self.widget = widget\n        self.hpadding = (lambda rect: 0) if hpadding is None else hpadding\n        self.vpadding = (lambda rect: 0) if vpadding is None else vpadding\n\n    def process_event(self, event):\n        self.widget.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        self.widget.update(\n            rect.inflate(-self.hpadding(rect)*2, -self.vpadding(rect)*2),\n            elapsed_ms\n        )\n\n    def draw(self, canvas):\n        self.widget.draw(canvas)\n",
+"text":"class Padding(Widget):\n\n    def __init__(self, window, parent, widget, hpadding=None, vpadding=None, **kwargs):\n        Widget.__init__(self, window, parent, **kwargs)\n        self.widget = widget\n        self.hpadding = (lambda rect: 0) if hpadding is None else hpadding\n        self.vpadding = (lambda rect: 0) if vpadding is None else vpadding\n\n    def process_event(self, event):\n        Widget.process_event(self, event)\n        self.widget.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        self.widget.update(\n            rect.inflate(-self.hpadding(rect)*2, -self.vpadding(rect)*2),\n            elapsed_ms\n        )\n\n    def draw(self, canvas):\n        self.widget.draw(canvas)\n",
 "type":"code"
 }
 ],
@@ -1669,7 +1677,7 @@
 ],
 "fragments":[
 {
-"text":"class Box(Widget):\n\n    def __init__(self, window, parent, **kwargs):\n        Widget.__init__(self, window, parent, **kwargs)\n        self.clear()\n\n    def clear(self):\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n        return child\n\n    def process_event(self, event):\n        for child in self.visible_children():\n            child.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = int(round((self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)))\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n",
+"text":"class Box(Widget):\n\n    def __init__(self, window, parent, **kwargs):\n        Widget.__init__(self, window, parent, **kwargs)\n        self.clear()\n\n    def clear(self):\n        self.children = []\n\n    def add(self, child):\n        self.children.append(child)\n        return child\n\n    def process_event(self, event):\n        Widget.process_event(self, event)\n        for child in self.visible_children():\n            child.process_event(event)\n\n    def update(self, rect, elapsed_ms):\n        sizes = []\n        divide_indices = []\n        for child in self.visible_children():\n            if self.get_widget_size(child) == -1:\n                divide_indices.append(len(sizes))\n                sizes.append(0)\n            else:\n                sizes.append(self.get_widget_size(child))\n        if divide_indices:\n            divide_size = int(round((self.get_rect_size(rect) - sum(sizes)) / len(divide_indices)))\n            for divide_index in divide_indices:\n                sizes[divide_index] = divide_size\n        for child, size in zip(self.visible_children(), sizes):\n            rect = self.set_rect_size(rect, size)\n            child.update(rect, elapsed_ms)\n            rect = self.move_rect(rect, size)\n\n    def draw(self, screen):\n        for child in self.visible_children():\n            child.draw(screen)\n\n    def visible_children(self):\n        for child in self.children:\n            if child.is_visible():\n                yield child\n",
 "type":"code"
 }
 ],
@@ -1724,7 +1732,7 @@
 ],
 "fragments":[
 {
-"text":"class TextField(Widget):\n\n    def __init__(self, window, parent, text_changed_callback, text_size=10, **kwargs):\n        Widget.__init__(self, window, parent, **kwargs)\n        self.text_size = text_size\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def set_text(self, text):\n        self.text = text\n        self.text_changed_callback(text)\n\n    def process_event(self, event):\n        if self.has_focus() and event.key_down_text():\n            self.set_text(self.text + event.key_down_text())\n        elif event.left_mouse_up(rect=self.rect):\n            self.focus()\n\n    def ",
+"text":"class TextField(Widget):\n\n    def __init__(self, window, parent, text_changed_callback, text_size=10, **kwargs):\n        Widget.__init__(self, window, parent, **kwargs)\n        self.text_size = text_size\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def set_text(self, text):\n        self.text = text\n        self.text_changed_callback(text)\n\n    def process_event(self, event):\n        if self.has_focus() and event.key_down_text():\n            self.set_text(self.text + event.key_down_text())\n        elif event.left_mouse_up(rect=self.rect):\n            self.focus()\n        else:\n            Widget.process_event(self, event)\n\n    def ",
 "type":"code"
 },
 {

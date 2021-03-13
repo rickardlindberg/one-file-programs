@@ -135,6 +135,7 @@ class Padding(Widget):
         self.vpadding = (lambda rect: 0) if vpadding is None else vpadding
 
     def process_event(self, event):
+        Widget.process_event(self, event)
         self.widget.process_event(event)
 
     def update(self, rect, elapsed_ms):
@@ -316,6 +317,7 @@ class Box(Widget):
         return child
 
     def process_event(self, event):
+        Widget.process_event(self, event)
         for child in self.visible_children():
             child.process_event(event)
 
@@ -395,6 +397,8 @@ class TextField(Widget):
             self.set_text(self.text + event.key_down_text())
         elif event.left_mouse_up(rect=self.rect):
             self.focus()
+        else:
+            Widget.process_event(self, event)
 
     def update(self, rect, elapsed_ms):
         self.rect = rect
@@ -788,10 +792,12 @@ class SearchNote(NoteBaseWidget):
         if event.mouse_motion(rect=self.rect):
             self.state.set_link_target(self)
             self.quick_focus()
-        elif event.left_mouse_down(rect=self.rect):
+        if event.left_mouse_down(rect=self.rect):
             self.state.set_link_source(self)
         elif event.left_mouse_up(rect=self.rect):
             self.open_callback(self.note_id)
+        else:
+            NoteBaseWidget.process_event(self, event)
 
     def update(self, rect, elapsed_ms):
         NoteBaseWidget.update(self, rect, elapsed_ms)
@@ -995,26 +1001,24 @@ class NetworkNote(NoteBaseWidget):
         if event.mouse_motion(rect=self.rect):
             self.state.set_link_target(self)
             self.quick_focus()
-        if not self.has_focus():
-            return
-        if event.key_down(KEY_EDIT_NOTE):
+        if self.has_focus() and event.key_down(KEY_EDIT_NOTE):
             self.clear_quick_focus()
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
                 entry=NoteText(self.db, self.note_id)
             )
-        elif event.key_down(KEY_DELETE_NOTE):
+        elif self.has_focus() and event.key_down(KEY_DELETE_NOTE):
             self.clear_quick_focus()
             self.db.delete_note(self.note_id)
-        elif event.key_down(KEY_UNLINK_NOTE):
+        elif self.has_focus() and event.key_down(KEY_UNLINK_NOTE):
             link_id = self.get_link_id()
             if link_id:
                 self.db.delete_link(link_id)
                 self.clear_quick_focus()
-        elif event.key_down(KEY_OPEN_LINKS):
+        elif self.has_focus() and event.key_down(KEY_OPEN_LINKS):
             for link in self.data.get("links", []):
                 webbrowser.open(link)
-        elif event.key_down(KEY_CREATE_NOTE):
+        elif self.has_focus() and event.key_down(KEY_CREATE_NOTE):
             self.clear_quick_focus()
             with self.db.transaction():
                 child_note_id = self.db.create_note(text=NEW_NOTE_TEXT)
@@ -1023,10 +1027,10 @@ class NetworkNote(NoteBaseWidget):
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
                 entry=NoteText(self.db, child_note_id)
             )
-        elif event.key_down(KEY_OPEN_SEARCH):
+        elif self.has_focus() and event.key_down(KEY_OPEN_SEARCH):
             self.clear_quick_focus()
             self.network.request_search_callback()
-        elif event.left_mouse_down():
+        elif self.has_focus() and event.left_mouse_down():
             self.state.set_link_source(self)
         else:
             NoteBaseWidget.process_event(self, event)
