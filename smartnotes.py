@@ -856,9 +856,9 @@ class NetworkWidget(Widget):
     def open_note(self, note_id):
         self.make_root(self.instantiate(NetworkNote, self, self.db, note_id, self.state))
 
-    def make_root(self, node):
-        if node is not self.root_note:
-            self.root_note = node
+    def make_root(self, note):
+        if note is not self.root_note:
+            self.root_note = note
             self.clear_quick_focus()
 
     def update(self, rect, elapsed_ms):

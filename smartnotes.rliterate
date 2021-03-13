@@ -535,7 +535,7 @@
 "type":"variable"
 },
 {
-"text":", self, self.db, note_id, self.state))\n\n    def make_root(self, node):\n        if node is not self.root_note:\n            self.root_note = node\n            self.clear_quick_focus()\n\n    def ",
+"text":", self, self.db, note_id, self.state))\n\n    def make_root(self, note):\n        if note is not self.root_note:\n            self.root_note = note\n            self.clear_quick_focus()\n\n    def ",
 "type":"code"
 },
 {
