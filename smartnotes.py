@@ -147,6 +147,7 @@ class Padding(Widget):
 
     def draw(self, canvas):
         self.widget.draw(canvas)
+        Widget.draw(self, canvas)
 
 class NoteBaseWidget(Widget):
 
@@ -193,6 +194,7 @@ class NoteBaseWidget(Widget):
             self.rect,
             scale_to_fit=self.rect.size
         )
+        Widget.draw(self, canvas)
 
     def _draw_card(self, canvas):
         border = 8
@@ -342,9 +344,10 @@ class Box(Widget):
             child.update(rect, elapsed_ms)
             rect = self.move_rect(rect, size)
 
-    def draw(self, screen):
+    def draw(self, canvas):
         for child in self.visible_children():
-            child.draw(screen)
+            child.draw(canvas)
+        Widget.draw(self, canvas)
 
     def visible_children(self):
         for child in self.children:
@@ -421,6 +424,7 @@ class TextField(Widget):
         )
         if self.has_focus():
             canvas.draw_rect(self.rect, COLOR_SELECTION, 2)
+        Widget.draw(self, canvas)
 
 class Immutable(object):
 
@@ -697,13 +701,13 @@ class SearchBar(VBox):
             (0, -self.ideal_height+self.get_height()),
             alpha=self.alpha
         )
+        VBox.draw(self, canvas)
 
     def _draw_search_bar_image(self, canvas):
         canvas.fill_rect(
             pygame.Rect(0, 0, self.ideal_rect.width, self.ideal_rect.height),
             color=COLOR_SEARCH_BAR
         )
-        VBox.draw(self, canvas)
 
 class SearchField(TextField):
 
@@ -985,6 +989,7 @@ class NetworkWidget(Widget):
             link.draw(canvas)
         for note in self.notes:
             note.draw(canvas)
+        Widget.draw(self, canvas)
 
 class NetworkNote(NoteBaseWidget):
 
@@ -1153,6 +1158,7 @@ class LinkWidget(Widget):
                 min(self.start_pos.y, self.end_pos.y)-self.padding,
             )
         canvas.blit(self.image, self.pos)
+        Widget.draw(self, canvas)
 
     def _draw_line(self, canvas):
         if self.start_pos.x < self.end_pos.x:
@@ -1198,6 +1204,7 @@ class TableWidget(Widget):
     def draw(self, canvas):
         if self.has_focus():
             canvas.draw_rect(self.rect.inflate(-2, -2), COLOR_SELECTION, 2)
+        Widget.draw(self, canvas)
 
 class DebugBar(Widget):
 
@@ -1242,6 +1249,7 @@ class DebugBar(Widget):
             self.rect,
             alpha=self.alpha
         )
+        Widget.draw(self, canvas)
 
     def _draw_bar(self, canvas):
         rect = pygame.Rect((0, 0), (self.rect.width, self.IDEAL_HEIGHT))
