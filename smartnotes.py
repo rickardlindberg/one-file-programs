@@ -831,14 +831,9 @@ class NetworkWidget(Widget):
     def process_event(self, event):
         if event.mouse_motion():
             self.pos = event.mouse_pos()
-        if event.left_mouse_up():
-            if event.left_mouse_up(rect=self.rect):
-                self.focus()
-            for note in reversed(self.notes):
-                if event.left_mouse_up(note.rect):
-                    self.make_root(note)
-                    return
-        elif event.key_down(KEY_OPEN_SEARCH) and self.has_focus():
+        if event.left_mouse_up(rect=self.rect):
+            self.focus()
+        if event.key_down(KEY_OPEN_SEARCH) and self.has_focus():
             self.request_search_callback()
         elif event.key_down(KEY_CREATE_NOTE) and self.has_focus():
             note_id = self.db.create_note(text=NEW_NOTE_TEXT)
@@ -1011,7 +1006,9 @@ class NetworkNote(NoteBaseWidget):
         if event.mouse_motion(rect=self.rect):
             self.state.set_link_target(self)
             self.quick_focus()
-        if self.has_focus() and event.key_down(KEY_EDIT_NOTE):
+        if event.left_mouse_up(self.rect):
+            self.network.make_root(self)
+        elif self.has_focus() and event.key_down(KEY_EDIT_NOTE):
             self.clear_quick_focus()
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
