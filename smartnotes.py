@@ -139,6 +139,7 @@ class Padding(Widget):
         self.widget.process_event(event)
 
     def update(self, rect, elapsed_ms):
+        Widget.update(self, rect, elapsed_ms)
         self.widget.update(
             rect.inflate(-self.hpadding(rect)*2, -self.vpadding(rect)*2),
             elapsed_ms
@@ -163,6 +164,7 @@ class NoteBaseWidget(Widget):
             return True
 
     def update(self, rect, elapsed_ms):
+        Widget.update(self, rect, elapsed_ms)
         self.data = self.db.get_note_data(self.note_id)
         self.full_width = self.state.get_full_note_width()
         self.full_height = int(self.full_width*3/5)
@@ -322,6 +324,7 @@ class Box(Widget):
             child.process_event(event)
 
     def update(self, rect, elapsed_ms):
+        Widget.update(self, rect, elapsed_ms)
         sizes = []
         divide_indices = []
         for child in self.visible_children():
@@ -401,6 +404,7 @@ class TextField(Widget):
             Widget.process_event(self, event)
 
     def update(self, rect, elapsed_ms):
+        Widget.update(self, rect, elapsed_ms)
         self.rect = rect
 
     def draw(self, canvas):
@@ -609,8 +613,8 @@ class SmartNotesWidget(VBox):
         self.search_bar.start_search()
 
     def update(self, rect, elapsed_ms):
-        self.rect = rect
         VBox.update(self, rect, elapsed_ms)
+        self.rect = rect
 
     def draw(self, canvas):
         canvas.fill_rect(self.rect, color=COLOR_BACKGROUND)
@@ -853,6 +857,7 @@ class NetworkWidget(Widget):
             self.clear_quick_focus()
 
     def update(self, rect, elapsed_ms):
+        Widget.update(self, rect, elapsed_ms)
         self.rect = rect
         self.stripe_rects = []
         padding = 8
@@ -1124,6 +1129,7 @@ class LinkWidget(Widget):
         self.end_pos = None
 
     def update(self, rect, elapsed_ms):
+        Widget.update(self, rect, elapsed_ms)
         start = pygame.math.Vector2(self.start.rect.midright)
         end = pygame.math.Vector2(self.end.rect.midleft)
         if start != self.start_pos or end != self.end_pos:
@@ -1186,6 +1192,7 @@ class TableWidget(Widget):
         self.request_search_callback = request_search_callback
 
     def update(self, rect, elapsed_ms):
+        Widget.update(self, rect, elapsed_ms)
         self.rect = rect
 
     def draw(self, canvas):
@@ -1212,6 +1219,7 @@ class DebugBar(Widget):
         self.animation.reverse(200)
 
     def update(self, rect, elapsed_ms):
+        Widget.update(self, rect, elapsed_ms)
         self.tot_elapsed_time += elapsed_ms
         self.frame_count += 1
         if self.tot_elapsed_time > 1000:
