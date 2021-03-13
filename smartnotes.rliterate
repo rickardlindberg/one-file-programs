@@ -298,7 +298,7 @@
 "type":"variable"
 },
 {
-"text":", self.network, self.db, link_data[\"to\"], self.state)\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def get_center(self):\n        return self.rect.center\n\n    def ",
+"text":", self.network, self.db, link_data[\"to\"], self.state)\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def get_center(self):\n        return self.rect.center\n\n    def get_link_in_point(self):\n        return self.rect.midleft\n\n    def get_link_out_point(self):\n        return self.rect.midright\n\n    def ",
 "type":"code"
 },
 {
@@ -457,7 +457,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        Widget.update(self, rect, elapsed_ms)\n        start = pygame.math.Vector2(self.start.rect.midright)\n        end = pygame.math.Vector2(self.end.rect.midleft)\n        if start != self.start_pos or end != self.end_pos:\n            self.start_pos = start\n            self.end_pos = end\n            self.padding = 3\n            self.need_redraw = True\n        else:\n            self.need_redraw = False\n\n    def ",
+"text":"):\n        Widget.update(self, rect, elapsed_ms)\n        start = pygame.math.Vector2(self.start.get_link_out_point())\n        end = pygame.math.Vector2(self.end.get_link_in_point())\n        if start != self.start_pos or end != self.end_pos:\n            self.start_pos = start\n            self.end_pos = end\n            self.padding = 3\n            self.need_redraw = True\n        else:\n            self.need_redraw = False\n\n    def ",
 "type":"code"
 },
 {

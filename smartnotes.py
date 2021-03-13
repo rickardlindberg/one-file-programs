@@ -1087,6 +1087,12 @@ class NetworkNote(NoteBaseWidget):
     def get_center(self):
         return self.rect.center
 
+    def get_link_in_point(self):
+        return self.rect.midleft
+
+    def get_link_out_point(self):
+        return self.rect.midright
+
     def update(self, rect, elapsed_ms, side, center_position):
         NoteBaseWidget.update(self, rect, elapsed_ms)
         self.side = side
@@ -1135,8 +1141,8 @@ class LinkWidget(Widget):
 
     def update(self, rect, elapsed_ms):
         Widget.update(self, rect, elapsed_ms)
-        start = pygame.math.Vector2(self.start.rect.midright)
-        end = pygame.math.Vector2(self.end.rect.midleft)
+        start = pygame.math.Vector2(self.start.get_link_out_point())
+        end = pygame.math.Vector2(self.end.get_link_in_point())
         if start != self.start_pos or end != self.end_pos:
             self.start_pos = start
             self.end_pos = end
