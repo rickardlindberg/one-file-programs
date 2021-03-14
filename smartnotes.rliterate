@@ -1239,6 +1239,27 @@
 }
 ],
 "title":"Settings"
+},
+{
+"children":[],
+"id":"8e3c9a0e06474dc49dc019c1445b567e",
+"paragraphs":[
+{
+"chunkpath":[],
+"filepath":[
+"test_smartnotes.py"
+],
+"fragments":[
+{
+"text":"#!/usr/bin/env python3\n\nimport unittest\n\nclass TestSmartNotes(unittest.TestCase):\n\n    def test_can_import_smart_notes(self):\n        import smartnotes\n\nif __name__ == \"__main__\":\n    unittest.main()\n",
+"type":"code"
+}
+],
+"id":"01b8448b345e40a9bc1724029f2b14b9",
+"type":"code"
+}
+],
+"title":"Automated Tests"
 }
 ],
 "id":"5b3057938889498f908a3eac28cd7ca7",
