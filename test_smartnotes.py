@@ -38,6 +38,7 @@ class SmartNotesEndToEndTests(unittest.TestCase):
 
     def setUp(self):
         self.driver = GuiDriver(smartnotes.SmartNotesWidget, "test_resources/example.notes")
+        self.driver.iteration()
 
     def test_main_screen(self):
         self.driver.iteration()
