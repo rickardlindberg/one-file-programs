@@ -60,7 +60,14 @@ class GuiDriver(object):
     def iteration(self, events=[], elapsed_ms=1000):
         for event in events:
             self.widget.process_event(event)
-        self.widget.update(pygame.Rect(0, 0, 800, 600), elapsed_ms)
+        while elapsed_ms > 0:
+            elapsed_ms_per_frame = min(elapsed_ms, 20)
+            elapsed_ms -= elapsed_ms_per_frame
+            self.widget.update(pygame.Rect(0, 0, 800, 600), elapsed_ms_per_frame)
+            self.widget.draw(self.canvas)
+        self.widget.update(pygame.Rect(0, 0, 800, 600), 0)
+        self.widget.draw(self.canvas)
+        self.widget.update(pygame.Rect(0, 0, 800, 600), 0)
         self.widget.draw(self.canvas)
 
     def write_to_png(self, path):
@@ -70,7 +77,6 @@ class SmartNotesEndToEndTests(unittest.TestCase):
 
     def setUp(self):
         self.driver = GuiDriver(smartnotes.SmartNotesWidget, "test_resources/example.notes")
-        self.driver.iteration()
 
     def assert_drawn_image_is(self, name):
         try:
@@ -89,27 +95,17 @@ class SmartNotesEndToEndTests(unittest.TestCase):
             )
 
     def test_main_screen(self):
-        self.driver.iteration()
+        self.driver.iteration(elapsed_ms=300)
         self.assert_drawn_image_is("main_screen.png")
 
     def test_search_bar(self):
         self.driver.iteration(events=[KeyEvent("/")], elapsed_ms=100)
-        self.driver.iteration(elapsed_ms=0)
         self.assert_drawn_image_is("search_bar_half_way.png")
         self.driver.iteration(elapsed_ms=100)
-        self.driver.iteration(elapsed_ms=0)
         self.assert_drawn_image_is("search_bar_animation_completed.png")
         self.driver.iteration(events=[KeyEvent("ctrl+g")], elapsed_ms=100)
-        self.driver.iteration(elapsed_ms=0)
-        self.driver.iteration(elapsed_ms=0)
         self.assert_drawn_image_is("search_bar_half_way_hide.png")
-        self.driver.iteration(elapsed_ms=200)
-        self.driver.iteration(elapsed_ms=200)
-        self.driver.iteration(elapsed_ms=200)
-        self.driver.iteration(elapsed_ms=200)
-        self.driver.iteration(elapsed_ms=200)
-        self.driver.iteration(elapsed_ms=200)
-        self.driver.iteration(elapsed_ms=200)
+        self.driver.iteration(elapsed_ms=500)
         self.assert_drawn_image_is("main_screen.png")
 
 if __name__ == "__main__":
