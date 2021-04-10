@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import cairo
 import pygame
 import smartnotes
@@ -29,14 +30,14 @@ class GuiDriver(object):
         self.widget.draw(self.canvas)
 
     def assert_drawn_image_is(self, path):
-        actual_path = "actual_{}".format(path)
+        actual_path = os.path.join("test_resources", "actual_{}".format(path))
         self.cairo_surface.write_to_png(actual_path)
-        subprocess.check_call(["diff", path, actual_path])
+        subprocess.check_call(["diff", os.path.join("test_resources", path), actual_path])
 
 class SmartNotesEndToEndTests(unittest.TestCase):
 
     def test_main_screen(self):
-        driver = GuiDriver(smartnotes.SmartNotesWidget, "example.notes")
+        driver = GuiDriver(smartnotes.SmartNotesWidget, "test_resources/example.notes")
         driver.iteration()
         driver.assert_drawn_image_is("main_screen.png")
 
