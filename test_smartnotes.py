@@ -36,10 +36,12 @@ class GuiDriver(object):
 
 class SmartNotesEndToEndTests(unittest.TestCase):
 
+    def setUp(self):
+        self.driver = GuiDriver(smartnotes.SmartNotesWidget, "test_resources/example.notes")
+
     def test_main_screen(self):
-        driver = GuiDriver(smartnotes.SmartNotesWidget, "test_resources/example.notes")
-        driver.iteration()
-        driver.assert_drawn_image_is("main_screen.png")
+        self.driver.iteration()
+        self.driver.assert_drawn_image_is("main_screen.png")
 
 if __name__ == "__main__":
     unittest.main()
