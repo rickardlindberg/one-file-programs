@@ -24,7 +24,7 @@ class BaseEvent(object):
     def key_down_text(self):
         return None
 
-    def key_down(self, description):
+    def key_down(self, description=None):
         return False
 
     def window_gained_focus(self):
@@ -38,7 +38,7 @@ class KeyEvent(BaseEvent):
     def __init__(self, description):
         self.description = description
 
-    def key_down(self, description):
+    def key_down(self, description=None):
         return self.description == description
 
 class GuiDriverWindow(smartnotes.WindowFocusMixin):
@@ -99,6 +99,18 @@ class SmartNotesEndToEndTests(unittest.TestCase):
         self.driver.iteration(elapsed_ms=100)
         self.driver.iteration(elapsed_ms=0)
         self.assert_drawn_image_is("search_bar_animation_completed.png")
+        self.driver.iteration(events=[KeyEvent("ctrl+g")], elapsed_ms=100)
+        self.driver.iteration(elapsed_ms=0)
+        self.driver.iteration(elapsed_ms=0)
+        self.assert_drawn_image_is("search_bar_half_way_hide.png")
+        self.driver.iteration(elapsed_ms=200)
+        self.driver.iteration(elapsed_ms=200)
+        self.driver.iteration(elapsed_ms=200)
+        self.driver.iteration(elapsed_ms=200)
+        self.driver.iteration(elapsed_ms=200)
+        self.driver.iteration(elapsed_ms=200)
+        self.driver.iteration(elapsed_ms=200)
+        self.assert_drawn_image_is("main_screen.png")
 
 if __name__ == "__main__":
     unittest.main()
