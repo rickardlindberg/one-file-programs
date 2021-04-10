@@ -7,6 +7,40 @@ import smartnotes
 import subprocess
 import unittest
 
+class BaseEvent(object):
+
+    def mouse_motion(self, rect=None):
+        return False
+
+    def left_mouse_down(self, rect=None):
+        return False
+
+    def left_mouse_up(self, rect=None):
+        return False
+
+    def mouse_pos(self):
+        return None
+
+    def key_down_text(self):
+        return None
+
+    def key_down(self, description):
+        return False
+
+    def window_gained_focus(self):
+        return False
+
+    def window_lost_focus(self):
+        return False
+
+class KeyEvent(BaseEvent):
+
+    def __init__(self, description):
+        self.description = description
+
+    def key_down(self, description):
+        return self.description == description
+
 class GuiDriverWindow(smartnotes.WindowFocusMixin):
 
     def set_title(self, title):
@@ -32,7 +66,15 @@ class GuiDriver(object):
     def assert_drawn_image_is(self, path):
         actual_path = os.path.join("test_resources", "actual_{}".format(path))
         self.cairo_surface.write_to_png(actual_path)
-        subprocess.check_call(["diff", os.path.join("test_resources", path), actual_path])
+        expected_path = os.path.join("test_resources", path)
+        try:
+            subprocess.check_call(["diff", expected_path, actual_path])
+        except:
+            raise ValueError(
+                f"Drawn image did not match:\n"
+                f"  Look:   eog {actual_path}\n"
+                f"  Accept: cp {actual_path} {expected_path}\n"
+            )
 
 class SmartNotesEndToEndTests(unittest.TestCase):
 
@@ -43,6 +85,14 @@ class SmartNotesEndToEndTests(unittest.TestCase):
     def test_main_screen(self):
         self.driver.iteration()
         self.driver.assert_drawn_image_is("main_screen.png")
+
+    def test_search_bar(self):
+        self.driver.iteration(events=[KeyEvent("/")], elapsed_ms=100)
+        self.driver.iteration(elapsed_ms=0)
+        self.driver.assert_drawn_image_is("search_bar_half_way.png")
+        self.driver.iteration(elapsed_ms=100)
+        self.driver.iteration(elapsed_ms=0)
+        self.driver.assert_drawn_image_is("search_bar_animation_completed.png")
 
 if __name__ == "__main__":
     unittest.main()

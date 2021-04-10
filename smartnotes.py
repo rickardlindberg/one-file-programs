@@ -701,13 +701,13 @@ class SearchBar(VBox):
             (0, -self.ideal_height+self.get_height()),
             alpha=self.alpha
         )
-        VBox.draw(self, canvas)
 
     def _draw_search_bar_image(self, canvas):
         canvas.fill_rect(
             pygame.Rect(0, 0, self.ideal_rect.width, self.ideal_rect.height),
             color=COLOR_SEARCH_BAR
         )
+        VBox.draw(self, canvas)
 
 class SearchField(TextField):
 
