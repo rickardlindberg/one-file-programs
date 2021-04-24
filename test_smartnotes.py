@@ -87,6 +87,7 @@ class SmartNotesEndToEndTests(unittest.TestCase):
             actual_path = os.path.join("test_resources", "actual_{}".format(name))
             self.driver.write_to_png(actual_path)
             subprocess.check_call(["diff", expected_path, actual_path])
+            os.remove(actual_path)
         except:
             if MANUAL_MODE and manual_compare_accept(expected_path, actual_path):
                 return
