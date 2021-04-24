@@ -122,6 +122,7 @@ class Widget(object):
     def draw(self, canvas):
         pass
 
+
     def bubble_event(self, event):
         if self._parent:
             self._parent.bubble_event(event)

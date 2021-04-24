@@ -38,13 +38,30 @@ class BaseEvent(object):
     def window_lost_focus(self):
         return False
 
+class MouseMotionEvent(BaseEvent):
+
+    def __init__(self, pos):
+        self.pos = pos
+
+    def mouse_motion(self, rect=None):
+        if rect is None:
+            return True
+        else:
+            return rect.collidepoint(self.pos)
+
+    def mouse_pos(self):
+        return self.pos
+
 class KeyEvent(BaseEvent):
 
     def __init__(self, description):
         self.description = description
 
     def key_down(self, description=None):
-        return self.description == description
+        if description is None:
+            return True
+        else:
+            return self.description == description
 
 class GuiDriverWindow(smartnotes.WindowFocusMixin):
 
@@ -101,6 +118,15 @@ class SmartNotesEndToEndTests(unittest.TestCase):
     def test_main_screen(self):
         self.driver.iteration(elapsed_ms=300+1)
         self.assert_drawn_image_is("main_screen.png")
+
+    def test_table_view(self):
+        self.driver.iteration(events=[KeyEvent("t")], elapsed_ms=300+1)
+        self.assert_drawn_image_is("table_view.png")
+
+    def test_note_focused(self):
+        self.driver.iteration(elapsed_ms=300+1)
+        self.driver.iteration(events=[MouseMotionEvent((400, 300))], elapsed_ms=1)
+        self.assert_drawn_image_is("network_note_focused.png")
 
     def test_search_bar(self):
         self.driver.iteration(events=[KeyEvent("/")], elapsed_ms=100)

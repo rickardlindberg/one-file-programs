@@ -1253,7 +1253,7 @@
 ],
 "fragments":[
 {
-"text":"#!/usr/bin/env python3\n\nimport os\nimport cairo\nimport pygame\nimport smartnotes\nimport subprocess\nimport unittest\nimport tempfile\n\nMANUAL_MODE = os.environ.get(\"MANUAL_MODE\", None) == \"yes\"\n\nMS_PER_FRAME = 20\n\nclass BaseEvent(object):\n\n    def mouse_motion(self, rect=None):\n        return False\n\n    def left_mouse_down(self, rect=None):\n        return False\n\n    def left_mouse_up(self, rect=None):\n        return False\n\n    def mouse_pos(self):\n        return None\n\n    def key_down_text(self):\n        return None\n\n    def key_down(self, description=None):\n        return False\n\n    def window_gained_focus(self):\n        return False\n\n    def window_lost_focus(self):\n        return False\n\nclass KeyEvent(BaseEvent):\n\n    def __init__(self, description):\n        self.description = description\n\n    def key_down(self, description=None):\n        return self.description == description\n\nclass GuiDriverWindow(smartnotes.WindowFocusMixin):\n\n    def set_title(self, title):\n        pass\n\n    def close(self):\n        pass\n\nclass GuiDriver(object):\n\n    def __init__(self, widget_cls, *args, **kwargs):\n        self.window = GuiDriverWindow()\n        self.cairo_surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 800, 600)\n        self.canvas = smartnotes.CairoCanvas(self.cairo_surface)\n        self.widget = widget_cls(self.window, None, *args, **kwargs)\n\n    def iteration(self, events=[], elapsed_ms=1000):\n        for event in events:\n            self.widget.process_event(event)\n        while elapsed_ms > 0:\n            elapsed_ms_per_frame = min(elapsed_ms, MS_PER_FRAME)\n            elapsed_ms -= elapsed_ms_per_frame\n            self.widget.update(pygame.Rect(0, 0, 800, 600), elapsed_ms_per_frame)\n            self.widget.draw(self.canvas)\n\n    def write_to_png(self, path):\n        self.cairo_surface.write_to_png(path)\n\nclass SmartNotesEndToEndTests(unittest.TestCase):\n\n    def setUp(self):\n        self.driver = GuiDriver(smartnotes.SmartNotesWidget, \"test_resources/example.notes\")\n\n    def assert_drawn_image_is(self, name):\n        try:\n            expected_path = os.path.join(\"test_resources\", name)\n            actual_path = os.path.join(\"test_resources\", \"actual_{}\".format(name))\n            self.driver.write_to_png(actual_path)\n            subprocess.check_call([\"diff\", expected_path, actual_path])\n            os.remove(actual_path)\n        except:\n            if MANUAL_MODE and manual_compare_accept(expected_path, actual_path):\n                return\n            self.fail(\n                f\"Drawn image did not match\\n\"\n                f\"\\n\"\n                f\"  Examine:\\n\"\n                f\"    eog {actual_path}\\n\"\n                f\"  Accept:\\n\"\n                f\"    cp {actual_path} {expected_path}\\n\"\n            )\n\n",
+"text":"#!/usr/bin/env python3\n\nimport os\nimport cairo\nimport pygame\nimport smartnotes\nimport subprocess\nimport unittest\nimport tempfile\n\nMANUAL_MODE = os.environ.get(\"MANUAL_MODE\", None) == \"yes\"\n\nMS_PER_FRAME = 20\n\nclass BaseEvent(object):\n\n    def mouse_motion(self, rect=None):\n        return False\n\n    def left_mouse_down(self, rect=None):\n        return False\n\n    def left_mouse_up(self, rect=None):\n        return False\n\n    def mouse_pos(self):\n        return None\n\n    def key_down_text(self):\n        return None\n\n    def key_down(self, description=None):\n        return False\n\n    def window_gained_focus(self):\n        return False\n\n    def window_lost_focus(self):\n        return False\n\nclass MouseMotionEvent(BaseEvent):\n\n    def __init__(self, pos):\n        self.pos = pos\n\n    def mouse_motion(self, rect=None):\n        if rect is None:\n            return True\n        else:\n            return rect.collidepoint(self.pos)\n\n    def mouse_pos(self):\n        return self.pos\n\nclass KeyEvent(BaseEvent):\n\n    def __init__(self, description):\n        self.description = description\n\n    def key_down(self, description=None):\n        if description is None:\n            return True\n        else:\n            return self.description == description\n\nclass GuiDriverWindow(smartnotes.WindowFocusMixin):\n\n    def set_title(self, title):\n        pass\n\n    def close(self):\n        pass\n\nclass GuiDriver(object):\n\n    def __init__(self, widget_cls, *args, **kwargs):\n        self.window = GuiDriverWindow()\n        self.cairo_surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 800, 600)\n        self.canvas = smartnotes.CairoCanvas(self.cairo_surface)\n        self.widget = widget_cls(self.window, None, *args, **kwargs)\n\n    def iteration(self, events=[], elapsed_ms=1000):\n        for event in events:\n            self.widget.process_event(event)\n        while elapsed_ms > 0:\n            elapsed_ms_per_frame = min(elapsed_ms, MS_PER_FRAME)\n            elapsed_ms -= elapsed_ms_per_frame\n            self.widget.update(pygame.Rect(0, 0, 800, 600), elapsed_ms_per_frame)\n            self.widget.draw(self.canvas)\n\n    def write_to_png(self, path):\n        self.cairo_surface.write_to_png(path)\n\nclass SmartNotesEndToEndTests(unittest.TestCase):\n\n    def setUp(self):\n        self.driver = GuiDriver(smartnotes.SmartNotesWidget, \"test_resources/example.notes\")\n\n    def assert_drawn_image_is(self, name):\n        try:\n            expected_path = os.path.join(\"test_resources\", name)\n            actual_path = os.path.join(\"test_resources\", \"actual_{}\".format(name))\n            self.driver.write_to_png(actual_path)\n            subprocess.check_call([\"diff\", expected_path, actual_path])\n            os.remove(actual_path)\n        except:\n            if MANUAL_MODE and manual_compare_accept(expected_path, actual_path):\n                return\n            self.fail(\n                f\"Drawn image did not match\\n\"\n                f\"\\n\"\n                f\"  Examine:\\n\"\n                f\"    eog {actual_path}\\n\"\n                f\"  Accept:\\n\"\n                f\"    cp {actual_path} {expected_path}\\n\"\n            )\n\n",
 "type":"code"
 },
 {
@@ -1292,6 +1292,38 @@
 }
 ],
 "id":"805afabcfbce442b8450d37bcd170ff8",
+"type":"code"
+},
+{
+"chunkpath":[
+"end-to-end"
+],
+"filepath":[
+"test_smartnotes.py"
+],
+"fragments":[
+{
+"text":"def test_table_view(self):\n    self.driver.iteration(events=[KeyEvent(\"t\")], elapsed_ms=300+1)\n    self.assert_drawn_image_is(\"table_view.png\")\n",
+"type":"code"
+}
+],
+"id":"0d349b2be815423795fec96ca1beedfd",
+"type":"code"
+},
+{
+"chunkpath":[
+"end-to-end"
+],
+"filepath":[
+"test_smartnotes.py"
+],
+"fragments":[
+{
+"text":"def test_note_focused(self):\n    self.driver.iteration(elapsed_ms=300+1)\n    self.driver.iteration(events=[MouseMotionEvent((400, 300))], elapsed_ms=1)\n    self.assert_drawn_image_is(\"network_note_focused.png\")\n",
+"type":"code"
+}
+],
+"id":"889c55fa6f344219855dc487cf1384f6",
 "type":"code"
 },
 {
@@ -1639,7 +1671,7 @@
 ],
 "fragments":[
 {
-"text":"def draw(self, canvas):\n    pass\n",
+"text":"def draw(self, canvas):\n    pass\n\n",
 "type":"code"
 }
 ],
