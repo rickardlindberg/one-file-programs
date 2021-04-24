@@ -117,11 +117,24 @@ class Widget(object):
             self.bubble_event(event)
 
     def update(self, rect, elapsed_ms):
-        pass
+        self.allotted_rect = rect
 
     def draw(self, canvas):
-        pass
+        if self.has_focus():
+            canvas.draw_rect(
+                self.get_focus_rect().inflate(
+                    -self.get_focus_rect_size(),
+                    -self.get_focus_rect_size()
+                ),
+                COLOR_SELECTION,
+                self.get_focus_rect_size()
+            )
 
+    def get_focus_rect_size(self):
+        return 2
+
+    def get_focus_rect(self):
+        return self.allotted_rect
 
     def bubble_event(self, event):
         if self._parent:
@@ -185,8 +198,6 @@ class NoteBaseWidget(Widget):
         border.y -= border_size
         canvas.fill_rect(border, color=COLOR_NOTE_BG)
         canvas.draw_rect(border, (0, 0, 0, 120), 1)
-        if self.has_focus():
-            canvas.draw_rect(border.inflate(-7, -7).move(1, 1), COLOR_SELECTION, 2)
         canvas.blit(
             canvas.create_image(
                 self.card_full_size,
@@ -196,6 +207,13 @@ class NoteBaseWidget(Widget):
             scale_to_fit=self.rect.size
         )
         Widget.draw(self, canvas)
+
+    def get_focus_rect(self):
+        border_size = 3
+        border = self.rect.copy()
+        border.width -= border_size
+        border.height -= border_size
+        return border.inflate(-7, -7).move(1, 1).inflate(2, 2)
 
     def _draw_card(self, canvas):
         border = 8
@@ -423,9 +441,13 @@ class TextField(Widget):
             size=self.text_size,
             boxalign="midleft"
         )
-        if self.has_focus():
-            canvas.draw_rect(self.rect, COLOR_SELECTION, 2)
         Widget.draw(self, canvas)
+
+    def get_focus_rect(self):
+        return self.rect.inflate(
+            self.get_focus_rect_size(),
+            self.get_focus_rect_size()
+        )
 
 class Immutable(object):
 
@@ -986,8 +1008,6 @@ class NetworkWidget(Widget):
         if DEBUG_NOTE_BORDER:
             for rect in self.stripe_rects:
                 canvas.draw_rect(rect, (255, 255, 0), 2)
-        if self.has_focus():
-            canvas.draw_rect(self.rect.inflate(-2, -2), COLOR_SELECTION, 2)
         for link in self.links:
             link.draw(canvas)
         for note in self.notes:
@@ -1219,11 +1239,8 @@ class TableWidget(Widget):
 
     def update(self, rect, elapsed_ms):
         Widget.update(self, rect, elapsed_ms)
-        self.rect = rect
 
     def draw(self, canvas):
-        if self.has_focus():
-            canvas.draw_rect(self.rect.inflate(-2, -2), COLOR_SELECTION, 2)
         Widget.draw(self, canvas)
 
 class DebugBar(Widget):
