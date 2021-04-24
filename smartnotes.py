@@ -136,6 +136,9 @@ class Widget(object):
     def get_focus_rect(self):
         return self.allotted_rect
 
+    def get_used_rect(self):
+        return self.allotted_rect
+
     def bubble_event(self, event):
         if self._parent:
             self._parent.bubble_event(event)
@@ -420,23 +423,19 @@ class TextField(Widget):
     def process_event(self, event):
         if self.has_focus() and event.key_down_text():
             self.set_text(self.text + event.key_down_text())
-        elif event.left_mouse_up(rect=self.rect):
+        elif event.left_mouse_up(rect=self.get_used_rect()):
             self.focus()
         else:
             Widget.process_event(self, event)
 
-    def update(self, rect, elapsed_ms):
-        Widget.update(self, rect, elapsed_ms)
-        self.rect = rect
-
     def draw(self, canvas):
         canvas.fill_rect(
-            self.rect,
+            self.get_used_rect(),
             (250, 250, 250)
         )
         canvas.render_text(
             "{}\u2302".format(self.text),
-            self.rect.inflate(-4, -4),
+            self.get_used_rect().inflate(-4, -4),
             face=FONT_MONOSPACE,
             size=self.text_size,
             boxalign="midleft"
@@ -444,7 +443,7 @@ class TextField(Widget):
         Widget.draw(self, canvas)
 
     def get_focus_rect(self):
-        return self.rect.inflate(
+        return self.get_used_rect().inflate(
             self.get_focus_rect_size(),
             self.get_focus_rect_size()
         )

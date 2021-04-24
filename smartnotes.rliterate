@@ -1671,7 +1671,7 @@
 ],
 "fragments":[
 {
-"text":"def draw(self, canvas):\n    if self.has_focus():\n        canvas.draw_rect(\n            self.get_focus_rect().inflate(\n                -self.get_focus_rect_size(),\n                -self.get_focus_rect_size()\n            ),\n            COLOR_SELECTION,\n            self.get_focus_rect_size()\n        )\n\ndef get_focus_rect_size(self):\n    return 2\n\ndef get_focus_rect(self):\n    return self.allotted_rect\n",
+"text":"def draw(self, canvas):\n    if self.has_focus():\n        canvas.draw_rect(\n            self.get_focus_rect().inflate(\n                -self.get_focus_rect_size(),\n                -self.get_focus_rect_size()\n            ),\n            COLOR_SELECTION,\n            self.get_focus_rect_size()\n        )\n\ndef get_focus_rect_size(self):\n    return 2\n\ndef get_focus_rect(self):\n    return self.allotted_rect\n\ndef get_used_rect(self):\n    return self.allotted_rect\n",
 "type":"code"
 }
 ],
@@ -1837,31 +1837,7 @@
 ],
 "fragments":[
 {
-"text":"class TextField(Widget):\n\n    def __init__(self, window, parent, text_changed_callback, text_size=10, **kwargs):\n        Widget.__init__(self, window, parent, **kwargs)\n        self.text_size = text_size\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def set_text(self, text):\n        self.text = text\n        self.text_changed_callback(text)\n\n    def process_event(self, event):\n        if self.has_focus() and event.key_down_text():\n            self.set_text(self.text + event.key_down_text())\n        elif event.left_mouse_up(rect=self.rect):\n            self.focus()\n        else:\n            Widget.process_event(self, event)\n\n    def ",
-"type":"code"
-},
-{
-"id":"8cce3dd9f80645e6a8df699f872f1736",
-"type":"variable"
-},
-{
-"text":"(self, ",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":", ",
-"type":"code"
-},
-{
-"id":"7583be08dcbd4bcca0e6a043d3791710",
-"type":"variable"
-},
-{
-"text":"):\n        Widget.update(self, rect, elapsed_ms)\n        self.rect = rect\n\n    def ",
+"text":"class TextField(Widget):\n\n    def __init__(self, window, parent, text_changed_callback, text_size=10, **kwargs):\n        Widget.__init__(self, window, parent, **kwargs)\n        self.text_size = text_size\n        self.text = \"\"\n        self.text_changed_callback = text_changed_callback\n\n    def set_text(self, text):\n        self.text = text\n        self.text_changed_callback(text)\n\n    def process_event(self, event):\n        if self.has_focus() and event.key_down_text():\n            self.set_text(self.text + event.key_down_text())\n        elif event.left_mouse_up(rect=self.get_used_rect()):\n            self.focus()\n        else:\n            Widget.process_event(self, event)\n\n    def ",
 "type":"code"
 },
 {
@@ -1869,7 +1845,7 @@
 "type":"variable"
 },
 {
-"text":"(self, canvas):\n        canvas.fill_rect(\n            self.rect,\n            (250, 250, 250)\n        )\n        canvas.render_text(\n            \"{}\\u2302\".format(self.text),\n            self.rect.inflate(-4, -4),\n            face=FONT_MONOSPACE,\n            size=self.text_size,\n            boxalign=\"midleft\"\n        )\n        Widget.draw(self, canvas)\n\n    def get_focus_rect(self):\n        return self.rect.inflate(\n            self.get_focus_rect_size(),\n            self.get_focus_rect_size()\n        )\n",
+"text":"(self, canvas):\n        canvas.fill_rect(\n            self.get_used_rect(),\n            (250, 250, 250)\n        )\n        canvas.render_text(\n            \"{}\\u2302\".format(self.text),\n            self.get_used_rect().inflate(-4, -4),\n            face=FONT_MONOSPACE,\n            size=self.text_size,\n            boxalign=\"midleft\"\n        )\n        Widget.draw(self, canvas)\n\n    def get_focus_rect(self):\n        return self.get_used_rect().inflate(\n            self.get_focus_rect_size(),\n            self.get_focus_rect_size()\n        )\n",
 "type":"code"
 }
 ],
