@@ -688,6 +688,7 @@ class SearchBar(VBox):
         VBox.update(self, self.ideal_rect, elapsed_ms)
         self.ideal_height = self.SEARCH_FIELD_HEIHGT + self.VPADDING + self.search_results.wanted_height
         percent = self.animation.advance(elapsed_ms)
+        self.update_height = self.get_height()
         if Widget.is_visible(self):
             self.alpha = int(255 * percent)
             self.resize(height=int(self.ideal_height * percent))
@@ -698,7 +699,7 @@ class SearchBar(VBox):
     def draw(self, canvas):
         canvas.blit(
             canvas.create_image(self.ideal_rect.size, self._draw_search_bar_image),
-            (0, -self.ideal_height+self.get_height()),
+            (0, -self.ideal_height+self.update_height),
             alpha=self.alpha
         )
 
