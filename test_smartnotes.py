@@ -10,6 +10,8 @@ import tempfile
 
 MANUAL_MODE = os.environ.get("MANUAL_MODE", None) == "yes"
 
+MS_PER_FRAME = 20
+
 class BaseEvent(object):
 
     def mouse_motion(self, rect=None):
@@ -64,7 +66,7 @@ class GuiDriver(object):
         for event in events:
             self.widget.process_event(event)
         while elapsed_ms > 0:
-            elapsed_ms_per_frame = min(elapsed_ms, 20)
+            elapsed_ms_per_frame = min(elapsed_ms, MS_PER_FRAME)
             elapsed_ms -= elapsed_ms_per_frame
             self.widget.update(pygame.Rect(0, 0, 800, 600), elapsed_ms_per_frame)
             self.widget.draw(self.canvas)
@@ -97,13 +99,13 @@ class SmartNotesEndToEndTests(unittest.TestCase):
             )
 
     def test_main_screen(self):
-        self.driver.iteration(elapsed_ms=301)
+        self.driver.iteration(elapsed_ms=300+1)
         self.assert_drawn_image_is("main_screen.png")
 
     def test_search_bar(self):
         self.driver.iteration(events=[KeyEvent("/")], elapsed_ms=100)
         self.assert_drawn_image_is("search_bar_half_way.png")
-        self.driver.iteration(elapsed_ms=121)
+        self.driver.iteration(elapsed_ms=100+MS_PER_FRAME+1)
         self.assert_drawn_image_is("search_bar_animation_completed.png")
         self.driver.iteration(events=[KeyEvent("ctrl+g")], elapsed_ms=100)
         self.assert_drawn_image_is("search_bar_half_way_hide.png")
