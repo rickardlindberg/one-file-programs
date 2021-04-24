@@ -63,6 +63,7 @@ class Widget(object):
         self._height = height
         self._visible = visible
         self.rect = pygame.Rect(0, 0, 0, 0)
+        self.allotted_rect = pygame.Rect(0, 0, 0, 0)
 
     def set_title(self, title):
         self._window.set_title(title)
@@ -291,6 +292,12 @@ class NoteBaseWidget(Widget):
         else:
             target.center = alotted_rect.center
         return target
+
+    def get_link_source_point(self):
+        return self.rect.center
+
+    def hit_test(self, pos):
+        return self.rect.collidepoint(pos)
 
 class WindowFocusMixin(object):
 
@@ -834,12 +841,6 @@ class SearchNote(NoteBaseWidget):
         NoteBaseWidget.update(self, rect, elapsed_ms)
         self.rect = self._get_target(rect, align="center")
 
-    def get_link_source_point(self):
-        return self.rect.center
-
-    def hit_test(self, pos):
-        return self.rect.collidepoint(pos)
-
 class NetworkWidget(Widget):
 
     def __init__(self, window, parent, db, state, request_search_callback):
@@ -1114,9 +1115,6 @@ class NetworkNote(NoteBaseWidget):
     def get_center(self):
         return self.rect.center
 
-    def get_link_source_point(self):
-        return self.rect.center
-
     def get_link_in_point(self):
         return self.rect.midleft
 
@@ -1155,9 +1153,6 @@ class NetworkNote(NoteBaseWidget):
         NoteBaseWidget.draw(self, canvas)
         if DEBUG_NOTE_BORDER:
             canvas.draw_rect(self.true_rect, (255, 0, 0), 1)
-
-    def hit_test(self, pos):
-        return self.rect.collidepoint(pos)
 
 class LinkWidget(Widget):
 
