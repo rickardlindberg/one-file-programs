@@ -6,6 +6,9 @@ import pygame
 import smartnotes
 import subprocess
 import unittest
+import tempfile
+
+MANUAL_MODE = os.environ.get("MANUAL_MODE", None) == "yes"
 
 class BaseEvent(object):
 
@@ -85,6 +88,8 @@ class SmartNotesEndToEndTests(unittest.TestCase):
             self.driver.write_to_png(actual_path)
             subprocess.check_call(["diff", expected_path, actual_path])
         except:
+            if MANUAL_MODE and manual_compare_accept(expected_path, actual_path):
+                return
             self.fail(
                 f"Drawn image did not match\n"
                 f"\n"
@@ -107,6 +112,41 @@ class SmartNotesEndToEndTests(unittest.TestCase):
         self.assert_drawn_image_is("search_bar_half_way_hide.png")
         self.driver.iteration(elapsed_ms=500)
         self.assert_drawn_image_is("main_screen.png")
+
+def manual_compare_accept(expected, actual):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        subprocess.call([
+            "compare",
+            expected,
+            actual,
+            "-compose",
+            "src",
+            os.path.join(tmp_dir, "diff.png")
+        ])
+        subprocess.call([
+            "montage",
+            "-mode", "concatenate",
+            "-tile", "x1",
+            "-geometry", "+5+5",
+            "-label", "%f",
+            expected,
+            actual,
+            os.path.join(tmp_dir, "diff.png"),
+            os.path.join(tmp_dir, "comparison.png")
+        ])
+        comparison = subprocess.Popen([
+            "eog",
+            os.path.join(tmp_dir, "comparison.png")
+        ])
+        accept = input("Enter 'y' to accept: ") == "y"
+        comparison.kill()
+        if accept:
+            subprocess.check_call([
+                "cp",
+                actual,
+                expected,
+            ])
+        return accept
 
 if __name__ == "__main__":
     unittest.main()
