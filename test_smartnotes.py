@@ -52,6 +52,20 @@ class MouseMotionEvent(BaseEvent):
     def mouse_pos(self):
         return self.pos
 
+class LeftMouseDownEvent(BaseEvent):
+
+    def __init__(self, pos):
+        self.pos = pos
+
+    def left_mouse_down(self, rect=None):
+        if rect is None:
+            return True
+        else:
+            return rect.collidepoint(self.pos)
+
+    def mouse_pos(self):
+        return self.pos
+
 class KeyEvent(BaseEvent):
 
     def __init__(self, description):
@@ -137,6 +151,24 @@ class SmartNotesEndToEndTests(unittest.TestCase):
         self.assert_drawn_image_is("search_bar_half_way_hide.png")
         self.driver.iteration(elapsed_ms=500)
         self.assert_drawn_image_is("main_screen.png")
+
+    def test_link_lines(self):
+        self.driver.iteration(events=[KeyEvent("/")], elapsed_ms=200+MS_PER_FRAME+1)
+        self.assert_drawn_image_is("search_bar_animation_completed.png")
+        self.driver.iteration(events=[
+            MouseMotionEvent((400, 300)),
+            LeftMouseDownEvent((400, 300)),
+            MouseMotionEvent((200, 200)),
+        ], elapsed_ms=MS_PER_FRAME+1)
+        self.assert_drawn_image_is("link_network_to_none.png")
+        self.driver.iteration(events=[
+            MouseMotionEvent((200, 360)),
+        ], elapsed_ms=MS_PER_FRAME+1)
+        self.assert_drawn_image_is("link_network_to_network.png")
+        self.driver.iteration(events=[
+            MouseMotionEvent((150, 80)),
+        ], elapsed_ms=MS_PER_FRAME+1)
+        self.assert_drawn_image_is("link_network_to_search.png")
 
 def manual_compare_accept(expected, actual):
     with tempfile.TemporaryDirectory() as tmp_dir:
