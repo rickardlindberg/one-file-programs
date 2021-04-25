@@ -1906,7 +1906,7 @@
 "type":"variable"
 },
 {
-"text":"(root_widget_cls, *args, **kwargs):\n    pygame.init()\n    root_widget = root_widget_cls(PygameWindow(), None, *args, **kwargs)\n    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)\n    clock = pygame.time.Clock()\n    external_text_entries = ",
+"text":"(root_widget_cls, *args, **kwargs):\n    pygame.init()\n    pygame.key.set_repeat(500, 30)\n    root_widget = root_widget_cls(PygameWindow(), None, *args, **kwargs)\n    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)\n    clock = pygame.time.Clock()\n    external_text_entries = ",
 "type":"code"
 },
 {

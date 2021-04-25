@@ -1830,6 +1830,7 @@ def utcnow_timestamp_string():
 
 def pygame_main(root_widget_cls, *args, **kwargs):
     pygame.init()
+    pygame.key.set_repeat(500, 30)
     root_widget = root_widget_cls(PygameWindow(), None, *args, **kwargs)
     screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     clock = pygame.time.Clock()
