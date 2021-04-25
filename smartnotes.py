@@ -803,6 +803,10 @@ class NoteBrowserWidget(VBox):
         self.link_target = None
         self.toggle_table_network_after_event_processing = False
         self.pos = (0, 0)
+        self.note_id = None
+
+    def register_note_opened(self, note_id):
+        self.note_id = note_id
 
     def open_note(self, note_id):
         self.network.open_note(note_id)
@@ -833,6 +837,7 @@ class NoteBrowserWidget(VBox):
             self.table.toggle_visible()
             if self.network.is_visible():
                 self.network.focus()
+                self.network.open_note(self.note_id)
             else:
                 self.table.focus()
             self.clear_quick_focus()
@@ -885,6 +890,7 @@ class NetworkWidget(Widget):
 
     def __init__(self, window, parent, db, state, request_search_callback):
         Widget.__init__(self, window, parent)
+        self.navigation_history = parent
         self.db = db
         self.state = state
         self.request_search_callback = request_search_callback
@@ -918,12 +924,14 @@ class NetworkWidget(Widget):
                 note.process_event(event)
 
     def open_note(self, note_id):
-        self.make_root(self.instantiate(NetworkNote, self, self.db, note_id, self.state))
+        if self.root_note is None or self.root_note.note_id != note_id:
+            self.make_root(self.instantiate(NetworkNote, self, self.db, note_id, self.state))
 
     def make_root(self, note):
         if note is not self.root_note:
             self.root_note = note
             self.clear_quick_focus()
+            self.navigation_history.register_note_opened(note.note_id)
 
     def update(self, rect, elapsed_ms):
         Widget.update(self, rect, elapsed_ms)
