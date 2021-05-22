@@ -169,11 +169,11 @@ class Padding(Widget):
 
 class NoteBaseWidget(Widget):
 
-    def __init__(self, window, parent, db, note_id, state):
+    def __init__(self, window, parent, db, note_id, settings):
         Widget.__init__(self, window, parent)
         self.db = db
         self.note_id = note_id
-        self.state = state
+        self.settings = settings
 
     def is_deleted(self):
         try:
@@ -185,7 +185,7 @@ class NoteBaseWidget(Widget):
     def update(self, rect, elapsed_ms):
         Widget.update(self, rect, elapsed_ms)
         self.data = self.db.get_note_data(self.note_id)
-        self.full_width = self.state.get_full_note_width()
+        self.full_width = self.settings.get_full_width()
         self.full_height = int(self.full_width*3/5)
         self.card_full_size = (self.full_width, self.full_height)
         self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)
@@ -537,6 +537,7 @@ class SmartNotesWidget(VBox):
 
     def __init__(self, window, parent, path):
         VBox.__init__(self, window, parent)
+        self.note_settings = NoteSettings()
         self.set_title(format_title("Smart Notes", path))
         self.toggle_table_network_after_event_processing = False
         self.db = NoteDb(path)
@@ -544,12 +545,13 @@ class SmartNotesWidget(VBox):
         self.note_browser = self.instantiate(NoteBrowserWidget,
             self.db,
             self.overlay,
+            self.note_settings,
             request_search_callback=self._on_search_request
         )
         self.search_bar = self.add(self.instantiate(SearchBar,
             self.db,
             self.overlay,
-            self.note_browser,
+            self.note_settings,
             open_callback=self._on_search_note_open,
             dismiss_callback=self._on_search_dismiss
         ))
@@ -618,16 +620,15 @@ class SearchBar(VBox):
     SEARCH_FIELD_HEIHGT = 50
     VPADDING = 8
 
-    def __init__(self, window, parent, db, overlay, state, open_callback, dismiss_callback):
+    def __init__(self, window, parent, db, overlay, note_settings, open_callback, dismiss_callback):
         VBox.__init__(self, window, parent, height=0, visible=False)
         self.db = db
-        self.state = state
         self.open_callback = open_callback
         self.dismiss_callback = dismiss_callback
         self.animation = Animation()
         self.notes = []
         self.search_results = self.instantiate(SearchResults,
-            db, overlay, state, open_callback,
+            db, overlay, note_settings, open_callback,
             hpadding=self.VPADDING
         )
         self.search_field = self.instantiate(SearchField,
@@ -721,11 +722,11 @@ class SearchField(TextField):
 
 class SearchResults(HBox):
 
-    def __init__(self, window, parent, db, overlay, state, open_callback, hpadding):
+    def __init__(self, window, parent, db, overlay, note_settings, open_callback, hpadding):
         HBox.__init__(self, window, parent)
         self.db = db
         self.overlay = overlay
-        self.state = state
+        self.note_settings = note_settings
         self.open_callback = open_callback
         self.hpadding = hpadding
         self.update_search_text("")
@@ -761,7 +762,7 @@ class SearchResults(HBox):
                     self.instantiate(SearchNote,
                         self.db,
                         self.overlay,
-                        self.state,
+                        self.note_settings,
                         note_id,
                         self.open_callback
                     ),
@@ -775,8 +776,8 @@ class SearchResults(HBox):
 
 class SearchNote(NoteBaseWidget):
 
-    def __init__(self, window, parent, db, overlay, state, note_id, open_callback):
-        NoteBaseWidget.__init__(self, window, parent, db, note_id, state)
+    def __init__(self, window, parent, db, overlay, settings, note_id, open_callback):
+        NoteBaseWidget.__init__(self, window, parent, db, note_id, settings)
         self.overlay = overlay
         self.open_callback = open_callback
 
@@ -797,22 +798,22 @@ class SearchNote(NoteBaseWidget):
 
 class NoteBrowserWidget(VBox):
 
-    def __init__(self, window, parent, db, overlay, request_search_callback):
+    def __init__(self, window, parent, db, overlay, note_settings, request_search_callback):
         VBox.__init__(self, window, parent)
         self.db = db
+        self.note_settings = note_settings
         self.network = self.add(self.instantiate(NetworkWidget,
             self.db,
             overlay,
-            self,
+            self.note_settings,
             request_search_callback=request_search_callback
         ))
         self.table = self.add(self.instantiate(TableWidget,
             self.db,
-            self,
+            self.note_settings,
             request_search_callback=request_search_callback
         ))
         self.table.toggle_visible()
-        self.full_note_width = 0
         self.toggle_table_network_after_event_processing = False
         self.pos = (0, 0)
         self.note_id = None
@@ -845,11 +846,8 @@ class NoteBrowserWidget(VBox):
             self.toggle_table_network_after_event_processing = False
 
     def update(self, rect, elapsed_ms):
-        self.full_note_width = int(rect.width * 0.3)
+        self.note_settings.set_full_width(int(rect.width * 0.3))
         VBox.update(self, rect, elapsed_ms)
-
-    def get_full_note_width(self):
-        return max(100, self.full_note_width)
 
     def bubble_event(self, event):
         if event.key_down(KEY_TOGGLE_TABLE_NETWORK):
@@ -862,12 +860,12 @@ class NoteBrowserWidget(VBox):
 
 class NetworkWidget(Widget):
 
-    def __init__(self, window, parent, db, overlay, state, request_search_callback):
+    def __init__(self, window, parent, db, overlay, note_settings, request_search_callback):
         Widget.__init__(self, window, parent)
         self.navigation_history = parent
         self.db = db
         self.overlay = overlay
-        self.state = state
+        self.note_settings = note_settings
         self.request_search_callback = request_search_callback
         self.pos = (-1, -1)
         self.notes = []
@@ -906,7 +904,7 @@ class NetworkWidget(Widget):
                 self.db,
                 self.overlay,
                 note_id,
-                self.state
+                self.note_settings
             ))
 
     def make_root(self, note):
@@ -1045,8 +1043,8 @@ class NetworkWidget(Widget):
 
 class NetworkNote(NoteBaseWidget):
 
-    def __init__(self, window, parent, network, db, overlay, note_id, state):
-        NoteBaseWidget.__init__(self, window, parent, db, note_id, state)
+    def __init__(self, window, parent, network, db, overlay, note_id, settings):
+        NoteBaseWidget.__init__(self, window, parent, db, note_id, settings)
         self.overlay = overlay
         self.network = network
         self.incoming = []
@@ -1119,7 +1117,7 @@ class NetworkNote(NoteBaseWidget):
                         self.db,
                         self.overlay,
                         link_data["from"],
-                        self.state
+                        self.settings
                     ),
                     self
                 )
@@ -1145,7 +1143,7 @@ class NetworkNote(NoteBaseWidget):
                         self.db,
                         self.overlay,
                         link_data["to"],
-                        self.state
+                        self.settings
                     )
                 )
         return self.outgoing
@@ -1269,10 +1267,10 @@ class LinkWidget(Widget):
 
 class TableWidget(Widget):
 
-    def __init__(self, window, parent, db, state, request_search_callback):
+    def __init__(self, window, parent, db, note_settings, request_search_callback):
         Widget.__init__(self, window, parent)
         self.db = db
-        self.state = state
+        self.note_settings = note_settings
         self.request_search_callback = request_search_callback
 
     def update(self, rect, elapsed_ms):
@@ -1387,6 +1385,17 @@ class OverlayWidget(VBox):
 
 class OverlayAbort(ValueError):
     pass
+
+class NoteSettings:
+
+    def __init__(self, **kwargs):
+        self.set_full_width(kwargs.get("full_width", 200))
+
+    def get_full_width(self):
+        return max(100, self.full_width)
+
+    def set_full_width(self, full_width):
+        self.full_width = full_width
 
 class NoteDb(Immutable):
 
