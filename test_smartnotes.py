@@ -66,6 +66,20 @@ class LeftMouseDownEvent(BaseEvent):
     def mouse_pos(self):
         return self.pos
 
+class LeftMouseUpEvent(BaseEvent):
+
+    def __init__(self, pos):
+        self.pos = pos
+
+    def left_mouse_up(self, rect=None):
+        if rect is None:
+            return True
+        else:
+            return rect.collidepoint(self.pos)
+
+    def mouse_pos(self):
+        return self.pos
+
 class KeyEvent(BaseEvent):
 
     def __init__(self, description):
@@ -108,7 +122,9 @@ class GuiDriver(object):
 class SmartNotesEndToEndTests(unittest.TestCase):
 
     def setUp(self):
-        self.driver = GuiDriver(smartnotes.SmartNotesWidget, "test_resources/example.notes")
+        example_notes = "test_resources/example.notes"
+        subprocess.check_call(["git", "checkout", example_notes])
+        self.driver = GuiDriver(smartnotes.SmartNotesWidget, example_notes)
 
     def assert_drawn_image_is(self, name):
         try:
@@ -169,6 +185,20 @@ class SmartNotesEndToEndTests(unittest.TestCase):
             MouseMotionEvent((150, 80)),
         ], elapsed_ms=MS_PER_FRAME+1)
         self.assert_drawn_image_is("link_network_to_search.png")
+
+    def test_create_link(self):
+        self.driver.iteration(elapsed_ms=300+1)
+        self.assert_drawn_image_is("main_screen.png")
+        self.driver.iteration(events=[
+            MouseMotionEvent((400, 300)),
+            LeftMouseDownEvent((400, 300)),
+            MouseMotionEvent((200, 300)),
+        ], elapsed_ms=MS_PER_FRAME+1)
+        self.assert_drawn_image_is("link_to_target.png")
+        self.driver.iteration(events=[
+            LeftMouseUpEvent((200, 300)),
+        ], elapsed_ms=400+1)
+        self.assert_drawn_image_is("link_created.png")
 
 def manual_compare_accept(expected, actual):
     with tempfile.TemporaryDirectory() as tmp_dir:

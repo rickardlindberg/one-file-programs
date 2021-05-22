@@ -540,12 +540,15 @@ class SmartNotesWidget(VBox):
         self.set_title(format_title("Smart Notes", path))
         self.toggle_table_network_after_event_processing = False
         self.db = NoteDb(path)
+        self.overlay = self.instantiate(OverlayWidget, self.db)
         self.note_browser = self.instantiate(NoteBrowserWidget,
             self.db,
+            self.overlay,
             request_search_callback=self._on_search_request
         )
         self.search_bar = self.add(self.instantiate(SearchBar,
             self.db,
+            self.overlay,
             self.note_browser,
             open_callback=self._on_search_note_open,
             dismiss_callback=self._on_search_dismiss
@@ -564,25 +567,30 @@ class SmartNotesWidget(VBox):
         self.toggle_table_network_after_event_processing = True
 
     def process_event(self, event):
-        if event.mouse_motion():
-            self.note_browser.set_link_target(None)
-            self.clear_quick_focus()
-        if event.key_down(KEY_QUIT):
-            self.quit()
-        elif event.key_down(KEY_UNDO):
-            self.db.undo()
-        elif event.key_down(KEY_REDO):
-            self.db.redo()
-        elif event.key_down(KEY_TOGGLE_DEBUG_BAR):
-            self.debug_bar.toggle()
-        elif event.key_down(KEY_CLEAR_FOCUS) and self.clear_quick_focus():
+        try:
+            self.overlay.process_event(event)
+        except OverlayAbort:
             pass
-        elif event.window_gained_focus():
-            self.restore_focus()
-        elif event.window_lost_focus():
-            self.save_focus()
         else:
-            VBox.process_event(self, event)
+            if event.mouse_motion():
+                self.overlay.set_link_target(None)
+                self.clear_quick_focus()
+            if event.key_down(KEY_QUIT):
+                self.quit()
+            elif event.key_down(KEY_UNDO):
+                self.db.undo()
+            elif event.key_down(KEY_REDO):
+                self.db.redo()
+            elif event.key_down(KEY_TOGGLE_DEBUG_BAR):
+                self.debug_bar.toggle()
+            elif event.key_down(KEY_CLEAR_FOCUS) and self.clear_quick_focus():
+                pass
+            elif event.window_gained_focus():
+                self.restore_focus()
+            elif event.window_lost_focus():
+                self.save_focus()
+            else:
+                VBox.process_event(self, event)
 
     def _on_search_note_open(self, note_id):
         self.note_browser.open_note(note_id)
@@ -596,19 +604,21 @@ class SmartNotesWidget(VBox):
         self.search_bar.start_search()
 
     def update(self, rect, elapsed_ms):
+        self.overlay.update(rect, elapsed_ms)
         VBox.update(self, rect, elapsed_ms)
         self.rect = rect
 
     def draw(self, canvas):
         canvas.fill_rect(self.rect, color=COLOR_BACKGROUND)
         VBox.draw(self, canvas)
+        self.overlay.draw(canvas)
 
 class SearchBar(VBox):
 
     SEARCH_FIELD_HEIHGT = 50
     VPADDING = 8
 
-    def __init__(self, window, parent, db, state, open_callback, dismiss_callback):
+    def __init__(self, window, parent, db, overlay, state, open_callback, dismiss_callback):
         VBox.__init__(self, window, parent, height=0, visible=False)
         self.db = db
         self.state = state
@@ -617,7 +627,7 @@ class SearchBar(VBox):
         self.animation = Animation()
         self.notes = []
         self.search_results = self.instantiate(SearchResults,
-            db, state, open_callback,
+            db, overlay, state, open_callback,
             hpadding=self.VPADDING
         )
         self.search_field = self.instantiate(SearchField,
@@ -711,9 +721,10 @@ class SearchField(TextField):
 
 class SearchResults(HBox):
 
-    def __init__(self, window, parent, db, state, open_callback, hpadding):
+    def __init__(self, window, parent, db, overlay, state, open_callback, hpadding):
         HBox.__init__(self, window, parent)
         self.db = db
+        self.overlay = overlay
         self.state = state
         self.open_callback = open_callback
         self.hpadding = hpadding
@@ -749,6 +760,7 @@ class SearchResults(HBox):
                 note = self.add(self.instantiate(Padding,
                     self.instantiate(SearchNote,
                         self.db,
+                        self.overlay,
                         self.state,
                         note_id,
                         self.open_callback
@@ -763,16 +775,17 @@ class SearchResults(HBox):
 
 class SearchNote(NoteBaseWidget):
 
-    def __init__(self, window, parent, db, state, note_id, open_callback):
+    def __init__(self, window, parent, db, overlay, state, note_id, open_callback):
         NoteBaseWidget.__init__(self, window, parent, db, note_id, state)
+        self.overlay = overlay
         self.open_callback = open_callback
 
     def process_event(self, event):
         if event.mouse_motion(rect=self.rect):
-            self.state.set_link_target(self)
+            self.overlay.set_link_target(self)
             self.quick_focus()
         if event.left_mouse_down(rect=self.rect):
-            self.state.set_link_source(self)
+            self.overlay.set_link_source(self)
         elif event.left_mouse_up(rect=self.rect):
             self.open_callback(self.note_id)
         else:
@@ -784,11 +797,12 @@ class SearchNote(NoteBaseWidget):
 
 class NoteBrowserWidget(VBox):
 
-    def __init__(self, window, parent, db, request_search_callback):
+    def __init__(self, window, parent, db, overlay, request_search_callback):
         VBox.__init__(self, window, parent)
         self.db = db
         self.network = self.add(self.instantiate(NetworkWidget,
             self.db,
+            overlay,
             self,
             request_search_callback=request_search_callback
         ))
@@ -799,8 +813,6 @@ class NoteBrowserWidget(VBox):
         ))
         self.table.toggle_visible()
         self.full_note_width = 0
-        self.link_source = None
-        self.link_target = None
         self.toggle_table_network_after_event_processing = False
         self.pos = (0, 0)
         self.note_id = None
@@ -820,17 +832,6 @@ class NoteBrowserWidget(VBox):
     def process_event(self, event):
         if event.mouse_motion():
             self.pos = event.mouse_pos()
-        if self.link_source and event.left_mouse_up():
-            if self.link_target:
-                self.db.create_link(
-                    self.link_source.note_id,
-                    self.link_target.note_id
-                )
-                self.set_link_source(None)
-                self.set_link_target(None)
-                return
-            self.set_link_source(None)
-            self.set_link_target(None)
         VBox.process_event(self, event)
         if self.toggle_table_network_after_event_processing:
             self.network.toggle_visible()
@@ -846,36 +847,11 @@ class NoteBrowserWidget(VBox):
     def update(self, rect, elapsed_ms):
         VBox.update(self, rect, elapsed_ms)
 
-    def draw(self, canvas):
-        VBox.draw(self, canvas)
-        if self.link_source and not self.link_source.hit_test(self.pos):
-            canvas.move_to(*self.link_source.get_link_source_point())
-            canvas.line_to(*self.pos)
-            if self.link_target:
-                canvas._set_color(COLOR_ACTIVE)
-            else:
-                canvas._set_color(COLOR_INACTIVE)
-            canvas.set_line_width(5)
-            canvas.stroke()
-
     def get_full_note_width(self):
         return max(100, self.full_note_width)
 
     def set_full_note_width(self, width):
         self.full_note_width = width
-
-    def set_link_source(self, link_source):
-        self.link_source = link_source
-
-    def set_link_target(self, link_target):
-        if link_target is None:
-            self.link_target = None
-            return
-        if self.link_source is None:
-            return
-        if self.link_source.note_id == link_target.note_id:
-            return
-        self.link_target = link_target
 
     def bubble_event(self, event):
         if event.key_down(KEY_TOGGLE_TABLE_NETWORK):
@@ -888,10 +864,11 @@ class NoteBrowserWidget(VBox):
 
 class NetworkWidget(Widget):
 
-    def __init__(self, window, parent, db, state, request_search_callback):
+    def __init__(self, window, parent, db, overlay, state, request_search_callback):
         Widget.__init__(self, window, parent)
         self.navigation_history = parent
         self.db = db
+        self.overlay = overlay
         self.state = state
         self.request_search_callback = request_search_callback
         self.pos = (-1, -1)
@@ -925,7 +902,14 @@ class NetworkWidget(Widget):
 
     def open_note(self, note_id):
         if self.root_note is None or self.root_note.note_id != note_id:
-            self.make_root(self.instantiate(NetworkNote, self, self.db, note_id, self.state))
+            self.make_root(self.instantiate(
+                NetworkNote,
+                self,
+                self.db,
+                self.overlay,
+                note_id,
+                self.state
+            ))
 
     def make_root(self, note):
         if note is not self.root_note:
@@ -1064,8 +1048,9 @@ class NetworkWidget(Widget):
 
 class NetworkNote(NoteBaseWidget):
 
-    def __init__(self, window, parent, network, db, note_id, state):
+    def __init__(self, window, parent, network, db, overlay, note_id, state):
         NoteBaseWidget.__init__(self, window, parent, db, note_id, state)
+        self.overlay = overlay
         self.network = network
         self.incoming = []
         self.outgoing = []
@@ -1080,7 +1065,7 @@ class NetworkNote(NoteBaseWidget):
 
     def process_event(self, event):
         if event.mouse_motion(rect=self.rect):
-            self.state.set_link_target(self)
+            self.overlay.set_link_target(self)
             self.quick_focus()
         if event.left_mouse_up(self.rect):
             self.network.make_root(self)
@@ -1114,7 +1099,7 @@ class NetworkNote(NoteBaseWidget):
             self.clear_quick_focus()
             self.network.request_search_callback()
         elif self.has_focus() and event.left_mouse_down():
-            self.state.set_link_source(self)
+            self.overlay.set_link_source(self)
         else:
             NoteBaseWidget.process_event(self, event)
 
@@ -1131,7 +1116,14 @@ class NetworkNote(NoteBaseWidget):
                 self.instantiate(LinkWidget,
                     self.db,
                     link_id,
-                    self.instantiate(NetworkNote, self.network, self.db, link_data["from"], self.state),
+                    self.instantiate(
+                        NetworkNote,
+                        self.network,
+                        self.db,
+                        self.overlay,
+                        link_data["from"],
+                        self.state
+                    ),
                     self
                 )
         return self.incoming
@@ -1150,7 +1142,14 @@ class NetworkNote(NoteBaseWidget):
                     self.db,
                     link_id,
                     self,
-                    self.instantiate(NetworkNote, self.network, self.db, link_data["to"], self.state)
+                    self.instantiate(
+                        NetworkNote,
+                        self.network,
+                        self.db,
+                        self.overlay,
+                        link_data["to"],
+                        self.state
+                    )
                 )
         return self.outgoing
 
@@ -1340,6 +1339,57 @@ class DebugBar(Widget):
             size=15,
             face="Monospace"
         )
+
+class OverlayWidget(VBox):
+
+    def __init__(self, window, parent, db):
+        VBox.__init__(self, window, parent)
+        self.db = db
+        self.link_source = None
+        self.link_target = None
+        self.pos = (0, 0)
+
+    def process_event(self, event):
+        if event.mouse_motion():
+            self.pos = event.mouse_pos()
+        if self.link_source and event.left_mouse_up():
+            if self.link_target:
+                self.db.create_link(
+                    self.link_source.note_id,
+                    self.link_target.note_id
+                )
+            self.set_link_source(None)
+            self.set_link_target(None)
+            raise OverlayAbort()
+        VBox.process_event(self, event)
+
+    def draw(self, canvas):
+        VBox.draw(self, canvas)
+        if self.link_source and not self.link_source.hit_test(self.pos):
+            canvas.move_to(*self.link_source.get_link_source_point())
+            canvas.line_to(*self.pos)
+            if self.link_target:
+                canvas._set_color(COLOR_ACTIVE)
+            else:
+                canvas._set_color(COLOR_INACTIVE)
+            canvas.set_line_width(5)
+            canvas.stroke()
+
+    def set_link_source(self, link_source):
+        self.link_source = link_source
+
+    def set_link_target(self, link_target):
+        if link_target is None:
+            self.link_target = None
+            return
+        if self.link_source is None:
+            return
+        if self.link_source.note_id == link_target.note_id:
+            return
+        self.link_target = link_target
+
+class OverlayAbort(ValueError):
+    pass
 
 class NoteDb(Immutable):
 

@@ -43,7 +43,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchResults(HBox):\n\n    def __init__(self, window, parent, db, state, open_callback, hpadding):\n        HBox.__init__(self, window, parent)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.hpadding = hpadding\n        self.update_search_text(\"\")\n        self.set_num_results(NUM_SEARCH_RESULTS)\n        self.by_id = {}\n\n    def inc_results(self):\n        self.set_num_results(self.num_results + 1)\n\n    def dec_results(self):\n        self.set_num_results(self.num_results - 1)\n\n    def set_num_results(self, num):\n        self.num_results = max(3, min(12, num))\n\n    def update_search_text(self, text):\n        self.text = text\n\n    def ",
+"text":"class SearchResults(HBox):\n\n    def __init__(self, window, parent, db, overlay, state, open_callback, hpadding):\n        HBox.__init__(self, window, parent)\n        self.db = db\n        self.overlay = overlay\n        self.state = state\n        self.open_callback = open_callback\n        self.hpadding = hpadding\n        self.update_search_text(\"\")\n        self.set_num_results(NUM_SEARCH_RESULTS)\n        self.by_id = {}\n\n    def inc_results(self):\n        self.set_num_results(self.num_results + 1)\n\n    def dec_results(self):\n        self.set_num_results(self.num_results - 1)\n\n    def set_num_results(self, num):\n        self.num_results = max(3, min(12, num))\n\n    def update_search_text(self, text):\n        self.text = text\n\n    def ",
 "type":"code"
 },
 {
@@ -67,7 +67,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        self.wanted_height = int(round((rect.width-self.hpadding)/self.num_results*3/5))\n        self._update_notes_list()\n        HBox.update(self, rect, elapsed_ms)\n\n    def _update_notes_list(self):\n        by_id = {}\n        self.clear()\n        self.add(self.instantiate(Widget, width=self.hpadding/2))\n        for note_id, note_data in self.db.get_notes(self.text)[:self.num_results]:\n            if note_id in self.by_id:\n                note = self.add(self.by_id[note_id])\n            else:\n                note = self.add(self.instantiate(Padding,\n                    self.instantiate(SearchNote,\n                        self.db,\n                        self.state,\n                        note_id,\n                        self.open_callback\n                    ),\n                    hpadding=lambda rect: self.hpadding/2\n                ))\n            by_id[note_id] = note\n        while len(self.children) <= self.num_results:\n            self.add(self.instantiate(Widget))\n        self.add(self.instantiate(Widget, width=self.hpadding/2))\n        self.by_id = by_id\n",
+"text":"):\n        self.wanted_height = int(round((rect.width-self.hpadding)/self.num_results*3/5))\n        self._update_notes_list()\n        HBox.update(self, rect, elapsed_ms)\n\n    def _update_notes_list(self):\n        by_id = {}\n        self.clear()\n        self.add(self.instantiate(Widget, width=self.hpadding/2))\n        for note_id, note_data in self.db.get_notes(self.text)[:self.num_results]:\n            if note_id in self.by_id:\n                note = self.add(self.by_id[note_id])\n            else:\n                note = self.add(self.instantiate(Padding,\n                    self.instantiate(SearchNote,\n                        self.db,\n                        self.overlay,\n                        self.state,\n                        note_id,\n                        self.open_callback\n                    ),\n                    hpadding=lambda rect: self.hpadding/2\n                ))\n            by_id[note_id] = note\n        while len(self.children) <= self.num_results:\n            self.add(self.instantiate(Widget))\n        self.add(self.instantiate(Widget, width=self.hpadding/2))\n        self.by_id = by_id\n",
 "type":"code"
 }
 ],
@@ -91,7 +91,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, window, parent, db, state, note_id, open_callback):\n        ",
+"text":"):\n\n    def __init__(self, window, parent, db, overlay, state, note_id, open_callback):\n        ",
 "type":"code"
 },
 {
@@ -99,7 +99,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, window, parent, db, note_id, state)\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        if event.left_mouse_down(rect=self.rect):\n            self.state.set_link_source(self)\n        elif event.left_mouse_up(rect=self.rect):\n            self.open_callback(self.note_id)\n        else:\n            ",
+"text":".__init__(self, window, parent, db, note_id, state)\n        self.overlay = overlay\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.overlay.set_link_target(self)\n            self.quick_focus()\n        if event.left_mouse_down(rect=self.rect):\n            self.overlay.set_link_source(self)\n        elif event.left_mouse_up(rect=self.rect):\n            self.open_callback(self.note_id)\n        else:\n            ",
 "type":"code"
 },
 {
@@ -137,7 +137,7 @@
 ],
 "fragments":[
 {
-"text":"class SearchBar(VBox):\n\n    SEARCH_FIELD_HEIHGT = 50\n    VPADDING = 8\n\n    def __init__(self, window, parent, db, state, open_callback, dismiss_callback):\n        VBox.__init__(self, window, parent, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_results = self.instantiate(SearchResults,\n            db, state, open_callback,\n            hpadding=self.VPADDING\n        )\n        self.search_field = self.instantiate(SearchField,\n            self.search_results,\n            self.dismiss_callback,\n            text_size=20\n        )\n        self.add(self.instantiate(Padding,\n            self.search_field,\n            hpadding=lambda rect: int(rect.width*0.08),\n            vpadding=lambda rect: self.VPADDING,\n            height=self.SEARCH_FIELD_HEIHGT\n        ))\n        self.add(self.search_results)\n        self.add(self.instantiate(Widget, height=self.VPADDING))\n        self.ideal_height = 200\n\n    def focus(self):\n        self.search_field.focus()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n\n    def ",
+"text":"class SearchBar(VBox):\n\n    SEARCH_FIELD_HEIHGT = 50\n    VPADDING = 8\n\n    def __init__(self, window, parent, db, overlay, state, open_callback, dismiss_callback):\n        VBox.__init__(self, window, parent, height=0, visible=False)\n        self.db = db\n        self.state = state\n        self.open_callback = open_callback\n        self.dismiss_callback = dismiss_callback\n        self.animation = Animation()\n        self.notes = []\n        self.search_results = self.instantiate(SearchResults,\n            db, overlay, state, open_callback,\n            hpadding=self.VPADDING\n        )\n        self.search_field = self.instantiate(SearchField,\n            self.search_results,\n            self.dismiss_callback,\n            text_size=20\n        )\n        self.add(self.instantiate(Padding,\n            self.search_field,\n            hpadding=lambda rect: int(rect.width*0.08),\n            vpadding=lambda rect: self.VPADDING,\n            height=self.SEARCH_FIELD_HEIHGT\n        ))\n        self.add(self.search_results)\n        self.add(self.instantiate(Widget, height=self.VPADDING))\n        self.ideal_height = 200\n\n    def focus(self):\n        self.search_field.focus()\n\n    def is_visible(self):\n        return Widget.is_visible(self) or self.animation.active()\n\n    def start_search(self):\n        if not Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n        self.focus()\n\n    def hide(self):\n        if Widget.is_visible(self):\n            self.toggle_visible()\n            self.animation.reverse(200)\n\n    def ",
 "type":"code"
 },
 {
@@ -220,7 +220,7 @@
 "type":"variable"
 },
 {
-"text":"):\n\n    def __init__(self, window, parent, network, db, note_id, state):\n        ",
+"text":"):\n\n    def __init__(self, window, parent, network, db, overlay, note_id, state):\n        ",
 "type":"code"
 },
 {
@@ -228,7 +228,7 @@
 "type":"variable"
 },
 {
-"text":".__init__(self, window, parent, db, note_id, state)\n        self.network = network\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def clear_hidden_links(self, visible_links):\n        self.incoming = [x for x in self.incoming if x in visible_links]\n        self.outgoing = [x for x in self.outgoing if x in visible_links]\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.state.set_link_target(self)\n            self.quick_focus()\n        if event.left_mouse_up(self.rect):\n            self.network.make_root(self)\n        elif self.has_focus() and event.key_down(KEY_EDIT_NOTE):\n            self.clear_quick_focus()\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
+"text":".__init__(self, window, parent, db, note_id, state)\n        self.overlay = overlay\n        self.network = network\n        self.incoming = []\n        self.outgoing = []\n        self.animation = Animation()\n        self.rect = None\n        self.target = None\n        self.previous = None\n\n    def clear_hidden_links(self, visible_links):\n        self.incoming = [x for x in self.incoming if x in visible_links]\n        self.outgoing = [x for x in self.outgoing if x in visible_links]\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.overlay.set_link_target(self)\n            self.quick_focus()\n        if event.left_mouse_up(self.rect):\n            self.network.make_root(self)\n        elif self.has_focus() and event.key_down(KEY_EDIT_NOTE):\n            self.clear_quick_focus()\n            self.post_event(\n                USER_EVENT_EXTERNAL_TEXT_ENTRY,\n                entry=",
 "type":"code"
 },
 {
@@ -244,7 +244,7 @@
 "type":"variable"
 },
 {
-"text":"(self.db, child_note_id)\n            )\n        elif self.has_focus() and event.key_down(KEY_OPEN_SEARCH):\n            self.clear_quick_focus()\n            self.network.request_search_callback()\n        elif self.has_focus() and event.left_mouse_down():\n            self.state.set_link_source(self)\n        else:\n            ",
+"text":"(self.db, child_note_id)\n            )\n        elif self.has_focus() and event.key_down(KEY_OPEN_SEARCH):\n            self.clear_quick_focus()\n            self.network.request_search_callback()\n        elif self.has_focus() and event.left_mouse_down():\n            self.overlay.set_link_source(self)\n        else:\n            ",
 "type":"code"
 },
 {
@@ -268,7 +268,7 @@
 "type":"variable"
 },
 {
-"text":",\n                    self.db,\n                    link_id,\n                    self.instantiate(",
+"text":",\n                    self.db,\n                    link_id,\n                    self.instantiate(\n                        ",
 "type":"code"
 },
 {
@@ -276,7 +276,7 @@
 "type":"variable"
 },
 {
-"text":", self.network, self.db, link_data[\"from\"], self.state),\n                    self\n                )\n        return self.incoming\n\n    def update_outgoing(self):\n        by_id = {\n            link.link_id: link\n            for link in self.outgoing\n        }\n        self.outgoing = []\n        for link_id, link_data in self.db.",
+"text":",\n                        self.network,\n                        self.db,\n                        self.overlay,\n                        link_data[\"from\"],\n                        self.state\n                    ),\n                    self\n                )\n        return self.incoming\n\n    def update_outgoing(self):\n        by_id = {\n            link.link_id: link\n            for link in self.outgoing\n        }\n        self.outgoing = []\n        for link_id, link_data in self.db.",
 "type":"code"
 },
 {
@@ -292,7 +292,7 @@
 "type":"variable"
 },
 {
-"text":",\n                    self.db,\n                    link_id,\n                    self,\n                    self.instantiate(",
+"text":",\n                    self.db,\n                    link_id,\n                    self,\n                    self.instantiate(\n                        ",
 "type":"code"
 },
 {
@@ -300,7 +300,7 @@
 "type":"variable"
 },
 {
-"text":", self.network, self.db, link_data[\"to\"], self.state)\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def get_center(self):\n        return self.rect.center\n\n    def get_link_in_point(self):\n        return self.rect.midleft\n\n    def get_link_out_point(self):\n        return self.rect.midright\n\n    def ",
+"text":",\n                        self.network,\n                        self.db,\n                        self.overlay,\n                        link_data[\"to\"],\n                        self.state\n                    )\n                )\n        return self.outgoing\n\n    def get_link_id(self):\n        if self.side == \"left\" and len(self.outgoing) == 1:\n            return self.outgoing[0].link_id\n        if self.side == \"right\" and len(self.incoming) == 1:\n            return self.incoming[0].link_id\n\n    def get_center(self):\n        return self.rect.center\n\n    def get_link_in_point(self):\n        return self.rect.midleft\n\n    def get_link_out_point(self):\n        return self.rect.midright\n\n    def ",
 "type":"code"
 },
 {
@@ -497,7 +497,7 @@
 "type":"variable"
 },
 {
-"text":"(Widget):\n\n    def __init__(self, window, parent, db, state, request_search_callback):\n        Widget.__init__(self, window, parent)\n        self.navigation_history = parent\n        self.db = db\n        self.state = state\n        self.request_search_callback = request_search_callback\n        self.pos = (-1, -1)\n        self.notes = []\n        self.open_last_note()\n\n    def open_last_note(self):\n        self.root_note = None\n        for note_id, note_data in self.db.get_notes():\n            self.",
+"text":"(Widget):\n\n    def __init__(self, window, parent, db, overlay, state, request_search_callback):\n        Widget.__init__(self, window, parent)\n        self.navigation_history = parent\n        self.db = db\n        self.overlay = overlay\n        self.state = state\n        self.request_search_callback = request_search_callback\n        self.pos = (-1, -1)\n        self.notes = []\n        self.open_last_note()\n\n    def open_last_note(self):\n        self.root_note = None\n        for note_id, note_data in self.db.get_notes():\n            self.",
 "type":"code"
 },
 {
@@ -529,7 +529,7 @@
 "type":"variable"
 },
 {
-"text":"(self, note_id):\n        if self.root_note is None or self.root_note.note_id != note_id:\n            self.make_root(self.instantiate(",
+"text":"(self, note_id):\n        if self.root_note is None or self.root_note.note_id != note_id:\n            self.make_root(self.instantiate(\n                ",
 "type":"code"
 },
 {
@@ -537,7 +537,7 @@
 "type":"variable"
 },
 {
-"text":", self, self.db, note_id, self.state))\n\n    def make_root(self, note):\n        if note is not self.root_note:\n            self.root_note = note\n            self.clear_quick_focus()\n            self.navigation_history.register_note_opened(note.note_id)\n\n    def ",
+"text":",\n                self,\n                self.db,\n                self.overlay,\n                note_id,\n                self.state\n            ))\n\n    def make_root(self, note):\n        if note is not self.root_note:\n            self.root_note = note\n            self.clear_quick_focus()\n            self.navigation_history.register_note_opened(note.note_id)\n\n    def ",
 "type":"code"
 },
 {
@@ -758,7 +758,7 @@
 ],
 "fragments":[
 {
-"text":"class NoteBrowserWidget(VBox):\n\n    def __init__(self, window, parent, db, request_search_callback):\n        VBox.__init__(self, window, parent)\n        self.db = db\n        self.network = self.add(self.instantiate(",
+"text":"class NoteBrowserWidget(VBox):\n\n    def __init__(self, window, parent, db, overlay, request_search_callback):\n        VBox.__init__(self, window, parent)\n        self.db = db\n        self.network = self.add(self.instantiate(",
 "type":"code"
 },
 {
@@ -766,7 +766,7 @@
 "type":"variable"
 },
 {
-"text":",\n            self.db,\n            self,\n            request_search_callback=request_search_callback\n        ))\n        self.table = self.add(self.instantiate(TableWidget,\n            self.db,\n            self,\n            request_search_callback=request_search_callback\n        ))\n        self.table.toggle_visible()\n        self.full_note_width = 0\n        self.link_source = None\n        self.link_target = None\n        self.toggle_table_network_after_event_processing = False\n        self.pos = (0, 0)\n        self.note_id = None\n\n    def register_note_opened(self, note_id):\n        self.note_id = note_id\n\n    def open_note(self, note_id):\n        self.network.open_note(note_id)\n\n    def focus(self):\n        if self.table.is_visible():\n            self.table.focus()\n        else:\n            self.network.focus()\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        if self.link_source and event.left_mouse_up():\n            if self.link_target:\n                self.db.create_link(\n                    self.link_source.note_id,\n                    self.link_target.note_id\n                )\n                self.set_link_source(None)\n                self.set_link_target(None)\n                return\n            self.set_link_source(None)\n            self.set_link_target(None)\n        VBox.process_event(self, event)\n        if self.toggle_table_network_after_event_processing:\n            self.network.toggle_visible()\n            self.table.toggle_visible()\n            if self.network.is_visible():\n                self.network.focus()\n                self.network.open_note(self.note_id)\n            else:\n                self.table.focus()\n            self.clear_quick_focus()\n            self.toggle_table_network_after_event_processing = False\n\n    def update(self, rect, elapsed_ms):\n        VBox.update(self, rect, elapsed_ms)\n\n    def draw(self, canvas):\n        VBox.draw(self, canvas)\n        if self.link_source and not self.link_source.hit_test(self.pos):\n            canvas.move_to(*self.link_source.get_link_source_point())\n            canvas.line_to(*self.pos)\n            if self.link_target:\n                canvas._set_color(COLOR_ACTIVE)\n            else:\n                canvas._set_color(COLOR_INACTIVE)\n            canvas.set_line_width(5)\n            canvas.stroke()\n\n    def get_full_note_width(self):\n        return max(100, self.full_note_width)\n\n    def set_full_note_width(self, width):\n        self.full_note_width = width\n\n    def set_link_source(self, link_source):\n        self.link_source = link_source\n\n    def set_link_target(self, link_target):\n        if link_target is None:\n            self.link_target = None\n            return\n        if self.link_source is None:\n            return\n        if self.link_source.note_id == link_target.note_id:\n            return\n        self.link_target = link_target\n\n    def bubble_event(self, event):\n        if event.key_down(KEY_TOGGLE_TABLE_NETWORK):\n            self.toggle_table_network()\n        else:\n            VBox.bubble_event(self, event)\n\n    def toggle_table_network(self):\n        self.toggle_table_network_after_event_processing = True\n",
+"text":",\n            self.db,\n            overlay,\n            self,\n            request_search_callback=request_search_callback\n        ))\n        self.table = self.add(self.instantiate(TableWidget,\n            self.db,\n            self,\n            request_search_callback=request_search_callback\n        ))\n        self.table.toggle_visible()\n        self.full_note_width = 0\n        self.toggle_table_network_after_event_processing = False\n        self.pos = (0, 0)\n        self.note_id = None\n\n    def register_note_opened(self, note_id):\n        self.note_id = note_id\n\n    def open_note(self, note_id):\n        self.network.open_note(note_id)\n\n    def focus(self):\n        if self.table.is_visible():\n            self.table.focus()\n        else:\n            self.network.focus()\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        VBox.process_event(self, event)\n        if self.toggle_table_network_after_event_processing:\n            self.network.toggle_visible()\n            self.table.toggle_visible()\n            if self.network.is_visible():\n                self.network.focus()\n                self.network.open_note(self.note_id)\n            else:\n                self.table.focus()\n            self.clear_quick_focus()\n            self.toggle_table_network_after_event_processing = False\n\n    def update(self, rect, elapsed_ms):\n        VBox.update(self, rect, elapsed_ms)\n\n    def get_full_note_width(self):\n        return max(100, self.full_note_width)\n\n    def set_full_note_width(self, width):\n        self.full_note_width = width\n\n    def bubble_event(self, event):\n        if event.key_down(KEY_TOGGLE_TABLE_NETWORK):\n            self.toggle_table_network()\n        else:\n            VBox.bubble_event(self, event)\n\n    def toggle_table_network(self):\n        self.toggle_table_network_after_event_processing = True\n",
 "type":"code"
 }
 ],
@@ -883,7 +883,7 @@
 "type":"variable"
 },
 {
-"text":"(path)\n        self.note_browser = self.instantiate(NoteBrowserWidget,\n            self.db,\n            request_search_callback=self._on_search_request\n        )\n        self.search_bar = self.add(self.instantiate(SearchBar,\n            self.db,\n            self.note_browser,\n            open_callback=self._on_search_note_open,\n            dismiss_callback=self._on_search_dismiss\n        ))\n        self.add(self.note_browser)\n        self.debug_bar = self.add(self.instantiate(DebugBar))\n        self.note_browser.focus()\n\n    def bubble_event(self, event):\n        if event.key_down(KEY_TOGGLE_TABLE_NETWORK):\n            self.toggle_table_network()\n        else:\n            VBox.bubble_event(self, event)\n\n    def toggle_table_network(self):\n        self.toggle_table_network_after_event_processing = True\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.note_browser.set_link_target(None)\n            self.clear_quick_focus()\n        if event.key_down(KEY_QUIT):\n            self.quit()\n        elif event.key_down(KEY_UNDO):\n            self.db.undo()\n        elif event.key_down(KEY_REDO):\n            self.db.redo()\n        elif event.key_down(KEY_TOGGLE_DEBUG_BAR):\n            self.debug_bar.toggle()\n        elif event.key_down(KEY_CLEAR_FOCUS) and self.clear_quick_focus():\n            pass\n        elif event.window_gained_focus():\n            self.restore_focus()\n        elif event.window_lost_focus():\n            self.save_focus()\n        else:\n            VBox.process_event(self, event)\n\n    def _on_search_note_open(self, note_id):\n        self.note_browser.open_note(note_id)\n\n    def _on_search_dismiss(self, close):\n        if close:\n            self.search_bar.hide()\n        self.note_browser.focus()\n\n    def _on_search_request(self):\n        self.search_bar.start_search()\n\n    def update(self, rect, elapsed_ms):\n        VBox.update(self, rect, elapsed_ms)\n        self.rect = rect\n\n    def draw(self, canvas):\n        canvas.fill_rect(self.rect, color=COLOR_BACKGROUND)\n        VBox.draw(self, canvas)\n",
+"text":"(path)\n        self.overlay = self.instantiate(OverlayWidget, self.db)\n        self.note_browser = self.instantiate(NoteBrowserWidget,\n            self.db,\n            self.overlay,\n            request_search_callback=self._on_search_request\n        )\n        self.search_bar = self.add(self.instantiate(SearchBar,\n            self.db,\n            self.overlay,\n            self.note_browser,\n            open_callback=self._on_search_note_open,\n            dismiss_callback=self._on_search_dismiss\n        ))\n        self.add(self.note_browser)\n        self.debug_bar = self.add(self.instantiate(DebugBar))\n        self.note_browser.focus()\n\n    def bubble_event(self, event):\n        if event.key_down(KEY_TOGGLE_TABLE_NETWORK):\n            self.toggle_table_network()\n        else:\n            VBox.bubble_event(self, event)\n\n    def toggle_table_network(self):\n        self.toggle_table_network_after_event_processing = True\n\n    def process_event(self, event):\n        try:\n            self.overlay.process_event(event)\n        except OverlayAbort:\n            pass\n        else:\n            if event.mouse_motion():\n                self.overlay.set_link_target(None)\n                self.clear_quick_focus()\n            if event.key_down(KEY_QUIT):\n                self.quit()\n            elif event.key_down(KEY_UNDO):\n                self.db.undo()\n            elif event.key_down(KEY_REDO):\n                self.db.redo()\n            elif event.key_down(KEY_TOGGLE_DEBUG_BAR):\n                self.debug_bar.toggle()\n            elif event.key_down(KEY_CLEAR_FOCUS) and self.clear_quick_focus():\n                pass\n            elif event.window_gained_focus():\n                self.restore_focus()\n            elif event.window_lost_focus():\n                self.save_focus()\n            else:\n                VBox.process_event(self, event)\n\n    def _on_search_note_open(self, note_id):\n        self.note_browser.open_note(note_id)\n\n    def _on_search_dismiss(self, close):\n        if close:\n            self.search_bar.hide()\n        self.note_browser.focus()\n\n    def _on_search_request(self):\n        self.search_bar.start_search()\n\n    def update(self, rect, elapsed_ms):\n        self.overlay.update(rect, elapsed_ms)\n        VBox.update(self, rect, elapsed_ms)\n        self.rect = rect\n\n    def draw(self, canvas):\n        canvas.fill_rect(self.rect, color=COLOR_BACKGROUND)\n        VBox.draw(self, canvas)\n        self.overlay.draw(canvas)\n",
 "type":"code"
 }
 ],
@@ -892,6 +892,45 @@
 }
 ],
 "title":"Smart Notes Widget"
+},
+{
+"children":[],
+"id":"91c0d732e3fe4c35bdb1a05270433eb1",
+"paragraphs":[
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class OverlayWidget(VBox):\n\n    def __init__(self, window, parent, db):\n        VBox.__init__(self, window, parent)\n        self.db = db\n        self.link_source = None\n        self.link_target = None\n        self.pos = (0, 0)\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        if self.link_source and event.left_mouse_up():\n            if self.link_target:\n                self.db.create_link(\n                    self.link_source.note_id,\n                    self.link_target.note_id\n                )\n            self.set_link_source(None)\n            self.set_link_target(None)\n            raise OverlayAbort()\n        VBox.process_event(self, event)\n\n    def draw(self, canvas):\n        VBox.draw(self, canvas)\n        if self.link_source and not self.link_source.hit_test(self.pos):\n            canvas.move_to(*self.link_source.get_link_source_point())\n            canvas.line_to(*self.pos)\n            if self.link_target:\n                canvas._set_color(COLOR_ACTIVE)\n            else:\n                canvas._set_color(COLOR_INACTIVE)\n            canvas.set_line_width(5)\n            canvas.stroke()\n\n    def set_link_source(self, link_source):\n        self.link_source = link_source\n\n    def set_link_target(self, link_target):\n        if link_target is None:\n            self.link_target = None\n            return\n        if self.link_source is None:\n            return\n        if self.link_source.note_id == link_target.note_id:\n            return\n        self.link_target = link_target\n",
+"type":"code"
+}
+],
+"id":"708b5437ef7d43a59ee42ef6c280f103",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class OverlayAbort(ValueError):\n    pass\n",
+"type":"code"
+}
+],
+"id":"e381c53cd83c4ae38669234858a277e5",
+"type":"code"
+}
+],
+"title":"Overlay Widget"
 },
 {
 "children":[
@@ -1277,7 +1316,7 @@
 ],
 "fragments":[
 {
-"text":"#!/usr/bin/env python3\n\nimport os\nimport cairo\nimport pygame\nimport smartnotes\nimport subprocess\nimport unittest\nimport tempfile\n\nMANUAL_MODE = os.environ.get(\"MANUAL_MODE\", None) == \"yes\"\n\nMS_PER_FRAME = 20\n\nclass BaseEvent(object):\n\n    def mouse_motion(self, rect=None):\n        return False\n\n    def left_mouse_down(self, rect=None):\n        return False\n\n    def left_mouse_up(self, rect=None):\n        return False\n\n    def mouse_pos(self):\n        return None\n\n    def key_down_text(self):\n        return None\n\n    def key_down(self, description=None):\n        return False\n\n    def window_gained_focus(self):\n        return False\n\n    def window_lost_focus(self):\n        return False\n\nclass MouseMotionEvent(BaseEvent):\n\n    def __init__(self, pos):\n        self.pos = pos\n\n    def mouse_motion(self, rect=None):\n        if rect is None:\n            return True\n        else:\n            return rect.collidepoint(self.pos)\n\n    def mouse_pos(self):\n        return self.pos\n\nclass LeftMouseDownEvent(BaseEvent):\n\n    def __init__(self, pos):\n        self.pos = pos\n\n    def left_mouse_down(self, rect=None):\n        if rect is None:\n            return True\n        else:\n            return rect.collidepoint(self.pos)\n\n    def mouse_pos(self):\n        return self.pos\n\nclass KeyEvent(BaseEvent):\n\n    def __init__(self, description):\n        self.description = description\n\n    def key_down(self, description=None):\n        if description is None:\n            return True\n        else:\n            return self.description == description\n\nclass GuiDriverWindow(smartnotes.WindowFocusMixin):\n\n    def set_title(self, title):\n        pass\n\n    def close(self):\n        pass\n\nclass GuiDriver(object):\n\n    def __init__(self, widget_cls, *args, **kwargs):\n        self.window = GuiDriverWindow()\n        self.cairo_surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 800, 600)\n        self.canvas = smartnotes.CairoCanvas(self.cairo_surface)\n        self.widget = widget_cls(self.window, None, *args, **kwargs)\n\n    def iteration(self, events=[], elapsed_ms=1000):\n        for event in events:\n            self.widget.process_event(event)\n        while elapsed_ms > 0:\n            elapsed_ms_per_frame = min(elapsed_ms, MS_PER_FRAME)\n            elapsed_ms -= elapsed_ms_per_frame\n            self.widget.update(pygame.Rect(0, 0, 800, 600), elapsed_ms_per_frame)\n            self.widget.draw(self.canvas)\n\n    def write_to_png(self, path):\n        self.cairo_surface.write_to_png(path)\n\nclass SmartNotesEndToEndTests(unittest.TestCase):\n\n    def setUp(self):\n        self.driver = GuiDriver(smartnotes.SmartNotesWidget, \"test_resources/example.notes\")\n\n    def assert_drawn_image_is(self, name):\n        try:\n            expected_path = os.path.join(\"test_resources\", name)\n            actual_path = os.path.join(\"test_resources\", \"actual_{}\".format(name))\n            self.driver.write_to_png(actual_path)\n            subprocess.check_call([\"diff\", expected_path, actual_path])\n            os.remove(actual_path)\n        except:\n            if MANUAL_MODE and manual_compare_accept(expected_path, actual_path):\n                return\n            self.fail(\n                f\"Drawn image did not match\\n\"\n                f\"\\n\"\n                f\"  Examine:\\n\"\n                f\"    eog {actual_path}\\n\"\n                f\"  Accept:\\n\"\n                f\"    cp {actual_path} {expected_path}\\n\"\n            )\n\n",
+"text":"#!/usr/bin/env python3\n\nimport os\nimport cairo\nimport pygame\nimport smartnotes\nimport subprocess\nimport unittest\nimport tempfile\n\nMANUAL_MODE = os.environ.get(\"MANUAL_MODE\", None) == \"yes\"\n\nMS_PER_FRAME = 20\n\nclass BaseEvent(object):\n\n    def mouse_motion(self, rect=None):\n        return False\n\n    def left_mouse_down(self, rect=None):\n        return False\n\n    def left_mouse_up(self, rect=None):\n        return False\n\n    def mouse_pos(self):\n        return None\n\n    def key_down_text(self):\n        return None\n\n    def key_down(self, description=None):\n        return False\n\n    def window_gained_focus(self):\n        return False\n\n    def window_lost_focus(self):\n        return False\n\nclass MouseMotionEvent(BaseEvent):\n\n    def __init__(self, pos):\n        self.pos = pos\n\n    def mouse_motion(self, rect=None):\n        if rect is None:\n            return True\n        else:\n            return rect.collidepoint(self.pos)\n\n    def mouse_pos(self):\n        return self.pos\n\nclass LeftMouseDownEvent(BaseEvent):\n\n    def __init__(self, pos):\n        self.pos = pos\n\n    def left_mouse_down(self, rect=None):\n        if rect is None:\n            return True\n        else:\n            return rect.collidepoint(self.pos)\n\n    def mouse_pos(self):\n        return self.pos\n\nclass LeftMouseUpEvent(BaseEvent):\n\n    def __init__(self, pos):\n        self.pos = pos\n\n    def left_mouse_up(self, rect=None):\n        if rect is None:\n            return True\n        else:\n            return rect.collidepoint(self.pos)\n\n    def mouse_pos(self):\n        return self.pos\n\nclass KeyEvent(BaseEvent):\n\n    def __init__(self, description):\n        self.description = description\n\n    def key_down(self, description=None):\n        if description is None:\n            return True\n        else:\n            return self.description == description\n\nclass GuiDriverWindow(smartnotes.WindowFocusMixin):\n\n    def set_title(self, title):\n        pass\n\n    def close(self):\n        pass\n\nclass GuiDriver(object):\n\n    def __init__(self, widget_cls, *args, **kwargs):\n        self.window = GuiDriverWindow()\n        self.cairo_surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 800, 600)\n        self.canvas = smartnotes.CairoCanvas(self.cairo_surface)\n        self.widget = widget_cls(self.window, None, *args, **kwargs)\n\n    def iteration(self, events=[], elapsed_ms=1000):\n        for event in events:\n            self.widget.process_event(event)\n        while elapsed_ms > 0:\n            elapsed_ms_per_frame = min(elapsed_ms, MS_PER_FRAME)\n            elapsed_ms -= elapsed_ms_per_frame\n            self.widget.update(pygame.Rect(0, 0, 800, 600), elapsed_ms_per_frame)\n            self.widget.draw(self.canvas)\n\n    def write_to_png(self, path):\n        self.cairo_surface.write_to_png(path)\n\nclass SmartNotesEndToEndTests(unittest.TestCase):\n\n    def setUp(self):\n        example_notes = \"test_resources/example.notes\"\n        subprocess.check_call([\"git\", \"checkout\", example_notes])\n        self.driver = GuiDriver(smartnotes.SmartNotesWidget, example_notes)\n\n    def assert_drawn_image_is(self, name):\n        try:\n            expected_path = os.path.join(\"test_resources\", name)\n            actual_path = os.path.join(\"test_resources\", \"actual_{}\".format(name))\n            self.driver.write_to_png(actual_path)\n            subprocess.check_call([\"diff\", expected_path, actual_path])\n            os.remove(actual_path)\n        except:\n            if MANUAL_MODE and manual_compare_accept(expected_path, actual_path):\n                return\n            self.fail(\n                f\"Drawn image did not match\\n\"\n                f\"\\n\"\n                f\"  Examine:\\n\"\n                f\"    eog {actual_path}\\n\"\n                f\"  Accept:\\n\"\n                f\"    cp {actual_path} {expected_path}\\n\"\n            )\n\n",
 "type":"code"
 },
 {
@@ -1380,6 +1419,22 @@
 }
 ],
 "id":"a73e1e8feca243b89d32527658522d68",
+"type":"code"
+},
+{
+"chunkpath":[
+"end-to-end"
+],
+"filepath":[
+"test_smartnotes.py"
+],
+"fragments":[
+{
+"text":"def test_create_link(self):\n    self.driver.iteration(elapsed_ms=300+1)\n    self.assert_drawn_image_is(\"main_screen.png\")\n    self.driver.iteration(events=[\n        MouseMotionEvent((400, 300)),\n        LeftMouseDownEvent((400, 300)),\n        MouseMotionEvent((200, 300)),\n    ], elapsed_ms=MS_PER_FRAME+1)\n    self.assert_drawn_image_is(\"link_to_target.png\")\n    self.driver.iteration(events=[\n        LeftMouseUpEvent((200, 300)),\n    ], elapsed_ms=400+1)\n    self.assert_drawn_image_is(\"link_created.png\")\n",
+"type":"code"
+}
+],
+"id":"c75680dae8bd45f5817a446043ffe72a",
 "type":"code"
 }
 ],
