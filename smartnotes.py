@@ -808,6 +808,8 @@ class NoteBrowserWidget(VBox):
         VBox.__init__(self, window, parent)
         self.db = db
         self.note_settings = note_settings
+        self.pos = (0, 0)
+        self.note_id = None
         self.network = self.add(self.instantiate(NetworkWidget,
             self.db,
             overlay,
@@ -816,19 +818,21 @@ class NoteBrowserWidget(VBox):
         ))
         self.table = self.add(self.instantiate(TableWidget,
             self.db,
+            overlay,
             self.note_settings,
             request_search_callback=request_search_callback
         ))
         self.table.toggle_visible()
         self.toggle_table_network_after_event_processing = False
-        self.pos = (0, 0)
-        self.note_id = None
 
     def register_note_opened(self, note_id):
         self.note_id = note_id
 
     def open_note(self, note_id):
-        self.network.open_note(note_id)
+        if self.network.is_visible():
+            self.network.open_note(note_id)
+        else:
+            self.table.open_note(note_id)
 
     def focus(self):
         if self.table.is_visible():
@@ -845,9 +849,9 @@ class NoteBrowserWidget(VBox):
             self.table.toggle_visible()
             if self.network.is_visible():
                 self.network.focus()
-                self.network.open_note(self.note_id)
             else:
                 self.table.focus()
+            self.open_note(self.note_id)
             self.clear_quick_focus()
             self.toggle_table_network_after_event_processing = False
 
@@ -1271,19 +1275,65 @@ class LinkWidget(Widget):
         canvas.set_line_width(1.5)
         canvas.stroke()
 
-class TableWidget(Widget):
+class TableWidget(HBox):
 
-    def __init__(self, window, parent, db, note_settings, request_search_callback):
-        Widget.__init__(self, window, parent)
+    def __init__(self, window, parent, db, overlay, note_settings, request_search_callback):
+        HBox.__init__(self, window, parent)
         self.db = db
+        self.overlay = overlay
         self.note_settings = note_settings
         self.request_search_callback = request_search_callback
+        self.by_id = {}
+
+    def open_note(self, note_id):
+        self.note_id = note_id
 
     def update(self, rect, elapsed_ms):
-        Widget.update(self, rect, elapsed_ms)
+        self._update_notes_list()
+        HBox.update(self, rect, elapsed_ms)
 
     def draw(self, canvas):
-        Widget.draw(self, canvas)
+        HBox.draw(self, canvas)
+
+    def _update_notes_list(self):
+        by_id = {}
+        self.clear()
+        for note_id in self.db.get_children(self.note_id):
+            if note_id in self.by_id:
+                note = self.add(self.by_id[note_id])
+            else:
+                note = self.add(self.instantiate(
+                    TableNote,
+                    self.db,
+                    self.overlay,
+                    self.note_settings,
+                    note_id,
+                    self.open_note
+                ))
+            by_id[note_id] = note
+        self.by_id = by_id
+
+class TableNote(NoteBaseWidget):
+
+    def __init__(self, window, parent, db, overlay, settings, note_id, open_callback):
+        NoteBaseWidget.__init__(self, window, parent, db, note_id, settings)
+        self.overlay = overlay
+        self.open_callback = open_callback
+
+    def process_event(self, event):
+        if event.mouse_motion(rect=self.rect):
+            self.overlay.set_link_target(self)
+            self.quick_focus()
+        if event.left_mouse_down(rect=self.rect):
+            self.overlay.set_link_source(self)
+        elif event.left_mouse_up(rect=self.rect):
+            self.open_callback(self.note_id)
+        else:
+            NoteBaseWidget.process_event(self, event)
+
+    def update(self, rect, elapsed_ms):
+        NoteBaseWidget.update(self, rect, elapsed_ms)
+        self.rect = self._get_target(rect, align="center")
 
 class DebugBar(Widget):
 
@@ -1446,6 +1496,10 @@ class NoteDb(Immutable):
     def get_note_data(self, note_id):
         self._ensure_note_id(note_id)
         return self._get("notes", note_id)
+
+    def get_children(self, note_id):
+        for link_id, link in self.get_outgoing_links(note_id):
+            yield link["to"]
 
     def get_outgoing_links(self, note_id):
         return [

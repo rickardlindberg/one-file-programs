@@ -728,11 +728,59 @@
 ],
 "fragments":[
 {
-"text":"class TableWidget(Widget):\n\n    def __init__(self, window, parent, db, note_settings, request_search_callback):\n        Widget.__init__(self, window, parent)\n        self.db = db\n        self.note_settings = note_settings\n        self.request_search_callback = request_search_callback\n\n    def update(self, rect, elapsed_ms):\n        Widget.update(self, rect, elapsed_ms)\n\n    def draw(self, canvas):\n        Widget.draw(self, canvas)\n",
+"text":"class TableWidget(HBox):\n\n    def __init__(self, window, parent, db, overlay, note_settings, request_search_callback):\n        HBox.__init__(self, window, parent)\n        self.db = db\n        self.overlay = overlay\n        self.note_settings = note_settings\n        self.request_search_callback = request_search_callback\n        self.by_id = {}\n\n    def open_note(self, note_id):\n        self.note_id = note_id\n\n    def update(self, rect, elapsed_ms):\n        self._update_notes_list()\n        HBox.update(self, rect, elapsed_ms)\n\n    def draw(self, canvas):\n        HBox.draw(self, canvas)\n\n    def _update_notes_list(self):\n        by_id = {}\n        self.clear()\n        for note_id in self.db.get_children(self.note_id):\n            if note_id in self.by_id:\n                note = self.add(self.by_id[note_id])\n            else:\n                note = self.add(self.instantiate(\n                    TableNote,\n                    self.db,\n                    self.overlay,\n                    self.note_settings,\n                    note_id,\n                    self.open_note\n                ))\n            by_id[note_id] = note\n        self.by_id = by_id\n",
 "type":"code"
 }
 ],
 "id":"7f90c12ab7a846fe9be3754699dc157e",
+"type":"code"
+},
+{
+"chunkpath":[
+"classes"
+],
+"filepath":[
+"smartnotes.py"
+],
+"fragments":[
+{
+"text":"class TableNote(",
+"type":"code"
+},
+{
+"id":"137180d5603e43c7a4a6224ea4c709fc",
+"type":"variable"
+},
+{
+"text":"):\n\n    def __init__(self, window, parent, db, overlay, settings, note_id, open_callback):\n        ",
+"type":"code"
+},
+{
+"id":"137180d5603e43c7a4a6224ea4c709fc",
+"type":"variable"
+},
+{
+"text":".__init__(self, window, parent, db, note_id, settings)\n        self.overlay = overlay\n        self.open_callback = open_callback\n\n    def process_event(self, event):\n        if event.mouse_motion(rect=self.rect):\n            self.overlay.set_link_target(self)\n            self.quick_focus()\n        if event.left_mouse_down(rect=self.rect):\n            self.overlay.set_link_source(self)\n        elif event.left_mouse_up(rect=self.rect):\n            self.open_callback(self.note_id)\n        else:\n            ",
+"type":"code"
+},
+{
+"id":"137180d5603e43c7a4a6224ea4c709fc",
+"type":"variable"
+},
+{
+"text":".process_event(self, event)\n\n    def update(self, rect, elapsed_ms):\n        ",
+"type":"code"
+},
+{
+"id":"137180d5603e43c7a4a6224ea4c709fc",
+"type":"variable"
+},
+{
+"text":".update(self, rect, elapsed_ms)\n        self.rect = self._get_target(rect, align=\"center\")\n",
+"type":"code"
+}
+],
+"id":"9104be74a8fb4fceb526be6a7af38885",
 "type":"code"
 }
 ],
@@ -750,7 +798,7 @@
 ],
 "fragments":[
 {
-"text":"class NoteBrowserWidget(VBox):\n\n    def __init__(self, window, parent, db, overlay, note_settings, request_search_callback):\n        VBox.__init__(self, window, parent)\n        self.db = db\n        self.note_settings = note_settings\n        self.network = self.add(self.instantiate(",
+"text":"class NoteBrowserWidget(VBox):\n\n    def __init__(self, window, parent, db, overlay, note_settings, request_search_callback):\n        VBox.__init__(self, window, parent)\n        self.db = db\n        self.note_settings = note_settings\n        self.pos = (0, 0)\n        self.note_id = None\n        self.network = self.add(self.instantiate(",
 "type":"code"
 },
 {
@@ -758,7 +806,7 @@
 "type":"variable"
 },
 {
-"text":",\n            self.db,\n            overlay,\n            self.note_settings,\n            request_search_callback=request_search_callback\n        ))\n        self.table = self.add(self.instantiate(TableWidget,\n            self.db,\n            self.note_settings,\n            request_search_callback=request_search_callback\n        ))\n        self.table.toggle_visible()\n        self.toggle_table_network_after_event_processing = False\n        self.pos = (0, 0)\n        self.note_id = None\n\n    def register_note_opened(self, note_id):\n        self.note_id = note_id\n\n    def open_note(self, note_id):\n        self.network.open_note(note_id)\n\n    def focus(self):\n        if self.table.is_visible():\n            self.table.focus()\n        else:\n            self.network.focus()\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        VBox.process_event(self, event)\n        if self.toggle_table_network_after_event_processing:\n            self.network.toggle_visible()\n            self.table.toggle_visible()\n            if self.network.is_visible():\n                self.network.focus()\n                self.network.open_note(self.note_id)\n            else:\n                self.table.focus()\n            self.clear_quick_focus()\n            self.toggle_table_network_after_event_processing = False\n\n    def update(self, rect, elapsed_ms):\n        self.note_settings.set_full_width(int(rect.width * 0.3))\n        VBox.update(self, rect, elapsed_ms)\n\n    def bubble_event(self, event):\n        if event.key_down(KEY_TOGGLE_TABLE_NETWORK):\n            self.toggle_table_network()\n        else:\n            VBox.bubble_event(self, event)\n\n    def toggle_table_network(self):\n        self.toggle_table_network_after_event_processing = True\n",
+"text":",\n            self.db,\n            overlay,\n            self.note_settings,\n            request_search_callback=request_search_callback\n        ))\n        self.table = self.add(self.instantiate(TableWidget,\n            self.db,\n            overlay,\n            self.note_settings,\n            request_search_callback=request_search_callback\n        ))\n        self.table.toggle_visible()\n        self.toggle_table_network_after_event_processing = False\n\n    def register_note_opened(self, note_id):\n        self.note_id = note_id\n\n    def open_note(self, note_id):\n        if self.network.is_visible():\n            self.network.open_note(note_id)\n        else:\n            self.table.open_note(note_id)\n\n    def focus(self):\n        if self.table.is_visible():\n            self.table.focus()\n        else:\n            self.network.focus()\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        VBox.process_event(self, event)\n        if self.toggle_table_network_after_event_processing:\n            self.network.toggle_visible()\n            self.table.toggle_visible()\n            if self.network.is_visible():\n                self.network.focus()\n            else:\n                self.table.focus()\n            self.open_note(self.note_id)\n            self.clear_quick_focus()\n            self.toggle_table_network_after_event_processing = False\n\n    def update(self, rect, elapsed_ms):\n        self.note_settings.set_full_width(int(rect.width * 0.3))\n        VBox.update(self, rect, elapsed_ms)\n\n    def bubble_event(self, event):\n        if event.key_down(KEY_TOGGLE_TABLE_NETWORK):\n            self.toggle_table_network()\n        else:\n            VBox.bubble_event(self, event)\n\n    def toggle_table_network(self):\n        self.toggle_table_network_after_event_processing = True\n",
 "type":"code"
 }
 ],
@@ -1023,7 +1071,7 @@
 "type":"variable"
 },
 {
-"text":"(self, note_id):\n        self._ensure_note_id(note_id)\n        return self._get(\"notes\", note_id)\n\n    def ",
+"text":"(self, note_id):\n        self._ensure_note_id(note_id)\n        return self._get(\"notes\", note_id)\n\n    def get_children(self, note_id):\n        for link_id, link in self.get_outgoing_links(note_id):\n            yield link[\"to\"]\n\n    def ",
 "type":"code"
 },
 {
