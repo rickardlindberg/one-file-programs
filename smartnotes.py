@@ -1359,9 +1359,11 @@ class OverlayWidget(VBox):
                     self.link_source.note_id,
                     self.link_target.note_id
                 )
+                self.set_link_source(None)
+                self.set_link_target(None)
+                raise OverlayAbort()
             self.set_link_source(None)
             self.set_link_target(None)
-            raise OverlayAbort()
         VBox.process_event(self, event)
 
     def draw(self, canvas):

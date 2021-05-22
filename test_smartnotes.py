@@ -200,6 +200,16 @@ class SmartNotesEndToEndTests(unittest.TestCase):
         ], elapsed_ms=400+1)
         self.assert_drawn_image_is("link_created.png")
 
+    def test_open_note(self):
+        self.driver.iteration(elapsed_ms=300+1)
+        self.assert_drawn_image_is("main_screen.png")
+        self.driver.iteration(events=[
+            MouseMotionEvent((200, 300)),
+            LeftMouseDownEvent((200, 300)),
+            LeftMouseUpEvent((200, 300)),
+        ], elapsed_ms=400+1)
+        self.assert_drawn_image_is("new_note_opened.png")
+
 def manual_compare_accept(expected, actual):
     with tempfile.TemporaryDirectory() as tmp_dir:
         subprocess.call([

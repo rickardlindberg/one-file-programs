@@ -898,7 +898,7 @@
 ],
 "fragments":[
 {
-"text":"class OverlayWidget(VBox):\n\n    def __init__(self, window, parent, db):\n        VBox.__init__(self, window, parent)\n        self.db = db\n        self.link_source = None\n        self.link_target = None\n        self.pos = (0, 0)\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        if self.link_source and event.left_mouse_up():\n            if self.link_target:\n                self.db.create_link(\n                    self.link_source.note_id,\n                    self.link_target.note_id\n                )\n            self.set_link_source(None)\n            self.set_link_target(None)\n            raise OverlayAbort()\n        VBox.process_event(self, event)\n\n    def draw(self, canvas):\n        VBox.draw(self, canvas)\n        if self.link_source and not self.link_source.hit_test(self.pos):\n            canvas.move_to(*self.link_source.get_link_source_point())\n            canvas.line_to(*self.pos)\n            if self.link_target:\n                canvas._set_color(COLOR_ACTIVE)\n            else:\n                canvas._set_color(COLOR_INACTIVE)\n            canvas.set_line_width(5)\n            canvas.stroke()\n\n    def set_link_source(self, link_source):\n        self.link_source = link_source\n\n    def set_link_target(self, link_target):\n        if link_target is None:\n            self.link_target = None\n            return\n        if self.link_source is None:\n            return\n        if self.link_source.note_id == link_target.note_id:\n            return\n        self.link_target = link_target\n",
+"text":"class OverlayWidget(VBox):\n\n    def __init__(self, window, parent, db):\n        VBox.__init__(self, window, parent)\n        self.db = db\n        self.link_source = None\n        self.link_target = None\n        self.pos = (0, 0)\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        if self.link_source and event.left_mouse_up():\n            if self.link_target:\n                self.db.create_link(\n                    self.link_source.note_id,\n                    self.link_target.note_id\n                )\n                self.set_link_source(None)\n                self.set_link_target(None)\n                raise OverlayAbort()\n            self.set_link_source(None)\n            self.set_link_target(None)\n        VBox.process_event(self, event)\n\n    def draw(self, canvas):\n        VBox.draw(self, canvas)\n        if self.link_source and not self.link_source.hit_test(self.pos):\n            canvas.move_to(*self.link_source.get_link_source_point())\n            canvas.line_to(*self.pos)\n            if self.link_target:\n                canvas._set_color(COLOR_ACTIVE)\n            else:\n                canvas._set_color(COLOR_INACTIVE)\n            canvas.set_line_width(5)\n            canvas.stroke()\n\n    def set_link_source(self, link_source):\n        self.link_source = link_source\n\n    def set_link_target(self, link_target):\n        if link_target is None:\n            self.link_target = None\n            return\n        if self.link_source is None:\n            return\n        if self.link_source.note_id == link_target.note_id:\n            return\n        self.link_target = link_target\n",
 "type":"code"
 }
 ],
@@ -1443,6 +1443,22 @@
 }
 ],
 "id":"c75680dae8bd45f5817a446043ffe72a",
+"type":"code"
+},
+{
+"chunkpath":[
+"end-to-end"
+],
+"filepath":[
+"test_smartnotes.py"
+],
+"fragments":[
+{
+"text":"def test_open_note(self):\n    self.driver.iteration(elapsed_ms=300+1)\n    self.assert_drawn_image_is(\"main_screen.png\")\n    self.driver.iteration(events=[\n        MouseMotionEvent((200, 300)),\n        LeftMouseDownEvent((200, 300)),\n        LeftMouseUpEvent((200, 300)),\n    ], elapsed_ms=400+1)\n    self.assert_drawn_image_is(\"new_note_opened.png\")\n",
+"type":"code"
+}
+],
+"id":"185b7f5386534ef1b0c0109eaab97e3f",
 "type":"code"
 }
 ],
