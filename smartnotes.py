@@ -186,7 +186,9 @@ class NoteBaseWidget(Widget):
         Widget.update(self, rect, elapsed_ms)
         self.data = self.db.get_note_data(self.note_id)
         self.full_width = self.settings.get_full_width()
-        self.full_height = int(self.full_width*3/5)
+        self.full_height = int(
+            self.full_width * self.settings.get_height_width_ratio()
+        )
         self.card_full_size = (self.full_width, self.full_height)
         self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)
 
@@ -746,7 +748,11 @@ class SearchResults(HBox):
         self.text = text
 
     def update(self, rect, elapsed_ms):
-        self.wanted_height = int(round((rect.width-self.hpadding)/self.num_results*3/5))
+        self.wanted_height = int(round(
+            (rect.width-self.hpadding) / self.num_results
+            *
+            self.note_settings.get_height_width_ratio()
+        ))
         self._update_notes_list()
         HBox.update(self, rect, elapsed_ms)
 
@@ -1396,6 +1402,9 @@ class NoteSettings:
 
     def set_full_width(self, full_width):
         self.full_width = full_width
+
+    def get_height_width_ratio(self):
+        return 3/5
 
 class NoteDb(Immutable):
 
