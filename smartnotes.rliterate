@@ -561,15 +561,7 @@
 "type":"variable"
 },
 {
-"text":"):\n        Widget.update(self, rect, elapsed_ms)\n        self.rect = rect\n        self.stripe_rects = []\n        padding = 8\n        self.state.set_full_note_width(int(",
-"type":"code"
-},
-{
-"id":"595003a78e1e4326ac5ef9aa70b79fd9",
-"type":"variable"
-},
-{
-"text":".width * 0.3))\n        self.old_notes = self.notes\n        self.notes = []\n        self.links = []\n        middle_stripe = self._stripe(",
+"text":"):\n        Widget.update(self, rect, elapsed_ms)\n        self.rect = rect\n        self.stripe_rects = []\n        padding = 8\n        self.old_notes = self.notes\n        self.notes = []\n        self.links = []\n        middle_stripe = self._stripe(",
 "type":"code"
 },
 {
@@ -766,7 +758,7 @@
 "type":"variable"
 },
 {
-"text":",\n            self.db,\n            overlay,\n            self,\n            request_search_callback=request_search_callback\n        ))\n        self.table = self.add(self.instantiate(TableWidget,\n            self.db,\n            self,\n            request_search_callback=request_search_callback\n        ))\n        self.table.toggle_visible()\n        self.full_note_width = 0\n        self.toggle_table_network_after_event_processing = False\n        self.pos = (0, 0)\n        self.note_id = None\n\n    def register_note_opened(self, note_id):\n        self.note_id = note_id\n\n    def open_note(self, note_id):\n        self.network.open_note(note_id)\n\n    def focus(self):\n        if self.table.is_visible():\n            self.table.focus()\n        else:\n            self.network.focus()\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        VBox.process_event(self, event)\n        if self.toggle_table_network_after_event_processing:\n            self.network.toggle_visible()\n            self.table.toggle_visible()\n            if self.network.is_visible():\n                self.network.focus()\n                self.network.open_note(self.note_id)\n            else:\n                self.table.focus()\n            self.clear_quick_focus()\n            self.toggle_table_network_after_event_processing = False\n\n    def update(self, rect, elapsed_ms):\n        VBox.update(self, rect, elapsed_ms)\n\n    def get_full_note_width(self):\n        return max(100, self.full_note_width)\n\n    def set_full_note_width(self, width):\n        self.full_note_width = width\n\n    def bubble_event(self, event):\n        if event.key_down(KEY_TOGGLE_TABLE_NETWORK):\n            self.toggle_table_network()\n        else:\n            VBox.bubble_event(self, event)\n\n    def toggle_table_network(self):\n        self.toggle_table_network_after_event_processing = True\n",
+"text":",\n            self.db,\n            overlay,\n            self,\n            request_search_callback=request_search_callback\n        ))\n        self.table = self.add(self.instantiate(TableWidget,\n            self.db,\n            self,\n            request_search_callback=request_search_callback\n        ))\n        self.table.toggle_visible()\n        self.full_note_width = 0\n        self.toggle_table_network_after_event_processing = False\n        self.pos = (0, 0)\n        self.note_id = None\n\n    def register_note_opened(self, note_id):\n        self.note_id = note_id\n\n    def open_note(self, note_id):\n        self.network.open_note(note_id)\n\n    def focus(self):\n        if self.table.is_visible():\n            self.table.focus()\n        else:\n            self.network.focus()\n\n    def process_event(self, event):\n        if event.mouse_motion():\n            self.pos = event.mouse_pos()\n        VBox.process_event(self, event)\n        if self.toggle_table_network_after_event_processing:\n            self.network.toggle_visible()\n            self.table.toggle_visible()\n            if self.network.is_visible():\n                self.network.focus()\n                self.network.open_note(self.note_id)\n            else:\n                self.table.focus()\n            self.clear_quick_focus()\n            self.toggle_table_network_after_event_processing = False\n\n    def update(self, rect, elapsed_ms):\n        self.full_note_width = int(rect.width * 0.3)\n        VBox.update(self, rect, elapsed_ms)\n\n    def get_full_note_width(self):\n        return max(100, self.full_note_width)\n\n    def bubble_event(self, event):\n        if event.key_down(KEY_TOGGLE_TABLE_NETWORK):\n            self.toggle_table_network()\n        else:\n            VBox.bubble_event(self, event)\n\n    def toggle_table_network(self):\n        self.toggle_table_network_after_event_processing = True\n",
 "type":"code"
 }
 ],

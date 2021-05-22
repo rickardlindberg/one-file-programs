@@ -845,13 +845,11 @@ class NoteBrowserWidget(VBox):
             self.toggle_table_network_after_event_processing = False
 
     def update(self, rect, elapsed_ms):
+        self.full_note_width = int(rect.width * 0.3)
         VBox.update(self, rect, elapsed_ms)
 
     def get_full_note_width(self):
         return max(100, self.full_note_width)
-
-    def set_full_note_width(self, width):
-        self.full_note_width = width
 
     def bubble_event(self, event):
         if event.key_down(KEY_TOGGLE_TABLE_NETWORK):
@@ -922,7 +920,6 @@ class NetworkWidget(Widget):
         self.rect = rect
         self.stripe_rects = []
         padding = 8
-        self.state.set_full_note_width(int(rect.width * 0.3))
         self.old_notes = self.notes
         self.notes = []
         self.links = []
