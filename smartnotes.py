@@ -189,6 +189,8 @@ class NoteBaseWidget(Widget):
             self.quick_focus()
         if self.has_focus() and event.left_mouse_down():
             self.overlay.set_link_source(self)
+        elif self.has_focus() and event.left_mouse_up(self.rect):
+            self.open_me()
         else:
             Widget.process_event(self, event)
 
@@ -797,11 +799,8 @@ class SearchNote(NoteBaseWidget):
         self.overlay = overlay
         self.open_callback = open_callback
 
-    def process_event(self, event):
-        if event.left_mouse_up(rect=self.rect):
-            self.open_callback(self.note_id)
-        else:
-            NoteBaseWidget.process_event(self, event)
+    def open_me(self):
+        self.open_callback(self.note_id)
 
     def update(self, rect, elapsed_ms):
         NoteBaseWidget.update(self, rect, elapsed_ms)
@@ -1073,10 +1072,11 @@ class NetworkNote(NoteBaseWidget):
         self.incoming = [x for x in self.incoming if x in visible_links]
         self.outgoing = [x for x in self.outgoing if x in visible_links]
 
+    def open_me(self):
+        self.network.make_root(self)
+
     def process_event(self, event):
-        if event.left_mouse_up(self.rect):
-            self.network.make_root(self)
-        elif self.has_focus() and event.key_down(KEY_EDIT_NOTE):
+        if self.has_focus() and event.key_down(KEY_EDIT_NOTE):
             self.clear_quick_focus()
             self.post_event(
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
@@ -1320,11 +1320,8 @@ class TableNote(NoteBaseWidget):
         self.overlay = overlay
         self.open_callback = open_callback
 
-    def process_event(self, event):
-        if event.left_mouse_up(rect=self.rect):
-            self.open_callback(self.note_id)
-        else:
-            NoteBaseWidget.process_event(self, event)
+    def open_me(self):
+        self.open_callback(self.note_id)
 
     def update(self, rect, elapsed_ms):
         NoteBaseWidget.update(self, rect, elapsed_ms)
