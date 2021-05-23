@@ -169,9 +169,10 @@ class Padding(Widget):
 
 class NoteBaseWidget(Widget):
 
-    def __init__(self, window, parent, db, note_id, settings):
+    def __init__(self, window, parent, db, overlay, note_id, settings):
         Widget.__init__(self, window, parent)
         self.db = db
+        self.overlay = overlay
         self.note_id = note_id
         self.settings = settings
 
@@ -181,6 +182,13 @@ class NoteBaseWidget(Widget):
             return False
         except NoteNotFound:
             return True
+
+    def process_event(self, event):
+        if event.mouse_motion(rect=self.rect):
+            self.overlay.set_link_target(self)
+            self.quick_focus()
+        else:
+            Widget.process_event(self, event)
 
     def update(self, rect, elapsed_ms):
         Widget.update(self, rect, elapsed_ms)
@@ -783,14 +791,11 @@ class SearchResults(HBox):
 class SearchNote(NoteBaseWidget):
 
     def __init__(self, window, parent, db, overlay, settings, note_id, open_callback):
-        NoteBaseWidget.__init__(self, window, parent, db, note_id, settings)
+        NoteBaseWidget.__init__(self, window, parent, db, overlay, note_id, settings)
         self.overlay = overlay
         self.open_callback = open_callback
 
     def process_event(self, event):
-        if event.mouse_motion(rect=self.rect):
-            self.overlay.set_link_target(self)
-            self.quick_focus()
         if event.left_mouse_down(rect=self.rect):
             self.overlay.set_link_source(self)
         elif event.left_mouse_up(rect=self.rect):
@@ -1054,7 +1059,7 @@ class NetworkWidget(Widget):
 class NetworkNote(NoteBaseWidget):
 
     def __init__(self, window, parent, network, db, overlay, note_id, settings):
-        NoteBaseWidget.__init__(self, window, parent, db, note_id, settings)
+        NoteBaseWidget.__init__(self, window, parent, db, overlay, note_id, settings)
         self.overlay = overlay
         self.network = network
         self.incoming = []
@@ -1069,9 +1074,6 @@ class NetworkNote(NoteBaseWidget):
         self.outgoing = [x for x in self.outgoing if x in visible_links]
 
     def process_event(self, event):
-        if event.mouse_motion(rect=self.rect):
-            self.overlay.set_link_target(self)
-            self.quick_focus()
         if event.left_mouse_up(self.rect):
             self.network.make_root(self)
         elif self.has_focus() and event.key_down(KEY_EDIT_NOTE):
@@ -1316,14 +1318,11 @@ class TableWidget(HBox):
 class TableNote(NoteBaseWidget):
 
     def __init__(self, window, parent, db, overlay, settings, note_id, open_callback):
-        NoteBaseWidget.__init__(self, window, parent, db, note_id, settings)
+        NoteBaseWidget.__init__(self, window, parent, db, overlay, note_id, settings)
         self.overlay = overlay
         self.open_callback = open_callback
 
     def process_event(self, event):
-        if event.mouse_motion(rect=self.rect):
-            self.overlay.set_link_target(self)
-            self.quick_focus()
         if event.left_mouse_down(rect=self.rect):
             self.overlay.set_link_source(self)
         elif event.left_mouse_up(rect=self.rect):
