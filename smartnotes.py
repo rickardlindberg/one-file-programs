@@ -193,6 +193,9 @@ class NoteBaseWidget(Widget):
         elif event.key_down(KEY_DELETE_NOTE):
             self.clear_quick_focus()
             self.db.delete_note(self.note_id)
+        elif event.key_down(KEY_OPEN_LINKS):
+            for link in self.db.get_note_data(self.note_id).get("links", []):
+                webbrowser.open(link)
         else:
             Widget.bubble_event(self, event)
 
@@ -1094,9 +1097,6 @@ class NetworkNote(NoteBaseWidget):
             if link_id:
                 self.db.delete_link(link_id)
                 self.clear_quick_focus()
-        elif self.has_focus() and event.key_down(KEY_OPEN_LINKS):
-            for link in self.data.get("links", []):
-                webbrowser.open(link)
         elif self.has_focus() and event.key_down(KEY_CREATE_NOTE):
             self.clear_quick_focus()
             with self.db.transaction():
