@@ -183,6 +183,16 @@ class NoteBaseWidget(Widget):
         except NoteNotFound:
             return True
 
+    def bubble_event(self, event):
+        if event.key_down(KEY_EDIT_NOTE):
+            self.clear_quick_focus()
+            self.post_event(
+                USER_EVENT_EXTERNAL_TEXT_ENTRY,
+                entry=NoteText(self.db, self.note_id)
+            )
+        else:
+            Widget.bubble_event(self, event)
+
     def process_event(self, event):
         if event.mouse_motion(rect=self.rect):
             self.overlay.set_link_target(self)
@@ -1076,13 +1086,7 @@ class NetworkNote(NoteBaseWidget):
         self.network.make_root(self)
 
     def process_event(self, event):
-        if self.has_focus() and event.key_down(KEY_EDIT_NOTE):
-            self.clear_quick_focus()
-            self.post_event(
-                USER_EVENT_EXTERNAL_TEXT_ENTRY,
-                entry=NoteText(self.db, self.note_id)
-            )
-        elif self.has_focus() and event.key_down(KEY_DELETE_NOTE):
+        if self.has_focus() and event.key_down(KEY_DELETE_NOTE):
             self.clear_quick_focus()
             self.db.delete_note(self.note_id)
         elif self.has_focus() and event.key_down(KEY_UNLINK_NOTE):
