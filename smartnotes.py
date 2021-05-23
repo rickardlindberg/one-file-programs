@@ -187,7 +187,7 @@ class NoteBaseWidget(Widget):
         if event.mouse_motion(rect=self.rect):
             self.overlay.set_link_target(self)
             self.quick_focus()
-        if self.has_focus() and event.left_mouse_down():
+        if self.has_focus() and event.left_mouse_down(self.rect):
             self.overlay.set_link_source(self)
         elif self.has_focus() and event.left_mouse_up(self.rect):
             self.open_me()
