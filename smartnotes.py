@@ -196,6 +196,15 @@ class NoteBaseWidget(Widget):
         elif event.key_down(KEY_OPEN_LINKS):
             for link in self.db.get_note_data(self.note_id).get("links", []):
                 webbrowser.open(link)
+        elif event.key_down(KEY_CREATE_NOTE):
+            self.clear_quick_focus()
+            with self.db.transaction():
+                child_note_id = self.db.create_note(text=NEW_NOTE_TEXT)
+                self.db.create_link(self.note_id, child_note_id)
+            self.post_event(
+                USER_EVENT_EXTERNAL_TEXT_ENTRY,
+                entry=NoteText(self.db, child_note_id)
+            )
         else:
             Widget.bubble_event(self, event)
 
@@ -1097,15 +1106,6 @@ class NetworkNote(NoteBaseWidget):
             if link_id:
                 self.db.delete_link(link_id)
                 self.clear_quick_focus()
-        elif self.has_focus() and event.key_down(KEY_CREATE_NOTE):
-            self.clear_quick_focus()
-            with self.db.transaction():
-                child_note_id = self.db.create_note(text=NEW_NOTE_TEXT)
-                self.db.create_link(self.note_id, child_note_id)
-            self.post_event(
-                USER_EVENT_EXTERNAL_TEXT_ENTRY,
-                entry=NoteText(self.db, child_note_id)
-            )
         elif self.has_focus() and event.key_down(KEY_OPEN_SEARCH):
             self.clear_quick_focus()
             self.network.request_search_callback()
