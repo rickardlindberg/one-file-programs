@@ -187,6 +187,8 @@ class NoteBaseWidget(Widget):
         if event.mouse_motion(rect=self.rect):
             self.overlay.set_link_target(self)
             self.quick_focus()
+        if self.has_focus() and event.left_mouse_down():
+            self.overlay.set_link_source(self)
         else:
             Widget.process_event(self, event)
 
@@ -796,9 +798,7 @@ class SearchNote(NoteBaseWidget):
         self.open_callback = open_callback
 
     def process_event(self, event):
-        if event.left_mouse_down(rect=self.rect):
-            self.overlay.set_link_source(self)
-        elif event.left_mouse_up(rect=self.rect):
+        if event.left_mouse_up(rect=self.rect):
             self.open_callback(self.note_id)
         else:
             NoteBaseWidget.process_event(self, event)
@@ -1105,8 +1105,6 @@ class NetworkNote(NoteBaseWidget):
         elif self.has_focus() and event.key_down(KEY_OPEN_SEARCH):
             self.clear_quick_focus()
             self.network.request_search_callback()
-        elif self.has_focus() and event.left_mouse_down():
-            self.overlay.set_link_source(self)
         else:
             NoteBaseWidget.process_event(self, event)
 
@@ -1323,9 +1321,7 @@ class TableNote(NoteBaseWidget):
         self.open_callback = open_callback
 
     def process_event(self, event):
-        if event.left_mouse_down(rect=self.rect):
-            self.overlay.set_link_source(self)
-        elif event.left_mouse_up(rect=self.rect):
+        if event.left_mouse_up(rect=self.rect):
             self.open_callback(self.note_id)
         else:
             NoteBaseWidget.process_event(self, event)
