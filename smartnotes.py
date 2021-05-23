@@ -4,6 +4,7 @@ import datetime
 import sys
 import uuid
 import webbrowser
+import math
 import cairo
 import pygame
 import contextlib
@@ -1270,42 +1271,99 @@ class LinkWidget(Widget):
         canvas.set_line_width(1.5)
         canvas.stroke()
 
-class TableWidget(HBox):
+class TableWidget(Widget):
 
     def __init__(self, window, parent, db, overlay, note_settings):
-        HBox.__init__(self, window, parent)
+        Widget.__init__(self, window, parent)
         self.db = db
         self.overlay = overlay
         self.note_settings = note_settings
+        self.notes = []
         self.by_id = {}
+
+    def process_event(self, event):
+        for note in self.notes:
+            note.process_event(event)
+        Widget.process_event(self, event)
 
     def open_note(self, note_id):
         self.note_id = note_id
 
     def update(self, rect, elapsed_ms):
         self._update_notes_list()
-        HBox.update(self, rect, elapsed_ms)
+        self._layout(rect, elapsed_ms)
+        Widget.update(self, rect, elapsed_ms)
 
     def draw(self, canvas):
-        HBox.draw(self, canvas)
+        for note in self.notes:
+            note.draw(canvas)
+        Widget.draw(self, canvas)
 
     def _update_notes_list(self):
         by_id = {}
-        self.clear()
+        self.notes.clear()
         for note_id in self.db.get_children(self.note_id):
             if note_id in self.by_id:
-                note = self.add(self.by_id[note_id])
+                note = self.by_id[note_id]
             else:
-                note = self.add(self.instantiate(
+                note = self.instantiate(
                     TableNote,
                     self.db,
                     self.overlay,
                     self.note_settings,
                     note_id,
                     self.open_note
-                ))
+                )
+            self.notes.append(note)
             by_id[note_id] = note
         self.by_id = by_id
+
+    def _layout(self, rect, elapsed_ms):
+        if not self.notes:
+            return
+        rows = 1
+        ratio = None
+        fit_box = None
+        notes_per_row = None
+        while True:
+            new_notes_per_row = math.ceil(len(self.notes) / rows)
+            ideal_box = pygame.Rect(
+                0,
+                0,
+                self.note_settings.get_full_width() * new_notes_per_row,
+                self.note_settings.get_full_width() * self.note_settings.get_height_width_ratio() * rows
+            )
+            new_fit_box = ideal_box.fit(rect)
+            new_ratio = new_fit_box.width / ideal_box.width
+            if new_ratio > 1:
+                new_fit_box = ideal_box
+                new_ratio = 1
+            new_fit_box.center = rect.center
+            if ratio is None or new_ratio > ratio:
+                ratio = new_ratio
+                fit_box = new_fit_box
+                notes_per_row = new_notes_per_row
+                rows += 1
+            else:
+                break
+        w = self.note_settings.get_full_width() * ratio
+        h = self.note_settings.get_full_width() * self.note_settings.get_height_width_ratio() * ratio
+        row = 0
+        col = 0
+        for note in self.notes:
+            if col == notes_per_row:
+                col = 0
+                row += 1
+            note.update(
+                pygame.Rect(
+                    fit_box.x+w*col,
+                    fit_box.y+h*row,
+                    w,
+                    h
+                ),
+                elapsed_ms
+            )
+            col += 1
 
 class TableNote(NoteBaseWidget):
 
