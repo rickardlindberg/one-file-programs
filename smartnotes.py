@@ -190,6 +190,9 @@ class NoteBaseWidget(Widget):
                 USER_EVENT_EXTERNAL_TEXT_ENTRY,
                 entry=NoteText(self.db, self.note_id)
             )
+        elif event.key_down(KEY_DELETE_NOTE):
+            self.clear_quick_focus()
+            self.db.delete_note(self.note_id)
         else:
             Widget.bubble_event(self, event)
 
@@ -1086,10 +1089,7 @@ class NetworkNote(NoteBaseWidget):
         self.network.make_root(self)
 
     def process_event(self, event):
-        if self.has_focus() and event.key_down(KEY_DELETE_NOTE):
-            self.clear_quick_focus()
-            self.db.delete_note(self.note_id)
-        elif self.has_focus() and event.key_down(KEY_UNLINK_NOTE):
+        if self.has_focus() and event.key_down(KEY_UNLINK_NOTE):
             link_id = self.get_link_id()
             if link_id:
                 self.db.delete_link(link_id)
