@@ -584,8 +584,7 @@ class SmartNotesWidget(VBox):
         self.note_browser = self.instantiate(NoteBrowserWidget,
             self.db,
             self.overlay,
-            self.note_settings,
-            request_search_callback=self._on_search_request
+            self.note_settings
         )
         self.search_bar = self.add(self.instantiate(SearchBar,
             self.db,
@@ -601,6 +600,9 @@ class SmartNotesWidget(VBox):
     def bubble_event(self, event):
         if event.key_down(KEY_TOGGLE_TABLE_NETWORK):
             self.toggle_table_network()
+        elif event.key_down(KEY_OPEN_SEARCH):
+            self.clear_quick_focus()
+            self.search_bar.start_search()
         else:
             VBox.bubble_event(self, event)
 
@@ -640,9 +642,6 @@ class SmartNotesWidget(VBox):
         if close:
             self.search_bar.hide()
         self.note_browser.focus()
-
-    def _on_search_request(self):
-        self.search_bar.start_search()
 
     def update(self, rect, elapsed_ms):
         self.overlay.update(rect, elapsed_ms)
@@ -833,7 +832,7 @@ class SearchNote(NoteBaseWidget):
 
 class NoteBrowserWidget(VBox):
 
-    def __init__(self, window, parent, db, overlay, note_settings, request_search_callback):
+    def __init__(self, window, parent, db, overlay, note_settings):
         VBox.__init__(self, window, parent)
         self.db = db
         self.note_settings = note_settings
@@ -842,14 +841,12 @@ class NoteBrowserWidget(VBox):
         self.network = self.add(self.instantiate(NetworkWidget,
             self.db,
             overlay,
-            self.note_settings,
-            request_search_callback=request_search_callback
+            self.note_settings
         ))
         self.table = self.add(self.instantiate(TableWidget,
             self.db,
             overlay,
-            self.note_settings,
-            request_search_callback=request_search_callback
+            self.note_settings
         ))
         self.table.toggle_visible()
         self.toggle_table_network_after_event_processing = False
@@ -899,13 +896,12 @@ class NoteBrowserWidget(VBox):
 
 class NetworkWidget(Widget):
 
-    def __init__(self, window, parent, db, overlay, note_settings, request_search_callback):
+    def __init__(self, window, parent, db, overlay, note_settings):
         Widget.__init__(self, window, parent)
         self.navigation_history = parent
         self.db = db
         self.overlay = overlay
         self.note_settings = note_settings
-        self.request_search_callback = request_search_callback
         self.pos = (-1, -1)
         self.notes = []
         self.open_last_note()
@@ -921,9 +917,7 @@ class NetworkWidget(Widget):
             self.pos = event.mouse_pos()
         if event.left_mouse_up(rect=self.rect):
             self.focus()
-        if event.key_down(KEY_OPEN_SEARCH) and self.has_focus():
-            self.request_search_callback()
-        elif event.key_down(KEY_CREATE_NOTE) and self.has_focus():
+        if event.key_down(KEY_CREATE_NOTE) and self.has_focus():
             note_id = self.db.create_note(text=NEW_NOTE_TEXT)
             self.open_note(note_id)
             self.post_event(
@@ -1106,9 +1100,6 @@ class NetworkNote(NoteBaseWidget):
             if link_id:
                 self.db.delete_link(link_id)
                 self.clear_quick_focus()
-        elif self.has_focus() and event.key_down(KEY_OPEN_SEARCH):
-            self.clear_quick_focus()
-            self.network.request_search_callback()
         else:
             NoteBaseWidget.process_event(self, event)
 
@@ -1281,12 +1272,11 @@ class LinkWidget(Widget):
 
 class TableWidget(HBox):
 
-    def __init__(self, window, parent, db, overlay, note_settings, request_search_callback):
+    def __init__(self, window, parent, db, overlay, note_settings):
         HBox.__init__(self, window, parent)
         self.db = db
         self.overlay = overlay
         self.note_settings = note_settings
-        self.request_search_callback = request_search_callback
         self.by_id = {}
 
     def open_note(self, note_id):
