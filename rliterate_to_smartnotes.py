@@ -37,10 +37,7 @@ class RliterateToSmartNotesConverter(object):
                     })
                 )
             elif paragraph["type"] == "list":
-                self.note_db.create_link(
-                    page_note_id,
-                    self.note_db.create_note(text=self.convert_list(paragraph))
-                )
+                self.convert_list(paragraph, page_note_id)
             else:
                 raise ValueError(f"Unknown paragraph type {paragraph['type']}")
         for child in page["children"]:
@@ -72,16 +69,21 @@ class RliterateToSmartNotesConverter(object):
             text = None
         return x
 
-    def convert_list(self, list):
-        if list["child_type"] == "unordered":
-            return "".join(
-                "* {}\n".format(self.convert_list(child))
-                for child in list["children"]
+    def convert_list(self, list, parent_note_id):
+        if list["child_type"] is None and len(list["children"]) == 0:
+            return
+        list_note_id = self.note_db.create_note(
+            text=f"<{list['child_type']} list>"
+        )
+        self.note_db.create_link(parent_note_id, list_note_id)
+        for child in list["children"]:
+            self.note_db.create_link(
+                list_note_id,
+                self.note_db.create_note(
+                    text=self.convert_text_fragments(child["fragments"])
+                )
             )
-        elif list["child_type"] is None:
-            self.convert_text_fragments(list["fragments"])
-        else:
-            raise ValueError(f"Unknown child_type {list['child_type']}")
+            self.convert_list(child, list_note_id)
 
     def convert_text_fragments(self, fragments):
         return "".join(
