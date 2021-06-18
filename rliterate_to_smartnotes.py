@@ -8,45 +8,45 @@ class RliterateToSmartNotesConverter(object):
         self.note_db = smartnotes.NoteDb(smart_notes_path)
         rliterate = smartnotes.read_json_file(rliterate_path, {})
         self.variables = rliterate["variables"]
-        self.write_page(rliterate["root_page"])
+        self.convert_page(rliterate["root_page"])
 
-    def write_page(self, page, parent=None):
-        page_id = self.note_db.create_note(**{
+    def convert_page(self, page, parent_page_note_id=None):
+        page_note_id = self.note_db.create_note(**{
             "text": page["title"],
             "tags": ["title"],
         })
-        if parent is not None:
-            self.note_db.create_link(parent, page_id)
+        if parent_page_note_id is not None:
+            self.note_db.create_link(parent_page_note_id, page_note_id)
         for paragraph in page["paragraphs"]:
             if paragraph["type"] == "text":
                 self.note_db.create_link(
-                    page_id,
+                    page_note_id,
                     self.note_db.create_note(
-                        text=self.fragments_to_text(paragraph["fragments"])
+                        text=self.convert_text_fragments(paragraph["fragments"])
                     )
                 )
             elif paragraph["type"] == "code":
                 self.note_db.create_link(
-                    page_id,
+                    page_note_id,
                     self.note_db.create_note(**{
                         "type": "code",
                         "text": "<code>",
                         "filepath": paragraph["filepath"],
                         "chunkpath": paragraph["chunkpath"],
-                        "fragments": self.transform_code_fragments(paragraph["fragments"]),
+                        "fragments": self.convert_code_fragments(paragraph["fragments"]),
                     })
                 )
             elif paragraph["type"] == "list":
                 self.note_db.create_link(
-                    page_id,
-                    self.note_db.create_note(text=self.list_to_text(paragraph))
+                    page_note_id,
+                    self.note_db.create_note(text=self.convert_list(paragraph))
                 )
             else:
                 raise ValueError(f"Unknown paragraph type {paragraph['type']}")
         for child in page["children"]:
-            self.write_page(child, page_id)
+            self.convert_page(child, page_note_id)
 
-    def transform_code_fragments(self, fragments):
+    def convert_code_fragments(self, fragments):
         x = []
         text = None
         for fragment in fragments:
@@ -72,18 +72,18 @@ class RliterateToSmartNotesConverter(object):
             text = None
         return x
 
-    def list_to_text(self, list):
+    def convert_list(self, list):
         if list["child_type"] == "unordered":
             return "".join(
-                "* {}\n".format(self.list_to_text(child))
+                "* {}\n".format(self.convert_list(child))
                 for child in list["children"]
             )
         elif list["child_type"] is None:
-            self.fragments_to_text(list["fragments"])
+            self.convert_text_fragments(list["fragments"])
         else:
             raise ValueError(f"Unknown child_type {list['child_type']}")
 
-    def fragments_to_text(self, fragments):
+    def convert_text_fragments(self, fragments):
         return "".join(
             fragment["text"] if fragment["text"] else fragment["page_id"]
             for fragment
