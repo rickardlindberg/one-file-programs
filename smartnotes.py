@@ -356,8 +356,9 @@ class NoteBaseWidget(Widget):
                 rect = rect.move(-rect.height*1.3, 0)
 
     def _code_lines(self, fragments):
+        MAX = 15
         lines = []
-        for fragment in fragments:
+        for fragment in fragments[:MAX]:
             if fragment["type"] == "chunk":
                 lines.append("{}<<{}>>".format(
                     fragment["prefix"],
@@ -367,6 +368,8 @@ class NoteBaseWidget(Widget):
                 lines.append("{}".format(
                     fragment["text"],
                 ))
+        if len(fragments) > MAX:
+            lines.append("...")
         return "\n".join(lines)
 
     def _get_target(self, alotted_rect, align="center"):

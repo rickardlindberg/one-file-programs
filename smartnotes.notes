@@ -4058,11 +4058,15 @@
                     "type": "line"
                 },
                 {
+                    "text": "        MAX = 15",
+                    "type": "line"
+                },
+                {
                     "text": "        lines = []",
                     "type": "line"
                 },
                 {
-                    "text": "        for fragment in fragments:",
+                    "text": "        for fragment in fragments[:MAX]:",
                     "type": "line"
                 },
                 {
@@ -4099,6 +4103,14 @@
                 },
                 {
                     "text": "                ))",
+                    "type": "line"
+                },
+                {
+                    "text": "        if len(fragments) > MAX:",
+                    "type": "line"
+                },
+                {
+                    "text": "            lines.append(\"...\")",
                     "type": "line"
                 },
                 {
@@ -4174,6 +4186,8 @@
                     "type": "line"
                 }
             ],
+            "links": [],
+            "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:52.800620",
             "type": "code"
