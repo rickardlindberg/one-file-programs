@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import datetime
 import sys
 import uuid
@@ -1673,6 +1674,8 @@ class NoteText(ExternalTextEntry):
 
     LINK_PREFIX = "link: "
     TAG_PREFIX = "tag: "
+    FILEPATH_PREFIX = "filepath: "
+    CHUNKPATH_PREFIX = "chunkpath: "
 
     def __init__(self, db, note_id=None):
         self.db = db
@@ -1690,15 +1693,23 @@ class NoteText(ExternalTextEntry):
             extra.append("{}{}\n".format(self.LINK_PREFIX, link))
         for tag in tags:
             extra.append("{}{}\n".format(self.TAG_PREFIX, tag))
+        if data.get("type", "text") == "code":
+            extra.append("{}{}\n".format(self.FILEPATH_PREFIX, "/".join(data["filepath"])))
+            extra.append("{}{}\n".format(self.CHUNKPATH_PREFIX, "/".join(data["chunkpath"])))
         extra.append("# Usage:\n")
         extra.append("# {}http://...\n".format(self.LINK_PREFIX))
         extra.append("# {}name\n".format(self.TAG_PREFIX))
+        extra.append("# {}foo/bar.py\n".format(self.FILEPATH_PREFIX))
+        extra.append("# {}classes/Foo\n".format(self.CHUNKPATH_PREFIX))
         extra.append("#\n")
         extra.append("# Tags with special formatting:\n")
         for tag in TAG_ATTRIBUTES:
             extra.append("# {}{}\n".format(self.TAG_PREFIX, tag["name"]))
         extra.append("--\n")
-        return data["text"] + "".join(extra)
+        if data.get("type", "text") == "code":
+            return self._code_fragments_to_text(data["fragments"]) + "".join(extra)
+        else:
+            return data["text"] + "".join(extra)
 
     def _new_text(self):
         self.db.update_note(self.note_id, **self._text_to_note_fields())
@@ -1713,11 +1724,43 @@ class NoteText(ExternalTextEntry):
                 "tags": [],
             }
 
+    def _code_fragments_to_text(self, fragments):
+        lines = []
+        for fragment in fragments:
+            if fragment["type"] == "chunk":
+                lines.append("{}<<{}, blank_lines_before={}>>".format(
+                    fragment["prefix"],
+                    "/".join(fragment["path"]),
+                    fragment["blank_lines_before"]
+                ))
+            else:
+                lines.append("{}".format(
+                    fragment["text"],
+                ))
+        return "\n".join(lines) + "\n"
+
+    def _text_to_code_fragments(self, text):
+        fragments = []
+        for line in text.splitlines():
+            match = re.match(r'^(.*)<<(.*), blank_lines_before=(\d+)>>$', line)
+            if match:
+                fragments.append({
+                    "type": "chunk",
+                    "prefix": match.group(1),
+                    "path": match.group(2).split("/"),
+                    "blank_lines_before": int(match.group(3))
+                })
+            else:
+                fragments.append({"type": "line", "text": line})
+        return fragments
+
     def _parse_footer(self):
         data = {
             "text": "",
             "links": [],
             "tags": [],
+            "filepath": [],
+            "chunkpath": [],
         }
         parts = self.text.splitlines(True)
         if parts and parts.pop(-1).rstrip() == "--":
@@ -1727,6 +1770,20 @@ class NoteText(ExternalTextEntry):
                     data["links"].insert(0, part[len(self.LINK_PREFIX):].rstrip())
                 elif part.startswith(self.TAG_PREFIX):
                     data["tags"].insert(0, part[len(self.TAG_PREFIX):].rstrip())
+                elif part.startswith(self.FILEPATH_PREFIX):
+                    data["filepath"] = [
+                        x
+                        for x
+                        in part[len(self.FILEPATH_PREFIX):].rstrip().split("/")
+                        if x
+                    ]
+                elif part.startswith(self.CHUNKPATH_PREFIX):
+                    data["chunkpath"] = [
+                        x
+                        for x
+                        in part[len(self.CHUNKPATH_PREFIX):].rstrip().split("/")
+                        if x
+                    ]
                 elif part.startswith("#"):
                     pass
                 else:
@@ -1736,6 +1793,14 @@ class NoteText(ExternalTextEntry):
                 while parts and parts[-1].strip() == "":
                     parts.pop(-1)
                 data["text"] = "".join(parts)
+                if data["filepath"] or data["chunkpath"]:
+                    data["type"] = "code"
+                    data["fragments"] = self._text_to_code_fragments(data["text"])
+                    data.pop("text")
+                else:
+                    data["type"] = "text"
+                    data.pop("filepath")
+                    data.pop("chunkpath")
                 return data
         raise ParseError("no footer found")
 

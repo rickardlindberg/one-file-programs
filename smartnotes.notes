@@ -5185,6 +5185,14 @@
                     "type": "line"
                 },
                 {
+                    "text": "    FILEPATH_PREFIX = \"filepath: \"",
+                    "type": "line"
+                },
+                {
+                    "text": "    CHUNKPATH_PREFIX = \"chunkpath: \"",
+                    "type": "line"
+                },
+                {
                     "text": "",
                     "type": "line"
                 },
@@ -5253,6 +5261,18 @@
                     "type": "line"
                 },
                 {
+                    "text": "        if data.get(\"type\", \"text\") == \"code\":",
+                    "type": "line"
+                },
+                {
+                    "text": "            extra.append(\"{}{}\\n\".format(self.FILEPATH_PREFIX, \"/\".join(data[\"filepath\"])))",
+                    "type": "line"
+                },
+                {
+                    "text": "            extra.append(\"{}{}\\n\".format(self.CHUNKPATH_PREFIX, \"/\".join(data[\"chunkpath\"])))",
+                    "type": "line"
+                },
+                {
                     "text": "        extra.append(\"# Usage:\\n\")",
                     "type": "line"
                 },
@@ -5262,6 +5282,14 @@
                 },
                 {
                     "text": "        extra.append(\"# {}name\\n\".format(self.TAG_PREFIX))",
+                    "type": "line"
+                },
+                {
+                    "text": "        extra.append(\"# {}foo/bar.py\\n\".format(self.FILEPATH_PREFIX))",
+                    "type": "line"
+                },
+                {
+                    "text": "        extra.append(\"# {}classes/Foo\\n\".format(self.CHUNKPATH_PREFIX))",
                     "type": "line"
                 },
                 {
@@ -5285,7 +5313,19 @@
                     "type": "line"
                 },
                 {
-                    "text": "        return data[\"text\"] + \"\".join(extra)",
+                    "text": "        if data.get(\"type\", \"text\") == \"code\":",
+                    "type": "line"
+                },
+                {
+                    "text": "            return self._code_fragments_to_text(data[\"fragments\"]) + \"\".join(extra)",
+                    "type": "line"
+                },
+                {
+                    "text": "        else:",
+                    "type": "line"
+                },
+                {
+                    "text": "            return data[\"text\"] + \"\".join(extra)",
                     "type": "line"
                 },
                 {
@@ -5345,6 +5385,126 @@
                     "type": "line"
                 },
                 {
+                    "text": "    def _code_fragments_to_text(self, fragments):",
+                    "type": "line"
+                },
+                {
+                    "text": "        lines = []",
+                    "type": "line"
+                },
+                {
+                    "text": "        for fragment in fragments:",
+                    "type": "line"
+                },
+                {
+                    "text": "            if fragment[\"type\"] == \"chunk\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                lines.append(\"{}<<{}, blank_lines_before={}>>\".format(",
+                    "type": "line"
+                },
+                {
+                    "text": "                    fragment[\"prefix\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"/\".join(fragment[\"path\"]),",
+                    "type": "line"
+                },
+                {
+                    "text": "                    fragment[\"blank_lines_before\"]",
+                    "type": "line"
+                },
+                {
+                    "text": "                ))",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                lines.append(\"{}\".format(",
+                    "type": "line"
+                },
+                {
+                    "text": "                    fragment[\"text\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "                ))",
+                    "type": "line"
+                },
+                {
+                    "text": "        return \"\\n\".join(lines) + \"\\n\"",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def _text_to_code_fragments(self, text):",
+                    "type": "line"
+                },
+                {
+                    "text": "        fragments = []",
+                    "type": "line"
+                },
+                {
+                    "text": "        for line in text.splitlines():",
+                    "type": "line"
+                },
+                {
+                    "text": "            match = re.match(r'^(.*)<<(.*), blank_lines_before=(\\d+)>>$', line)",
+                    "type": "line"
+                },
+                {
+                    "text": "            if match:",
+                    "type": "line"
+                },
+                {
+                    "text": "                fragments.append({",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"type\": \"chunk\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"prefix\": match.group(1),",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"path\": match.group(2).split(\"/\"),",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"blank_lines_before\": int(match.group(3))",
+                    "type": "line"
+                },
+                {
+                    "text": "                })",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                fragments.append({\"type\": \"line\", \"text\": line})",
+                    "type": "line"
+                },
+                {
+                    "text": "        return fragments",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
                     "text": "    def _parse_footer(self):",
                     "type": "line"
                 },
@@ -5362,6 +5522,14 @@
                 },
                 {
                     "text": "            \"tags\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "            \"filepath\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "            \"chunkpath\": [],",
                     "type": "line"
                 },
                 {
@@ -5401,6 +5569,62 @@
                     "type": "line"
                 },
                 {
+                    "text": "                elif part.startswith(self.FILEPATH_PREFIX):",
+                    "type": "line"
+                },
+                {
+                    "text": "                    data[\"filepath\"] = [",
+                    "type": "line"
+                },
+                {
+                    "text": "                        x",
+                    "type": "line"
+                },
+                {
+                    "text": "                        for x",
+                    "type": "line"
+                },
+                {
+                    "text": "                        in part[len(self.FILEPATH_PREFIX):].rstrip().split(\"/\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                        if x",
+                    "type": "line"
+                },
+                {
+                    "text": "                    ]",
+                    "type": "line"
+                },
+                {
+                    "text": "                elif part.startswith(self.CHUNKPATH_PREFIX):",
+                    "type": "line"
+                },
+                {
+                    "text": "                    data[\"chunkpath\"] = [",
+                    "type": "line"
+                },
+                {
+                    "text": "                        x",
+                    "type": "line"
+                },
+                {
+                    "text": "                        for x",
+                    "type": "line"
+                },
+                {
+                    "text": "                        in part[len(self.CHUNKPATH_PREFIX):].rstrip().split(\"/\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                        if x",
+                    "type": "line"
+                },
+                {
+                    "text": "                    ]",
+                    "type": "line"
+                },
+                {
                     "text": "                elif part.startswith(\"#\"):",
                     "type": "line"
                 },
@@ -5434,6 +5658,38 @@
                 },
                 {
                     "text": "                data[\"text\"] = \"\".join(parts)",
+                    "type": "line"
+                },
+                {
+                    "text": "                if data[\"filepath\"] or data[\"chunkpath\"]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    data[\"type\"] = \"code\"",
+                    "type": "line"
+                },
+                {
+                    "text": "                    data[\"fragments\"] = self._text_to_code_fragments(data[\"text\"])",
+                    "type": "line"
+                },
+                {
+                    "text": "                    data.pop(\"text\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    data[\"type\"] = \"text\"",
+                    "type": "line"
+                },
+                {
+                    "text": "                    data.pop(\"filepath\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                    data.pop(\"chunkpath\")",
                     "type": "line"
                 },
                 {
@@ -8553,6 +8809,10 @@
                 "smartnotes.py"
             ],
             "fragments": [
+                {
+                    "text": "import re",
+                    "type": "line"
+                },
                 {
                     "text": "import datetime",
                     "type": "line"
