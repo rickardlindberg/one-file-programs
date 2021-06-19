@@ -2147,7 +2147,7 @@ def read_json_file(path, default_value):
 
 def write_json_file(path, value):
     with safe_write(path) as f:
-        json.dump(value, f)
+        json.dump(value, f, indent=4, sort_keys=True)
 
 @contextlib.contextmanager
 def safe_write(path):
