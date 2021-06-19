@@ -5,10 +5,10 @@ import smartnotes
 class RliterateToSmartNotesConverter(object):
 
     def convert(self, rliterate_path, smart_notes_path):
+        self.rliterate = smartnotes.read_json_file(rliterate_path, {})
+        self.note_db = smartnotes.NoteDb(smart_notes_path)
         self.page_links = set()
         self.page_id_to_note_id = {}
-        self.note_db = smartnotes.NoteDb(smart_notes_path)
-        self.rliterate = smartnotes.read_json_file(rliterate_path, {})
         self.convert_page(self.rliterate["root_page"])
         for note_id, page_id in self.page_links:
             self.note_db.create_link(note_id, self.page_id_to_note_id[page_id])
@@ -38,7 +38,7 @@ class RliterateToSmartNotesConverter(object):
             elif paragraph["type"] == "list":
                 self.convert_list(paragraph, page_note_id)
             else:
-                raise ValueError(f"Unknown paragraph type {paragraph['type']}")
+                raise ValueError(f"Unknown paragraph {paragraph}")
         for child in page["children"]:
             self.convert_page(child, page_note_id)
 
@@ -62,20 +62,20 @@ class RliterateToSmartNotesConverter(object):
                 else:
                     text += self.rliterate["variables"][fragment["id"]]
             else:
-                raise ValueError(f"Unknown code fragment type {fragment['type']}")
+                raise ValueError(f"Unknown code fragment {fragment}")
         if text is not None:
             x.extend({"type": "line", "text": x} for x in text.splitlines())
             text = None
         return x
 
-    def convert_list(self, list, parent_note_id):
-        if list["child_type"] is None and len(list["children"]) == 0:
+    def convert_list(self, list_obj, parent_note_id):
+        if list_obj["child_type"] is None and len(list_obj["children"]) == 0:
             return
         list_note_id = self.note_db.create_note(
-            text=f"<{list['child_type']} list>"
+            text=f"<{list_obj['child_type']} list>"
         )
         self.note_db.create_link(parent_note_id, list_note_id)
-        for child in list["children"]:
+        for child in list_obj["children"]:
             self.create_text_fragments_note(list_note_id, child["fragments"])
             self.convert_list(child, list_note_id)
 
@@ -104,7 +104,7 @@ class RliterateToSmartNotesConverter(object):
             self.text_fragments_page_links.add(fragment["page_id"])
             return self.get_page_title(fragment["page_id"], fragment["text"])
         else:
-            raise ValueError(f"Unknown fragment type {fragment['type']}")
+            raise ValueError(f"Unknown text fragment {fragment}")
 
     def get_page_title(self, page_id, default):
         if default:
@@ -118,9 +118,9 @@ class RliterateToSmartNotesConverter(object):
         if page["id"] == page_id:
             return page
         for child in page["children"]:
-            x = self.find_page(page_id, child)
-            if x is not None:
-                return x
+            page = self.find_page(page_id, child)
+            if page is not None:
+                return page
 
 if __name__ == "__main__":
     RliterateToSmartNotesConverter().convert("smartnotes.rliterate", "smartnotes.notes")
