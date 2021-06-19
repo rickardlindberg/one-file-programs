@@ -39,7 +39,6 @@ def consolidate(path, file, chunk, parts, db):
     sm = difflib.SequenceMatcher(a=[x[1] for x in old_lines], b=new_lines)
     note_actions = defaultdict(list)
     for tag, i1, i2, j1, j2 in sm.get_opcodes():
-        print((tag, i1, i2, j1, j2))
         if tag == "replace":
             first = None
             for tag, line in old_lines[i1:i2]:
@@ -92,7 +91,6 @@ def strip_prefix(prefix, line):
         return line
 
 def consolidate_fragments(fragments, actions):
-    print(actions)
     removes = set()
     extends = {}
     for action in actions:
