@@ -4270,6 +4270,8 @@
                     "type": "line"
                 }
             ],
+            "links": [],
+            "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:52.852081",
             "type": "code"
@@ -7132,6 +7134,646 @@
                     "type": "line"
                 },
                 {
+                    "text": "        self.consolidate_files()",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def write_files(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "        parts = self.collect_parts()",
+                    "type": "line"
+                },
+                {
+                    "text": "        for (file, chunk) in parts.keys():",
+                    "type": "line"
+                },
+                {
+                    "text": "            if file != tuple() and chunk == tuple():",
+                    "type": "line"
+                },
+                {
+                    "text": "                with open(os.path.join(*file), \"w\") as f:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    f.write(self.collect(file, chunk, parts))",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def consolidate_files(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "        with self.transaction():",
+                    "type": "line"
+                },
+                {
+                    "text": "            parts = self.collect_parts()",
+                    "type": "line"
+                },
+                {
+                    "text": "            notes = set()",
+                    "type": "line"
+                },
+                {
+                    "text": "            for (file, chunk) in parts.keys():",
+                    "type": "line"
+                },
+                {
+                    "text": "                if file != tuple() and chunk == tuple():",
+                    "type": "line"
+                },
+                {
+                    "text": "                    notes.update(self.consolidate(os.path.join(*file), file, chunk, parts))",
+                    "type": "line"
+                },
+                {
+                    "text": "            if notes:",
+                    "type": "line"
+                },
+                {
+                    "text": "                parts = self.collect_parts()",
+                    "type": "line"
+                },
+                {
+                    "text": "                report = [",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"Consolidation report:\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                ]",
+                    "type": "line"
+                },
+                {
+                    "text": "                for (file, chunk) in parts.keys():",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if file != tuple() and chunk == tuple():",
+                    "type": "line"
+                },
+                {
+                    "text": "                        path = os.path.join(*file)",
+                    "type": "line"
+                },
+                {
+                    "text": "                        with open(path) as f:",
+                    "type": "line"
+                },
+                {
+                    "text": "                            file_on_disk = f.read()",
+                    "type": "line"
+                },
+                {
+                    "text": "                        file_in_memory = self.collect(file, chunk, parts)",
+                    "type": "line"
+                },
+                {
+                    "text": "                        if file_on_disk != file_in_memory:",
+                    "type": "line"
+                },
+                {
+                    "text": "                            report.append(f\"  FAIL: {path}\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                            with open(f\"{path}.orig\", \"w\") as f:",
+                    "type": "line"
+                },
+                {
+                    "text": "                                f.write(file_on_disk)",
+                    "type": "line"
+                },
+                {
+                    "text": "                        else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                            report.append(f\"  OK:   {path}\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                report_id = self.create_note(**{",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"type\": \"code\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"text\": \"<code>\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"filepath\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"chunkpath\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"fragments\": [{\"type\": \"line\", \"text\": x} for x in report]",
+                    "type": "line"
+                },
+                {
+                    "text": "                })",
+                    "type": "line"
+                },
+                {
+                    "text": "                for affected_note in notes:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    self.create_link(report_id, affected_note)",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def collect_parts(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "        parts = defaultdict(list)",
+                    "type": "line"
+                },
+                {
+                    "text": "        for note_id, note in reversed(self.get_notes()):",
+                    "type": "line"
+                },
+                {
+                    "text": "            if note.get(\"type\", None) == \"code\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                key = (tuple(note[\"filepath\"]), tuple(note[\"chunkpath\"]))",
+                    "type": "line"
+                },
+                {
+                    "text": "                parts[key].append((note_id, note[\"fragments\"]))",
+                    "type": "line"
+                },
+                {
+                    "text": "        return parts",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def consolidate(self, path, file, chunk, parts):",
+                    "type": "line"
+                },
+                {
+                    "text": "        old_lines = []",
+                    "type": "line"
+                },
+                {
+                    "text": "        self.collect_lines(old_lines, file, chunk, parts)",
+                    "type": "line"
+                },
+                {
+                    "text": "        with open(path) as f:",
+                    "type": "line"
+                },
+                {
+                    "text": "            new_lines = f.read().splitlines()",
+                    "type": "line"
+                },
+                {
+                    "text": "        sm = difflib.SequenceMatcher(a=[x[1] for x in old_lines], b=new_lines)",
+                    "type": "line"
+                },
+                {
+                    "text": "        note_actions = defaultdict(list)",
+                    "type": "line"
+                },
+                {
+                    "text": "        for tag, i1, i2, j1, j2 in sm.get_opcodes():",
+                    "type": "line"
+                },
+                {
+                    "text": "            if tag == \"replace\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                first = None",
+                    "type": "line"
+                },
+                {
+                    "text": "                for tag, line in old_lines[i1:i2]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if tag is not None:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        note_id, prefix, fragment_index = tag",
+                    "type": "line"
+                },
+                {
+                    "text": "                        if first is None:",
+                    "type": "line"
+                },
+                {
+                    "text": "                            first = tag",
+                    "type": "line"
+                },
+                {
+                    "text": "                        note_actions[note_id].append(('remove', fragment_index))",
+                    "type": "line"
+                },
+                {
+                    "text": "                if first:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    note_actions[first[0]].append((",
+                    "type": "line"
+                },
+                {
+                    "text": "                        'extend',",
+                    "type": "line"
+                },
+                {
+                    "text": "                        first[2],",
+                    "type": "line"
+                },
+                {
+                    "text": "                        [self.strip_prefix(first[1], x) for x in new_lines[j1:j2]]",
+                    "type": "line"
+                },
+                {
+                    "text": "                    ))",
+                    "type": "line"
+                },
+                {
+                    "text": "            elif tag == \"delete\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                for tag, line in old_lines[i1:i2]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if tag is not None:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        note_id, prefix, fragment_index = tag",
+                    "type": "line"
+                },
+                {
+                    "text": "                        note_actions[note_id].append(('remove', fragment_index))",
+                    "type": "line"
+                },
+                {
+                    "text": "            elif tag == \"insert\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                index = i1",
+                    "type": "line"
+                },
+                {
+                    "text": "                while True:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    tag, line = old_lines[index]",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if tag:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        note_id, prefix, fragment_index = tag",
+                    "type": "line"
+                },
+                {
+                    "text": "                        note_actions[note_id].append((",
+                    "type": "line"
+                },
+                {
+                    "text": "                            'extend',",
+                    "type": "line"
+                },
+                {
+                    "text": "                            fragment_index,",
+                    "type": "line"
+                },
+                {
+                    "text": "                            [self.strip_prefix(prefix, x) for x in new_lines[j1:j2]]",
+                    "type": "line"
+                },
+                {
+                    "text": "                        ))",
+                    "type": "line"
+                },
+                {
+                    "text": "                        break",
+                    "type": "line"
+                },
+                {
+                    "text": "                    else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        index += 1",
+                    "type": "line"
+                },
+                {
+                    "text": "            elif tag == \"equal\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                # Nothing to do",
+                    "type": "line"
+                },
+                {
+                    "text": "                pass",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                raise ValueError(f\"Unknown op_code tag {tag}\")",
+                    "type": "line"
+                },
+                {
+                    "text": "        notes = set()",
+                    "type": "line"
+                },
+                {
+                    "text": "        for note_id, actions in note_actions.items():",
+                    "type": "line"
+                },
+                {
+                    "text": "            note = self.get_note_data(note_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "            self.update_note(",
+                    "type": "line"
+                },
+                {
+                    "text": "                note_id,",
+                    "type": "line"
+                },
+                {
+                    "text": "                fragments=self.consolidate_fragments(note[\"fragments\"], actions)",
+                    "type": "line"
+                },
+                {
+                    "text": "            )",
+                    "type": "line"
+                },
+                {
+                    "text": "            notes.add(note_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "        return notes",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def strip_prefix(self, prefix, line):",
+                    "type": "line"
+                },
+                {
+                    "text": "        if line.startswith(prefix):",
+                    "type": "line"
+                },
+                {
+                    "text": "            return line[len(prefix):]",
+                    "type": "line"
+                },
+                {
+                    "text": "        else:",
+                    "type": "line"
+                },
+                {
+                    "text": "            return line",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def consolidate_fragments(self, fragments, actions):",
+                    "type": "line"
+                },
+                {
+                    "text": "        removes = set()",
+                    "type": "line"
+                },
+                {
+                    "text": "        extends = {}",
+                    "type": "line"
+                },
+                {
+                    "text": "        for action in actions:",
+                    "type": "line"
+                },
+                {
+                    "text": "            if action[0] == 'remove':",
+                    "type": "line"
+                },
+                {
+                    "text": "                removes.add(action[1])",
+                    "type": "line"
+                },
+                {
+                    "text": "            elif action[0] == 'extend':",
+                    "type": "line"
+                },
+                {
+                    "text": "                extends[action[1]] = action[2]",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                raise ValueError(f\"Unknown action {action}\")",
+                    "type": "line"
+                },
+                {
+                    "text": "        new_fragments = []",
+                    "type": "line"
+                },
+                {
+                    "text": "        for index, fragment in enumerate(fragments):",
+                    "type": "line"
+                },
+                {
+                    "text": "            if index in extends:",
+                    "type": "line"
+                },
+                {
+                    "text": "                for line in extends[index]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    new_fragments.append({\"type\": \"line\", \"text\": line})",
+                    "type": "line"
+                },
+                {
+                    "text": "            if index not in removes:",
+                    "type": "line"
+                },
+                {
+                    "text": "                new_fragments.append(fragment)",
+                    "type": "line"
+                },
+                {
+                    "text": "        return new_fragments",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def collect(self, file, chunk, parts):",
+                    "type": "line"
+                },
+                {
+                    "text": "        lines = []",
+                    "type": "line"
+                },
+                {
+                    "text": "        self.collect_lines(lines, file, chunk, parts)",
+                    "type": "line"
+                },
+                {
+                    "text": "        return \"\\n\".join(line[1] for line in lines) + \"\\n\"",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def collect_lines(self, lines, file, chunk, parts, prefix=\"\", blank_lines_before=0):",
+                    "type": "line"
+                },
+                {
+                    "text": "        for index, (note_id, fragments) in enumerate(parts.get((file, chunk), [])):",
+                    "type": "line"
+                },
+                {
+                    "text": "            if index > 0:",
+                    "type": "line"
+                },
+                {
+                    "text": "                for foo in range(blank_lines_before):",
+                    "type": "line"
+                },
+                {
+                    "text": "                    lines.append((None, \"\"))",
+                    "type": "line"
+                },
+                {
+                    "text": "            for fragment_index, fragment in enumerate(fragments):",
+                    "type": "line"
+                },
+                {
+                    "text": "                if fragment[\"type\"] == \"line\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if fragment[\"text\"]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        lines.append(((note_id, prefix, fragment_index), prefix+fragment[\"text\"]))",
+                    "type": "line"
+                },
+                {
+                    "text": "                    else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        lines.append(((note_id, prefix, fragment_index), \"\"))",
+                    "type": "line"
+                },
+                {
+                    "text": "                elif fragment[\"type\"] == \"chunk\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                    self.collect_lines(",
+                    "type": "line"
+                },
+                {
+                    "text": "                        lines,",
+                    "type": "line"
+                },
+                {
+                    "text": "                        file,",
+                    "type": "line"
+                },
+                {
+                    "text": "                        tuple(list(chunk)+fragment[\"path\"]),",
+                    "type": "line"
+                },
+                {
+                    "text": "                        parts,",
+                    "type": "line"
+                },
+                {
+                    "text": "                        prefix=prefix+fragment[\"prefix\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "                        blank_lines_before=fragment[\"blank_lines_before\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "                    )",
+                    "type": "line"
+                },
+                {
+                    "text": "                else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    raise ValueError(f\"Unknown code fragment type {fragment['type']}\")",
+                    "type": "line"
+                },
+                {
                     "text": "",
                     "type": "line"
                 },
@@ -7558,8 +8200,14 @@
                 {
                     "text": "        write_json_file(self.path, self._get())",
                     "type": "line"
+                },
+                {
+                    "text": "        self.write_files()",
+                    "type": "line"
                 }
             ],
+            "links": [],
+            "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:52.838266",
             "type": "code"
@@ -8810,6 +9458,14 @@
             ],
             "fragments": [
                 {
+                    "text": "from collections import defaultdict",
+                    "type": "line"
+                },
+                {
+                    "text": "import difflib",
+                    "type": "line"
+                },
+                {
                     "text": "import re",
                     "type": "line"
                 },
@@ -9717,6 +10373,8 @@
                     "type": "line"
                 }
             ],
+            "links": [],
+            "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:53.077200",
             "type": "code"

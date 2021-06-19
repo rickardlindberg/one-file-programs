@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from collections import defaultdict
+import difflib
 import re
 import datetime
 import sys
@@ -1556,6 +1558,166 @@ class NoteDb(Immutable):
             "links": {},
         }))
         self.path = path
+        self.consolidate_files()
+
+    def write_files(self):
+        parts = self.collect_parts()
+        for (file, chunk) in parts.keys():
+            if file != tuple() and chunk == tuple():
+                with open(os.path.join(*file), "w") as f:
+                    f.write(self.collect(file, chunk, parts))
+
+    def consolidate_files(self):
+        with self.transaction():
+            parts = self.collect_parts()
+            notes = set()
+            for (file, chunk) in parts.keys():
+                if file != tuple() and chunk == tuple():
+                    notes.update(self.consolidate(os.path.join(*file), file, chunk, parts))
+            if notes:
+                parts = self.collect_parts()
+                report = [
+                    "Consolidation report:",
+                    "",
+                ]
+                for (file, chunk) in parts.keys():
+                    if file != tuple() and chunk == tuple():
+                        path = os.path.join(*file)
+                        with open(path) as f:
+                            file_on_disk = f.read()
+                        file_in_memory = self.collect(file, chunk, parts)
+                        if file_on_disk != file_in_memory:
+                            report.append(f"  FAIL: {path}")
+                            with open(f"{path}.orig", "w") as f:
+                                f.write(file_on_disk)
+                        else:
+                            report.append(f"  OK:   {path}")
+                report_id = self.create_note(**{
+                    "type": "code",
+                    "text": "<code>",
+                    "filepath": [],
+                    "chunkpath": [],
+                    "fragments": [{"type": "line", "text": x} for x in report]
+                })
+                for affected_note in notes:
+                    self.create_link(report_id, affected_note)
+
+    def collect_parts(self):
+        parts = defaultdict(list)
+        for note_id, note in reversed(self.get_notes()):
+            if note.get("type", None) == "code":
+                key = (tuple(note["filepath"]), tuple(note["chunkpath"]))
+                parts[key].append((note_id, note["fragments"]))
+        return parts
+
+    def consolidate(self, path, file, chunk, parts):
+        old_lines = []
+        self.collect_lines(old_lines, file, chunk, parts)
+        with open(path) as f:
+            new_lines = f.read().splitlines()
+        sm = difflib.SequenceMatcher(a=[x[1] for x in old_lines], b=new_lines)
+        note_actions = defaultdict(list)
+        for tag, i1, i2, j1, j2 in sm.get_opcodes():
+            if tag == "replace":
+                first = None
+                for tag, line in old_lines[i1:i2]:
+                    if tag is not None:
+                        note_id, prefix, fragment_index = tag
+                        if first is None:
+                            first = tag
+                        note_actions[note_id].append(('remove', fragment_index))
+                if first:
+                    note_actions[first[0]].append((
+                        'extend',
+                        first[2],
+                        [self.strip_prefix(first[1], x) for x in new_lines[j1:j2]]
+                    ))
+            elif tag == "delete":
+                for tag, line in old_lines[i1:i2]:
+                    if tag is not None:
+                        note_id, prefix, fragment_index = tag
+                        note_actions[note_id].append(('remove', fragment_index))
+            elif tag == "insert":
+                index = i1
+                while True:
+                    tag, line = old_lines[index]
+                    if tag:
+                        note_id, prefix, fragment_index = tag
+                        note_actions[note_id].append((
+                            'extend',
+                            fragment_index,
+                            [self.strip_prefix(prefix, x) for x in new_lines[j1:j2]]
+                        ))
+                        break
+                    else:
+                        index += 1
+            elif tag == "equal":
+                # Nothing to do
+                pass
+            else:
+                raise ValueError(f"Unknown op_code tag {tag}")
+        notes = set()
+        for note_id, actions in note_actions.items():
+            note = self.get_note_data(note_id)
+            self.update_note(
+                note_id,
+                fragments=self.consolidate_fragments(note["fragments"], actions)
+            )
+            notes.add(note_id)
+        return notes
+
+    def strip_prefix(self, prefix, line):
+        if line.startswith(prefix):
+            return line[len(prefix):]
+        else:
+            return line
+
+    def consolidate_fragments(self, fragments, actions):
+        removes = set()
+        extends = {}
+        for action in actions:
+            if action[0] == 'remove':
+                removes.add(action[1])
+            elif action[0] == 'extend':
+                extends[action[1]] = action[2]
+            else:
+                raise ValueError(f"Unknown action {action}")
+        new_fragments = []
+        for index, fragment in enumerate(fragments):
+            if index in extends:
+                for line in extends[index]:
+                    new_fragments.append({"type": "line", "text": line})
+            if index not in removes:
+                new_fragments.append(fragment)
+        return new_fragments
+
+    def collect(self, file, chunk, parts):
+        lines = []
+        self.collect_lines(lines, file, chunk, parts)
+        return "\n".join(line[1] for line in lines) + "\n"
+
+    def collect_lines(self, lines, file, chunk, parts, prefix="", blank_lines_before=0):
+        for index, (note_id, fragments) in enumerate(parts.get((file, chunk), [])):
+            if index > 0:
+                for foo in range(blank_lines_before):
+                    lines.append((None, ""))
+            for fragment_index, fragment in enumerate(fragments):
+                if fragment["type"] == "line":
+                    if fragment["text"]:
+                        lines.append(((note_id, prefix, fragment_index), prefix+fragment["text"]))
+                    else:
+                        lines.append(((note_id, prefix, fragment_index), ""))
+                elif fragment["type"] == "chunk":
+                    self.collect_lines(
+                        lines,
+                        file,
+                        tuple(list(chunk)+fragment["path"]),
+                        parts,
+                        prefix=prefix+fragment["prefix"],
+                        blank_lines_before=fragment["blank_lines_before"],
+                    )
+                else:
+                    raise ValueError(f"Unknown code fragment type {fragment['type']}")
 
     def get_notes(self, expression=""):
         def match(item):
@@ -1663,6 +1825,7 @@ class NoteDb(Immutable):
 
     def _data_changed(self):
         write_json_file(self.path, self._get())
+        self.write_files()
 
 class NoteNotFound(ValueError):
     pass
