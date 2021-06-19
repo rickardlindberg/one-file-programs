@@ -5,26 +5,25 @@ import smartnotes
 class RliterateToSmartNotesConverter(object):
 
     def convert(self, rliterate_path, smart_notes_path):
+        self.page_links = set()
+        self.page_id_to_note_id = {}
         self.note_db = smartnotes.NoteDb(smart_notes_path)
-        rliterate = smartnotes.read_json_file(rliterate_path, {})
-        self.variables = rliterate["variables"]
-        self.convert_page(rliterate["root_page"])
+        self.rliterate = smartnotes.read_json_file(rliterate_path, {})
+        self.convert_page(self.rliterate["root_page"])
+        for note_id, page_id in self.page_links:
+            self.note_db.create_link(note_id, self.page_id_to_note_id[page_id])
 
     def convert_page(self, page, parent_page_note_id=None):
         page_note_id = self.note_db.create_note(**{
             "text": page["title"],
             "tags": ["title"],
         })
+        self.page_id_to_note_id[page["id"]] = page_note_id
         if parent_page_note_id is not None:
             self.note_db.create_link(parent_page_note_id, page_note_id)
         for paragraph in page["paragraphs"]:
             if paragraph["type"] == "text":
-                self.note_db.create_link(
-                    page_note_id,
-                    self.note_db.create_note(
-                        text=self.convert_text_fragments(paragraph["fragments"])
-                    )
-                )
+                self.create_text_fragments_note(page_note_id, paragraph["fragments"])
             elif paragraph["type"] == "code":
                 self.note_db.create_link(
                     page_note_id,
@@ -59,9 +58,9 @@ class RliterateToSmartNotesConverter(object):
                     text += fragment["text"]
             elif fragment["type"] == "variable":
                 if text is None:
-                    text = self.variables[fragment["id"]]
+                    text = self.rliterate["variables"][fragment["id"]]
                 else:
-                    text += self.variables[fragment["id"]]
+                    text += self.rliterate["variables"][fragment["id"]]
             else:
                 raise ValueError(f"Unknown code fragment type {fragment['type']}")
         if text is not None:
@@ -77,20 +76,51 @@ class RliterateToSmartNotesConverter(object):
         )
         self.note_db.create_link(parent_note_id, list_note_id)
         for child in list["children"]:
-            self.note_db.create_link(
-                list_note_id,
-                self.note_db.create_note(
-                    text=self.convert_text_fragments(child["fragments"])
-                )
-            )
+            self.create_text_fragments_note(list_note_id, child["fragments"])
             self.convert_list(child, list_note_id)
+
+    def create_text_fragments_note(self, parent_note_id, fragments):
+        self.text_fragments_page_links = set()
+        child_note_id = self.note_db.create_note(
+            text=self.convert_text_fragments(fragments)
+        )
+        self.note_db.create_link(parent_note_id, child_note_id)
+        for page_id in self.text_fragments_page_links:
+            self.page_links.add((child_note_id, page_id))
 
     def convert_text_fragments(self, fragments):
         return "".join(
-            fragment["text"] if fragment["text"] else fragment["page_id"]
+            self.convert_text_fragment(fragment)
             for fragment
             in fragments
         )
+
+    def convert_text_fragment(self, fragment):
+        if fragment["type"] == "text":
+            return fragment["text"]
+        elif fragment["type"] == "code":
+            return "`{}`".format(fragment["text"])
+        elif fragment["type"] == "reference":
+            self.text_fragments_page_links.add(fragment["page_id"])
+            return self.get_page_title(fragment["page_id"], fragment["text"])
+        else:
+            raise ValueError(f"Unknown fragment type {fragment['type']}")
+
+    def get_page_title(self, page_id, default):
+        if default:
+            return default
+        else:
+            return self.find_page(page_id)["title"]
+
+    def find_page(self, page_id, page=None):
+        if page is None:
+            page = self.rliterate["root_page"]
+        if page["id"] == page_id:
+            return page
+        for child in page["children"]:
+            x = self.find_page(page_id, child)
+            if x is not None:
+                return x
 
 if __name__ == "__main__":
     RliterateToSmartNotesConverter().convert("smartnotes.rliterate", "smartnotes.notes")
