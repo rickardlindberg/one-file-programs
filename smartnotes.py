@@ -275,15 +275,45 @@ class NoteBaseWidget(Widget):
                 for key in list(attributes.keys()):
                     if key in tag:
                         attributes[key] = tag[key]
-        canvas.render_text(
-            self.data["text"],
-            rect,
-            size=self.full_width/10,
-            textalign=attributes["textalign"],
-            boxalign="center",
-            color=COLOR_NOTE_TEXT,
-            face=FONT_TEXT
-        )
+        if self.data.get("type", "text") == "code":
+            header = rect.copy()
+            header.height = status_height
+            body = rect.copy()
+            body.y += (header.height*1.5)
+            body.height -= (header.height*1.5)
+            canvas.render_text(
+                "{} - {}".format(
+                    "/".join(self.data["filepath"]),
+                    "/".join(self.data["chunkpath"])
+                ),
+                header,
+                size=self.full_width/12,
+                textalign="left",
+                boxalign="topright",
+                color=COLOR_NOTE_TAG_TEXT,
+                face=FONT_MONOSPACE,
+                split=False
+            )
+            canvas.render_text(
+                self._code_lines(self.data["fragments"]),
+                body,
+                size=self.full_width/12,
+                textalign="left",
+                boxalign="left",
+                color=COLOR_NOTE_TEXT,
+                face=FONT_MONOSPACE,
+                split=False
+            )
+        else:
+            canvas.render_text(
+                self.data["text"],
+                rect,
+                size=self.full_width/10,
+                textalign=attributes["textalign"],
+                boxalign="center",
+                color=COLOR_NOTE_TEXT,
+                face=FONT_TEXT
+            )
         rect = rect.inflate(border*2, 0)
         rect.height = status_height
         rect.bottom = self.card_full_rect.bottom - border
@@ -321,6 +351,20 @@ class NoteBaseWidget(Widget):
                     1
                 )
                 rect = rect.move(-rect.height*1.3, 0)
+
+    def _code_lines(self, fragments):
+        lines = []
+        for fragment in fragments:
+            if fragment["type"] == "chunk":
+                lines.append("{}<<{}>>".format(
+                    fragment["prefix"],
+                    "/".join(fragment["path"])
+                ))
+            else:
+                lines.append("{}".format(
+                    fragment["text"],
+                ))
+        return "\n".join(lines)
 
     def _get_target(self, alotted_rect, align="center"):
         target = self.card_full_rect
@@ -1866,7 +1910,8 @@ class CairoCanvas(object):
     ):
         if box.height <= 0:
             return
-        text = text.strip().replace("\n", " ")
+        if split:
+            text = text.strip().replace("\n", " ")
         if not text:
             return
         if DEBUG_TEXT_BORDER:
@@ -1884,6 +1929,8 @@ class CairoCanvas(object):
         self._translate_box(box, metrics["width"]*scale_factor, metrics["height"]*scale_factor, boxalign)
         self.ctx.scale(scale_factor, scale_factor)
         for x, y, width, part in metrics["parts"]:
+            if not split:
+                x = 0
             if textalign == "center":
                 x_align_offset = (metrics["width"]-width)/2
             elif textalign == "right":
@@ -1904,7 +1951,7 @@ class CairoCanvas(object):
         if split:
             metrics = self._find_best_split(text, box)
         else:
-            metrics = self._get_metrics([text])
+            metrics = self._get_metrics(text.splitlines())
         scale_factor = box.width / metrics["width"]
         if metrics["height"] * scale_factor > box.height:
             scale_factor = box.height / metrics["height"]
@@ -1961,6 +2008,8 @@ class CairoCanvas(object):
             height += font_descent
             height += extra
         height -= extra
+        if height == 0:
+            height = 0.1
         return {
             "parts": parts,
             "width": width,
