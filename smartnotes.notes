@@ -7958,7 +7958,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "        return [",
+                    "text": "        return self._sort_links([",
                     "type": "line"
                 },
                 {
@@ -7974,7 +7974,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "        ]",
+                    "text": "        ])",
                     "type": "line"
                 },
                 {
@@ -7986,7 +7986,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "        return [",
+                    "text": "        return self._sort_links([",
                     "type": "line"
                 },
                 {
@@ -8002,7 +8002,31 @@
                     "type": "line"
                 },
                 {
-                    "text": "        ]",
+                    "text": "        ])",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def _sort_links(self, links):",
+                    "type": "line"
+                },
+                {
+                    "text": "        return sorted(",
+                    "type": "line"
+                },
+                {
+                    "text": "            links,",
+                    "type": "line"
+                },
+                {
+                    "text": "            key=lambda item: item[1][\"timestamp_created\"]",
+                    "type": "line"
+                },
+                {
+                    "text": "        )",
                     "type": "line"
                 },
                 {

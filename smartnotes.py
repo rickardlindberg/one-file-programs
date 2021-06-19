@@ -1764,18 +1764,24 @@ class NoteDb(Immutable):
             yield link["to"]
 
     def get_outgoing_links(self, note_id):
-        return [
+        return self._sort_links([
             (link_id, link)
             for link_id, link in self._get("links").items()
             if link["from"] == note_id
-        ]
+        ])
 
     def get_incoming_links(self, note_id):
-        return [
+        return self._sort_links([
             (link_id, link)
             for link_id, link in self._get("links").items()
             if link["to"] == note_id
-        ]
+        ])
+
+    def _sort_links(self, links):
+        return sorted(
+            links,
+            key=lambda item: item[1]["timestamp_created"]
+        )
 
     def create_note(self, **params):
         note_id = genid()
