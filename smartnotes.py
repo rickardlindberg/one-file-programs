@@ -1638,19 +1638,27 @@ class NoteDb(Immutable):
                         note_id, prefix, fragment_index = tag
                         note_actions[note_id].append(('remove', fragment_index))
             elif tag == "insert":
-                index = i1
-                while True:
+                def indices(index, items):
+                    index_up = index - 1
+                    index_down = index
+                    while index_up >= 0 or index_down < len(items):
+                        if index_up >= 0:
+                            yield (index_up, 1)
+                            index_up -= 1
+                        if index_down < len(items):
+                            yield (index_down, 0)
+                            index_down += 1
+                    raise ValueError("ran out of indices to try")
+                for index, offset in indices(i1, old_lines):
                     tag, line = old_lines[index]
                     if tag:
                         note_id, prefix, fragment_index = tag
                         note_actions[note_id].append((
                             'extend',
-                            fragment_index,
+                            fragment_index+offset,
                             [self.strip_prefix(prefix, x) for x in new_lines[j1:j2]]
                         ))
                         break
-                    else:
-                        index += 1
             elif tag == "equal":
                 # Nothing to do
                 pass
@@ -1689,6 +1697,9 @@ class NoteDb(Immutable):
                     new_fragments.append({"type": "line", "text": line})
             if index not in removes:
                 new_fragments.append(fragment)
+        if (index+1) in extends:
+            for line in extends[index+1]:
+                new_fragments.append({"type": "line", "text": line})
         return new_fragments
 
     def collect(self, file, chunk, parts):

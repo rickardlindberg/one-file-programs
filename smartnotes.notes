@@ -7454,11 +7454,51 @@
                     "type": "line"
                 },
                 {
-                    "text": "                index = i1",
+                    "text": "                def indices(index, items):",
                     "type": "line"
                 },
                 {
-                    "text": "                while True:",
+                    "text": "                    index_up = index - 1",
+                    "type": "line"
+                },
+                {
+                    "text": "                    index_down = index",
+                    "type": "line"
+                },
+                {
+                    "text": "                    while index_up >= 0 or index_down < len(items):",
+                    "type": "line"
+                },
+                {
+                    "text": "                        if index_up >= 0:",
+                    "type": "line"
+                },
+                {
+                    "text": "                            yield (index_up, 1)",
+                    "type": "line"
+                },
+                {
+                    "text": "                            index_up -= 1",
+                    "type": "line"
+                },
+                {
+                    "text": "                        if index_down < len(items):",
+                    "type": "line"
+                },
+                {
+                    "text": "                            yield (index_down, 0)",
+                    "type": "line"
+                },
+                {
+                    "text": "                            index_down += 1",
+                    "type": "line"
+                },
+                {
+                    "text": "                    raise ValueError(\"ran out of indices to try\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                for index, offset in indices(i1, old_lines):",
                     "type": "line"
                 },
                 {
@@ -7482,7 +7522,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "                            fragment_index,",
+                    "text": "                            fragment_index+offset,",
                     "type": "line"
                 },
                 {
@@ -7495,14 +7535,6 @@
                 },
                 {
                     "text": "                        break",
-                    "type": "line"
-                },
-                {
-                    "text": "                    else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                        index += 1",
                     "type": "line"
                 },
                 {
@@ -7655,6 +7687,18 @@
                 },
                 {
                     "text": "                new_fragments.append(fragment)",
+                    "type": "line"
+                },
+                {
+                    "text": "        if (index+1) in extends:",
+                    "type": "line"
+                },
+                {
+                    "text": "            for line in extends[index+1]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                new_fragments.append({\"type\": \"line\", \"text\": line})",
                     "type": "line"
                 },
                 {
