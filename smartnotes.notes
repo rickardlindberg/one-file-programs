@@ -115,6 +115,11 @@
             "timestamp_created": "2021-04-25T05:42:56.115072",
             "to": "81c03dd935934f6988dbe6800d2a0013"
         },
+        "24a597ed83ca49a1947c89c7cb9b6bde": {
+            "from": "de4893d9140f4fc0b623a31c81af267c",
+            "timestamp_created": "2021-06-20T12:30:05.662790",
+            "to": "6f2696b9761a45d48b44f77888167531"
+        },
         "24c3f6bb51334c4cbe348541751ff2cf": {
             "from": "5d81e13c3cb9476da21aac3f66c239f7",
             "timestamp_created": "2021-06-19T07:27:52.662041",
@@ -489,6 +494,11 @@
             "from": "19c4146f24a34fd692f02a722b9041d2",
             "timestamp_created": "2021-06-20T09:34:55.377586",
             "to": "066bfafcddf84e72abc59a89cf1a8947"
+        },
+        "848c44b820574216a03a2306779dafea": {
+            "from": "de4893d9140f4fc0b623a31c81af267c",
+            "timestamp_created": "2021-06-20T12:27:23.840297",
+            "to": "b6d3c5edf7454e8ab469258bdb5dc0c1"
         },
         "85f890d8ce3942309bfb2f55b11f6943": {
             "from": "3c0c8700f3df48f993020e420ec4b125",
@@ -939,6 +949,11 @@
             "from": "2ee004f1e26a4e6bafcf5e9fd1e4e874",
             "timestamp_created": "2021-06-19T07:27:53.913321",
             "to": "5ad55d51dad84960bda16db55ffb5115"
+        },
+        "f41dd1b56c924282bf7a245caab70685": {
+            "from": "2a3c18b5f0914536be66afe1ea8aee44",
+            "timestamp_created": "2021-06-20T12:30:46.912286",
+            "to": "6f2696b9761a45d48b44f77888167531"
         },
         "f4e749c3737a4fe8998d9a1d2c2420d1": {
             "from": "73bd50be44c24e0198e725a0ff9c56df",
@@ -2451,6 +2466,58 @@
             ],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:53.014429",
+            "type": "code"
+        },
+        "21e09e1f1d0d4fa184795fa3105577c9": {
+            "chunkpath": [
+                "classes",
+                "NoteText"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _text_to_note_fields(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    try:",
+                    "type": "line"
+                },
+                {
+                    "text": "        return self._parse_footer()",
+                    "type": "line"
+                },
+                {
+                    "text": "    except ParseError:",
+                    "type": "line"
+                },
+                {
+                    "text": "        return {",
+                    "type": "line"
+                },
+                {
+                    "text": "            \"text\": self.text,",
+                    "type": "line"
+                },
+                {
+                    "text": "            \"links\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "            \"tags\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "        }",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:27:02.675543",
             "type": "code"
         },
         "21f583aa5a32443fbad72db20a181f03": {
@@ -4076,6 +4143,218 @@
             "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-20T12:22:06.076969",
+            "type": "code"
+        },
+        "385ff0e82d6f450bb8a890ceb61cf3e3": {
+            "chunkpath": [
+                "classes",
+                "NoteText"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _parse_footer(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    data = {",
+                    "type": "line"
+                },
+                {
+                    "text": "        \"text\": \"\",",
+                    "type": "line"
+                },
+                {
+                    "text": "        \"links\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "        \"tags\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "        \"filepath\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "        \"chunkpath\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "    }",
+                    "type": "line"
+                },
+                {
+                    "text": "    parts = self.text.splitlines(True)",
+                    "type": "line"
+                },
+                {
+                    "text": "    if parts and parts.pop(-1).rstrip() == \"--\":",
+                    "type": "line"
+                },
+                {
+                    "text": "        while parts and parts[-1].rstrip() != \"--\":",
+                    "type": "line"
+                },
+                {
+                    "text": "            part = parts.pop(-1)",
+                    "type": "line"
+                },
+                {
+                    "text": "            if part.startswith(self.LINK_PREFIX):",
+                    "type": "line"
+                },
+                {
+                    "text": "                data[\"links\"].insert(0, part[len(self.LINK_PREFIX):].rstrip())",
+                    "type": "line"
+                },
+                {
+                    "text": "            elif part.startswith(self.TAG_PREFIX):",
+                    "type": "line"
+                },
+                {
+                    "text": "                data[\"tags\"].insert(0, part[len(self.TAG_PREFIX):].rstrip())",
+                    "type": "line"
+                },
+                {
+                    "text": "            elif part.startswith(self.FILEPATH_PREFIX):",
+                    "type": "line"
+                },
+                {
+                    "text": "                data[\"filepath\"] = [",
+                    "type": "line"
+                },
+                {
+                    "text": "                    x",
+                    "type": "line"
+                },
+                {
+                    "text": "                    for x",
+                    "type": "line"
+                },
+                {
+                    "text": "                    in part[len(self.FILEPATH_PREFIX):].rstrip().split(\"/\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if x",
+                    "type": "line"
+                },
+                {
+                    "text": "                ]",
+                    "type": "line"
+                },
+                {
+                    "text": "            elif part.startswith(self.CHUNKPATH_PREFIX):",
+                    "type": "line"
+                },
+                {
+                    "text": "                data[\"chunkpath\"] = [",
+                    "type": "line"
+                },
+                {
+                    "text": "                    x",
+                    "type": "line"
+                },
+                {
+                    "text": "                    for x",
+                    "type": "line"
+                },
+                {
+                    "text": "                    in part[len(self.CHUNKPATH_PREFIX):].rstrip().split(\"/\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if x",
+                    "type": "line"
+                },
+                {
+                    "text": "                ]",
+                    "type": "line"
+                },
+                {
+                    "text": "            elif part.startswith(\"#\"):",
+                    "type": "line"
+                },
+                {
+                    "text": "                pass",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                raise ParseError(\"unknown field\")",
+                    "type": "line"
+                },
+                {
+                    "text": "        if parts:",
+                    "type": "line"
+                },
+                {
+                    "text": "            parts.pop(-1)",
+                    "type": "line"
+                },
+                {
+                    "text": "            while parts and parts[-1].strip() == \"\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                parts.pop(-1)",
+                    "type": "line"
+                },
+                {
+                    "text": "            data[\"text\"] = \"\".join(parts)",
+                    "type": "line"
+                },
+                {
+                    "text": "            if data[\"filepath\"] or data[\"chunkpath\"]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                data[\"type\"] = \"code\"",
+                    "type": "line"
+                },
+                {
+                    "text": "                data[\"splits\"] = self._text_to_code_fragments(data[\"text\"])",
+                    "type": "line"
+                },
+                {
+                    "text": "                data.pop(\"text\")",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                data[\"type\"] = \"text\"",
+                    "type": "line"
+                },
+                {
+                    "text": "                data.pop(\"filepath\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                data.pop(\"chunkpath\")",
+                    "type": "line"
+                },
+                {
+                    "text": "            return data",
+                    "type": "line"
+                },
+                {
+                    "text": "    raise ParseError(\"no footer found\")",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:27:02.675622",
             "type": "code"
         },
         "398ad55085fc451383e54a64291de937": {
@@ -6196,6 +6475,13 @@
             "timestamp_created": "2021-06-20T12:22:06.077157",
             "type": "code"
         },
+        "6f2696b9761a45d48b44f77888167531": {
+            "links": [],
+            "tags": [],
+            "text": "Can we write out the file again here so that we don't accidentally create lots of split notes?\n",
+            "timestamp_created": "2021-06-20T12:30:05.662734",
+            "type": "text"
+        },
         "726500679d284eb494c0900f5c305cda": {
             "links": [],
             "tags": [
@@ -6675,570 +6961,16 @@
                     "type": "line"
                 },
                 {
-                    "text": "    def __init__(self, db, note_id=None):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.db = db",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.note_id = note_id",
-                    "type": "line"
-                },
-                {
-                    "text": "        ExternalTextEntry.__init__(self, self._note_to_text(), EDITOR_COMMAND)",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _note_to_text(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        data = self.db.get_note_data(self.note_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "        links = data.get(\"links\", [])",
-                    "type": "line"
-                },
-                {
-                    "text": "        tags = data.get(\"tags\", [])",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra = []",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"\\n\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"--\\n\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        for link in links:",
-                    "type": "line"
-                },
-                {
-                    "text": "            extra.append(\"{}{}\\n\".format(self.LINK_PREFIX, link))",
-                    "type": "line"
-                },
-                {
-                    "text": "        for tag in tags:",
-                    "type": "line"
-                },
-                {
-                    "text": "            extra.append(\"{}{}\\n\".format(self.TAG_PREFIX, tag))",
-                    "type": "line"
-                },
-                {
-                    "text": "        if data.get(\"type\", \"text\") == \"code\":",
-                    "type": "line"
-                },
-                {
-                    "text": "            extra.append(\"{}{}\\n\".format(self.FILEPATH_PREFIX, \"/\".join(data[\"filepath\"])))",
-                    "type": "line"
-                },
-                {
-                    "text": "            extra.append(\"{}{}\\n\".format(self.CHUNKPATH_PREFIX, \"/\".join(data[\"chunkpath\"])))",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"# Usage:\\n\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"# {}http://...\\n\".format(self.LINK_PREFIX))",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"# {}name\\n\".format(self.TAG_PREFIX))",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"# {}foo/bar.py\\n\".format(self.FILEPATH_PREFIX))",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"# {}classes/Foo\\n\".format(self.CHUNKPATH_PREFIX))",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"#\\n\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"# Code Syntax:\\n\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"# <<foo, blank_lines_before=1>>\\n\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"# {}\\n\".format(self.SPLIT_SYNAX))",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"#\\n\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"# Tags with special formatting:\\n\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        for tag in TAG_ATTRIBUTES:",
-                    "type": "line"
-                },
-                {
-                    "text": "            extra.append(\"# {}{}\\n\".format(self.TAG_PREFIX, tag[\"name\"]))",
-                    "type": "line"
-                },
-                {
-                    "text": "        extra.append(\"--\\n\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        if data.get(\"type\", \"text\") == \"code\":",
-                    "type": "line"
-                },
-                {
-                    "text": "            return self._code_fragments_to_text(data[\"fragments\"]) + \"\".join(extra)",
-                    "type": "line"
-                },
-                {
-                    "text": "        else:",
-                    "type": "line"
-                },
-                {
-                    "text": "            return data[\"text\"] + \"\".join(extra)",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _new_text(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        with self.db.transaction():",
-                    "type": "line"
-                },
-                {
-                    "text": "            fields = self._text_to_note_fields()",
-                    "type": "line"
-                },
-                {
-                    "text": "            if \"splits\" in fields:",
-                    "type": "line"
-                },
-                {
-                    "text": "                splits = fields.pop(\"splits\")",
-                    "type": "line"
-                },
-                {
-                    "text": "                self.db.update_note(self.note_id, **dict(fields, fragments=splits[0]))",
-                    "type": "line"
-                },
-                {
-                    "text": "                for fragments in splits[1:]:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    self.db.create_note(**dict(fields, fragments=fragments, text=\"<code>\"))",
-                    "type": "line"
-                },
-                {
-                    "text": "            else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                self.db.update_note(self.note_id, **fields)",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _text_to_note_fields(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        try:",
-                    "type": "line"
-                },
-                {
-                    "text": "            return self._parse_footer()",
-                    "type": "line"
-                },
-                {
-                    "text": "        except ParseError:",
-                    "type": "line"
-                },
-                {
-                    "text": "            return {",
-                    "type": "line"
-                },
-                {
-                    "text": "                \"text\": self.text,",
-                    "type": "line"
-                },
-                {
-                    "text": "                \"links\": [],",
-                    "type": "line"
-                },
-                {
-                    "text": "                \"tags\": [],",
-                    "type": "line"
-                },
-                {
-                    "text": "            }",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _code_fragments_to_text(self, fragments):",
-                    "type": "line"
-                },
-                {
-                    "text": "        lines = []",
-                    "type": "line"
-                },
-                {
-                    "text": "        for fragment in fragments:",
-                    "type": "line"
-                },
-                {
-                    "text": "            if fragment[\"type\"] == \"chunk\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                lines.append(\"{}<<{}, blank_lines_before={}>>\".format(",
-                    "type": "line"
-                },
-                {
-                    "text": "                    fragment[\"prefix\"],",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"/\".join(fragment[\"path\"]),",
-                    "type": "line"
-                },
-                {
-                    "text": "                    fragment[\"blank_lines_before\"]",
-                    "type": "line"
-                },
-                {
-                    "text": "                ))",
-                    "type": "line"
-                },
-                {
-                    "text": "            else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                lines.append(\"{}\".format(",
-                    "type": "line"
-                },
-                {
-                    "text": "                    fragment[\"text\"],",
-                    "type": "line"
-                },
-                {
-                    "text": "                ))",
-                    "type": "line"
-                },
-                {
-                    "text": "        return \"\\n\".join(lines) + \"\\n\"",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _text_to_code_fragments(self, text):",
-                    "type": "line"
-                },
-                {
-                    "text": "        splits = [[]]",
-                    "type": "line"
-                },
-                {
-                    "text": "        for line in text.splitlines():",
-                    "type": "line"
-                },
-                {
-                    "text": "            if line == self.SPLIT_SYNAX:",
-                    "type": "line"
-                },
-                {
-                    "text": "                splits.append([])",
-                    "type": "line"
-                },
-                {
-                    "text": "            else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                match = re.match(r'^(.*)<<(.*), blank_lines_before=(\\d+)>>$', line)",
-                    "type": "line"
-                },
-                {
-                    "text": "                if match:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    splits[-1].append({",
-                    "type": "line"
-                },
-                {
-                    "text": "                        \"type\": \"chunk\",",
-                    "type": "line"
-                },
-                {
-                    "text": "                        \"prefix\": match.group(1),",
-                    "type": "line"
-                },
-                {
-                    "text": "                        \"path\": match.group(2).split(\"/\"),",
-                    "type": "line"
-                },
-                {
-                    "text": "                        \"blank_lines_before\": int(match.group(3))",
-                    "type": "line"
-                },
-                {
-                    "text": "                    })",
-                    "type": "line"
-                },
-                {
-                    "text": "                else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    splits[-1].append({\"type\": \"line\", \"text\": line})",
-                    "type": "line"
-                },
-                {
-                    "text": "        return splits",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _parse_footer(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        data = {",
-                    "type": "line"
-                },
-                {
-                    "text": "            \"text\": \"\",",
-                    "type": "line"
-                },
-                {
-                    "text": "            \"links\": [],",
-                    "type": "line"
-                },
-                {
-                    "text": "            \"tags\": [],",
-                    "type": "line"
-                },
-                {
-                    "text": "            \"filepath\": [],",
-                    "type": "line"
-                },
-                {
-                    "text": "            \"chunkpath\": [],",
-                    "type": "line"
-                },
-                {
-                    "text": "        }",
-                    "type": "line"
-                },
-                {
-                    "text": "        parts = self.text.splitlines(True)",
-                    "type": "line"
-                },
-                {
-                    "text": "        if parts and parts.pop(-1).rstrip() == \"--\":",
-                    "type": "line"
-                },
-                {
-                    "text": "            while parts and parts[-1].rstrip() != \"--\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                part = parts.pop(-1)",
-                    "type": "line"
-                },
-                {
-                    "text": "                if part.startswith(self.LINK_PREFIX):",
-                    "type": "line"
-                },
-                {
-                    "text": "                    data[\"links\"].insert(0, part[len(self.LINK_PREFIX):].rstrip())",
-                    "type": "line"
-                },
-                {
-                    "text": "                elif part.startswith(self.TAG_PREFIX):",
-                    "type": "line"
-                },
-                {
-                    "text": "                    data[\"tags\"].insert(0, part[len(self.TAG_PREFIX):].rstrip())",
-                    "type": "line"
-                },
-                {
-                    "text": "                elif part.startswith(self.FILEPATH_PREFIX):",
-                    "type": "line"
-                },
-                {
-                    "text": "                    data[\"filepath\"] = [",
-                    "type": "line"
-                },
-                {
-                    "text": "                        x",
-                    "type": "line"
-                },
-                {
-                    "text": "                        for x",
-                    "type": "line"
-                },
-                {
-                    "text": "                        in part[len(self.FILEPATH_PREFIX):].rstrip().split(\"/\")",
-                    "type": "line"
-                },
-                {
-                    "text": "                        if x",
-                    "type": "line"
-                },
-                {
-                    "text": "                    ]",
-                    "type": "line"
-                },
-                {
-                    "text": "                elif part.startswith(self.CHUNKPATH_PREFIX):",
-                    "type": "line"
-                },
-                {
-                    "text": "                    data[\"chunkpath\"] = [",
-                    "type": "line"
-                },
-                {
-                    "text": "                        x",
-                    "type": "line"
-                },
-                {
-                    "text": "                        for x",
-                    "type": "line"
-                },
-                {
-                    "text": "                        in part[len(self.CHUNKPATH_PREFIX):].rstrip().split(\"/\")",
-                    "type": "line"
-                },
-                {
-                    "text": "                        if x",
-                    "type": "line"
-                },
-                {
-                    "text": "                    ]",
-                    "type": "line"
-                },
-                {
-                    "text": "                elif part.startswith(\"#\"):",
-                    "type": "line"
-                },
-                {
-                    "text": "                    pass",
-                    "type": "line"
-                },
-                {
-                    "text": "                else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    raise ParseError(\"unknown field\")",
-                    "type": "line"
-                },
-                {
-                    "text": "            if parts:",
-                    "type": "line"
-                },
-                {
-                    "text": "                parts.pop(-1)",
-                    "type": "line"
-                },
-                {
-                    "text": "                while parts and parts[-1].strip() == \"\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                    parts.pop(-1)",
-                    "type": "line"
-                },
-                {
-                    "text": "                data[\"text\"] = \"\".join(parts)",
-                    "type": "line"
-                },
-                {
-                    "text": "                if data[\"filepath\"] or data[\"chunkpath\"]:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    data[\"type\"] = \"code\"",
-                    "type": "line"
-                },
-                {
-                    "text": "                    data[\"splits\"] = self._text_to_code_fragments(data[\"text\"])",
-                    "type": "line"
-                },
-                {
-                    "text": "                    data.pop(\"text\")",
-                    "type": "line"
-                },
-                {
-                    "text": "                else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    data[\"type\"] = \"text\"",
-                    "type": "line"
-                },
-                {
-                    "text": "                    data.pop(\"filepath\")",
-                    "type": "line"
-                },
-                {
-                    "text": "                    data.pop(\"chunkpath\")",
-                    "type": "line"
-                },
-                {
-                    "text": "                return data",
-                    "type": "line"
-                },
-                {
-                    "text": "        raise ParseError(\"no footer found\")",
-                    "type": "line"
+                    "blank_lines_before": 1,
+                    "path": [
+                        "NoteText"
+                    ],
+                    "prefix": "    ",
+                    "type": "chunk"
                 }
             ],
+            "links": [],
+            "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:52.922483",
             "type": "code"
@@ -7649,6 +7381,38 @@
             ],
             "text": "Immutable",
             "timestamp_created": "2021-06-19T07:27:54.002538"
+        },
+        "8f5ce28ebda74713aa5a991dfc59c16f": {
+            "chunkpath": [
+                "classes",
+                "NoteText"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def __init__(self, db, note_id=None):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.db = db",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.note_id = note_id",
+                    "type": "line"
+                },
+                {
+                    "text": "    ExternalTextEntry.__init__(self, self._note_to_text(), EDITOR_COMMAND)",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "def __init__(self, db, note_id=None):\n    self.db = db\n    self.note_id = note_id\n    ExternalTextEntry.__init__(self, self._note_to_text(), EDITOR_COMMAND)\n\ndef _note_to_text(self):\n    data = self.db.get_note_data(self.note_id)\n    links = data.get(\"links\", [])\n    tags = data.get(\"tags\", [])\n    extra = []\n    extra.append(\"\\n\")\n    extra.append(\"--\\n\")\n    for link in links:\n        extra.append(\"{}{}\\n\".format(self.LINK_PREFIX, link))\n    for tag in tags:\n        extra.append(\"{}{}\\n\".format(self.TAG_PREFIX, tag))\n    if data.get(\"type\", \"text\") == \"code\":\n        extra.append(\"{}{}\\n\".format(self.FILEPATH_PREFIX, \"/\".join(data[\"filepath\"])))\n        extra.append(\"{}{}\\n\".format(self.CHUNKPATH_PREFIX, \"/\".join(data[\"chunkpath\"])))\n    extra.append(\"# Usage:\\n\")\n    extra.append(\"# {}http://...\\n\".format(self.LINK_PREFIX))\n    extra.append(\"# {}name\\n\".format(self.TAG_PREFIX))\n    extra.append(\"# {}foo/bar.py\\n\".format(self.FILEPATH_PREFIX))\n    extra.append(\"# {}classes/Foo\\n\".format(self.CHUNKPATH_PREFIX))\n    extra.append(\"#\\n\")\n    extra.append(\"# Code Syntax:\\n\")\n    extra.append(\"# <<foo, blank_lines_before=1>>\\n\")\n    extra.append(\"# {}\\n\".format(self.SPLIT_SYNAX))\n    extra.append(\"#\\n\")\n    extra.append(\"# Tags with special formatting:\\n\")\n    for tag in TAG_ATTRIBUTES:\n        extra.append(\"# {}{}\\n\".format(self.TAG_PREFIX, tag[\"name\"]))\n    extra.append(\"--\\n\")\n    if data.get(\"type\", \"text\") == \"code\":\n        return self._code_fragments_to_text(data[\"fragments\"]) + \"\".join(extra)\n    else:\n        return data[\"text\"] + \"\".join(extra)\n\ndef _new_text(self):\n    with self.db.transaction():\n        fields = self._text_to_note_fields()\n        if \"splits\" in fields:\n            splits = fields.pop(\"splits\")\n            self.db.update_note(self.note_id, **dict(fields, fragments=splits[0]))\n            for fragments in splits[1:]:\n                self.db.create_note(**dict(fields, fragments=fragments, text=\"<code>\"))\n        else:\n            self.db.update_note(self.note_id, **fields)\n\ndef _text_to_note_fields(self):\n    try:\n        return self._parse_footer()\n    except ParseError:\n        return {\n            \"text\": self.text,\n            \"links\": [],\n            \"tags\": [],\n        }\n\ndef _code_fragments_to_text(self, fragments):\n    lines = []\n    for fragment in fragments:\n        if fragment[\"type\"] == \"chunk\":\n            lines.append(\"{}<<{}, blank_lines_before={}>>\".format(\n                fragment[\"prefix\"],\n                \"/\".join(fragment[\"path\"]),\n                fragment[\"blank_lines_before\"]\n            ))\n        else:\n            lines.append(\"{}\".format(\n                fragment[\"text\"],\n            ))\n    return \"\\n\".join(lines) + \"\\n\"\n\ndef _text_to_code_fragments(self, text):\n    splits = [[]]\n    for line in text.splitlines():\n        if line == self.SPLIT_SYNAX:\n            splits.append([])\n        else:\n            match = re.match(r'^(.*)<<(.*), blank_lines_before=(\\d+)>>$', line)\n            if match:\n                splits[-1].append({\n                    \"type\": \"chunk\",\n                    \"prefix\": match.group(1),\n                    \"path\": match.group(2).split(\"/\"),\n                    \"blank_lines_before\": int(match.group(3))\n                })\n            else:\n                splits[-1].append({\"type\": \"line\", \"text\": line})\n    return splits\n\ndef _parse_footer(self):\n    data = {\n        \"text\": \"\",\n        \"links\": [],\n        \"tags\": [],\n        \"filepath\": [],\n        \"chunkpath\": [],\n    }\n    parts = self.text.splitlines(True)\n    if parts and parts.pop(-1).rstrip() == \"--\":\n        while parts and parts[-1].rstrip() != \"--\":\n            part = parts.pop(-1)\n            if part.startswith(self.LINK_PREFIX):\n                data[\"links\"].insert(0, part[len(self.LINK_PREFIX):].rstrip())\n            elif part.startswith(self.TAG_PREFIX):\n                data[\"tags\"].insert(0, part[len(self.TAG_PREFIX):].rstrip())\n            elif part.startswith(self.FILEPATH_PREFIX):\n                data[\"filepath\"] = [\n                    x\n                    for x\n                    in part[len(self.FILEPATH_PREFIX):].rstrip().split(\"/\")\n                    if x\n                ]\n            elif part.startswith(self.CHUNKPATH_PREFIX):\n                data[\"chunkpath\"] = [\n                    x\n                    for x\n                    in part[len(self.CHUNKPATH_PREFIX):].rstrip().split(\"/\")\n                    if x\n                ]\n            elif part.startswith(\"#\"):\n                pass\n            else:\n                raise ParseError(\"unknown field\")\n        if parts:\n            parts.pop(-1)\n            while parts and parts[-1].strip() == \"\":\n                parts.pop(-1)\n            data[\"text\"] = \"\".join(parts)\n            if data[\"filepath\"] or data[\"chunkpath\"]:\n                data[\"type\"] = \"code\"\n                data[\"splits\"] = self._text_to_code_fragments(data[\"text\"])\n                data.pop(\"text\")\n            else:\n                data[\"type\"] = \"text\"\n                data.pop(\"filepath\")\n                data.pop(\"chunkpath\")\n            return data\n    raise ParseError(\"no footer found\")\n",
+            "timestamp_created": "2021-06-20T12:25:28.651569",
+            "type": "code"
         },
         "8fa7f664ecdf47119a1b319bcfe3e293": {
             "links": [],
@@ -8964,6 +8728,90 @@
             "timestamp_created": "2021-06-20T12:14:33.776761",
             "type": "code"
         },
+        "b34dce1ce47449c8ae691acce741daf8": {
+            "chunkpath": [
+                "classes",
+                "NoteText"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _text_to_code_fragments(self, text):",
+                    "type": "line"
+                },
+                {
+                    "text": "    splits = [[]]",
+                    "type": "line"
+                },
+                {
+                    "text": "    for line in text.splitlines():",
+                    "type": "line"
+                },
+                {
+                    "text": "        if line == self.SPLIT_SYNAX:",
+                    "type": "line"
+                },
+                {
+                    "text": "            splits.append([])",
+                    "type": "line"
+                },
+                {
+                    "text": "        else:",
+                    "type": "line"
+                },
+                {
+                    "text": "            match = re.match(r'^(.*)<<(.*), blank_lines_before=(\\d+)>>$', line)",
+                    "type": "line"
+                },
+                {
+                    "text": "            if match:",
+                    "type": "line"
+                },
+                {
+                    "text": "                splits[-1].append({",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"type\": \"chunk\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"prefix\": match.group(1),",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"path\": match.group(2).split(\"/\"),",
+                    "type": "line"
+                },
+                {
+                    "text": "                    \"blank_lines_before\": int(match.group(3))",
+                    "type": "line"
+                },
+                {
+                    "text": "                })",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                splits[-1].append({\"type\": \"line\", \"text\": line})",
+                    "type": "line"
+                },
+                {
+                    "text": "    return splits",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:27:02.675596",
+            "type": "code"
+        },
         "b4922ecf5d984d408bcdaab9fdeeb064": {
             "chunkpath": [
                 "functions"
@@ -9021,6 +8869,13 @@
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:53.740746",
             "type": "code"
+        },
+        "b6d3c5edf7454e8ab469258bdb5dc0c1": {
+            "links": [],
+            "tags": [],
+            "text": "`<code>` is needed here only because Smart Notes can not yet handle notes without a `text` field.\n",
+            "timestamp_created": "2021-06-20T12:27:23.840166",
+            "type": "text"
         },
         "b9ead1e5dbad4a97abb50aad507341ca": {
             "links": [],
@@ -11881,6 +11736,62 @@
             "timestamp_created": "2021-06-19T07:27:53.077200",
             "type": "code"
         },
+        "de4893d9140f4fc0b623a31c81af267c": {
+            "chunkpath": [
+                "classes",
+                "NoteText"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _new_text(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    with self.db.transaction():",
+                    "type": "line"
+                },
+                {
+                    "text": "        fields = self._text_to_note_fields()",
+                    "type": "line"
+                },
+                {
+                    "text": "        if \"splits\" in fields:",
+                    "type": "line"
+                },
+                {
+                    "text": "            splits = fields.pop(\"splits\")",
+                    "type": "line"
+                },
+                {
+                    "text": "            self.db.update_note(self.note_id, **dict(fields, fragments=splits[0]))",
+                    "type": "line"
+                },
+                {
+                    "text": "            for fragments in splits[1:]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                self.db.create_note(**dict(fields, fragments=fragments, text=\"<code>\"))",
+                    "type": "line"
+                },
+                {
+                    "text": "        else:",
+                    "type": "line"
+                },
+                {
+                    "text": "            self.db.update_note(self.note_id, **fields)",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:27:02.675514",
+            "type": "code"
+        },
         "dee94b78ca4f4adaa5ad786c7d1b671c": {
             "chunkpath": [
                 "constants"
@@ -12340,6 +12251,150 @@
             "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-20T12:14:33.776785",
+            "type": "code"
+        },
+        "e862f0d963a546ae84c44f5c4577b9d7": {
+            "chunkpath": [
+                "classes",
+                "NoteText"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _note_to_text(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    data = self.db.get_note_data(self.note_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "    links = data.get(\"links\", [])",
+                    "type": "line"
+                },
+                {
+                    "text": "    tags = data.get(\"tags\", [])",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra = []",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"--\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    for link in links:",
+                    "type": "line"
+                },
+                {
+                    "text": "        extra.append(\"{}{}\\n\".format(self.LINK_PREFIX, link))",
+                    "type": "line"
+                },
+                {
+                    "text": "    for tag in tags:",
+                    "type": "line"
+                },
+                {
+                    "text": "        extra.append(\"{}{}\\n\".format(self.TAG_PREFIX, tag))",
+                    "type": "line"
+                },
+                {
+                    "text": "    if data.get(\"type\", \"text\") == \"code\":",
+                    "type": "line"
+                },
+                {
+                    "text": "        extra.append(\"{}{}\\n\".format(self.FILEPATH_PREFIX, \"/\".join(data[\"filepath\"])))",
+                    "type": "line"
+                },
+                {
+                    "text": "        extra.append(\"{}{}\\n\".format(self.CHUNKPATH_PREFIX, \"/\".join(data[\"chunkpath\"])))",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"# Usage:\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"# {}http://...\\n\".format(self.LINK_PREFIX))",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"# {}name\\n\".format(self.TAG_PREFIX))",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"# {}foo/bar.py\\n\".format(self.FILEPATH_PREFIX))",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"# {}classes/Foo\\n\".format(self.CHUNKPATH_PREFIX))",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"#\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"# Code Syntax:\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"# <<foo, blank_lines_before=1>>\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"# {}\\n\".format(self.SPLIT_SYNAX))",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"#\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"# Tags with special formatting:\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    for tag in TAG_ATTRIBUTES:",
+                    "type": "line"
+                },
+                {
+                    "text": "        extra.append(\"# {}{}\\n\".format(self.TAG_PREFIX, tag[\"name\"]))",
+                    "type": "line"
+                },
+                {
+                    "text": "    extra.append(\"--\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    if data.get(\"type\", \"text\") == \"code\":",
+                    "type": "line"
+                },
+                {
+                    "text": "        return self._code_fragments_to_text(data[\"fragments\"]) + \"\".join(extra)",
+                    "type": "line"
+                },
+                {
+                    "text": "    else:",
+                    "type": "line"
+                },
+                {
+                    "text": "        return data[\"text\"] + \"\".join(extra)",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:27:02.675472",
             "type": "code"
         },
         "e86e435137dc469188e80c3579924929": {
@@ -13077,6 +13132,78 @@
             ],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:52.658627",
+            "type": "code"
+        },
+        "e88bdaa18f3f4c74a320ee0ffb89269c": {
+            "chunkpath": [
+                "classes",
+                "NoteText"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _code_fragments_to_text(self, fragments):",
+                    "type": "line"
+                },
+                {
+                    "text": "    lines = []",
+                    "type": "line"
+                },
+                {
+                    "text": "    for fragment in fragments:",
+                    "type": "line"
+                },
+                {
+                    "text": "        if fragment[\"type\"] == \"chunk\":",
+                    "type": "line"
+                },
+                {
+                    "text": "            lines.append(\"{}<<{}, blank_lines_before={}>>\".format(",
+                    "type": "line"
+                },
+                {
+                    "text": "                fragment[\"prefix\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "                \"/\".join(fragment[\"path\"]),",
+                    "type": "line"
+                },
+                {
+                    "text": "                fragment[\"blank_lines_before\"]",
+                    "type": "line"
+                },
+                {
+                    "text": "            ))",
+                    "type": "line"
+                },
+                {
+                    "text": "        else:",
+                    "type": "line"
+                },
+                {
+                    "text": "            lines.append(\"{}\".format(",
+                    "type": "line"
+                },
+                {
+                    "text": "                fragment[\"text\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "            ))",
+                    "type": "line"
+                },
+                {
+                    "text": "    return \"\\n\".join(lines) + \"\\n\"",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:27:02.675570",
             "type": "code"
         },
         "e8fff187417d4e4d850f5663a8b3fb0a": {
