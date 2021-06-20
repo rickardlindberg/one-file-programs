@@ -30,6 +30,7 @@ COLOR_BACKGROUND         = (134, 169, 214)
 COLOR_ACTIVE             = (25, 204, 25)
 COLOR_INACTIVE           = (204, 204, 204)
 COLOR_LINE               = (114, 127, 178)
+COLOR_VIRTUAL_LINE       = (185, 118, 169)
 COLOR_NOTE_BG            = (250, 250, 250)
 COLOR_NOTE_TEXT          = (20, 20, 20)
 COLOR_NOTE_DATE_TEXT     = (100, 100, 100)
@@ -1165,8 +1166,8 @@ class NetworkNote(NoteBaseWidget):
                 self.incoming.append(by_id.pop(link_id))
             else:
                 self.instantiate(LinkWidget,
-                    self.db,
                     link_id,
+                    link_data,
                     self.instantiate(
                         NetworkNote,
                         self.network,
@@ -1190,8 +1191,8 @@ class NetworkNote(NoteBaseWidget):
                 self.outgoing.append(by_id.pop(link_id))
             else:
                 self.instantiate(LinkWidget,
-                    self.db,
                     link_id,
+                    link_data,
                     self,
                     self.instantiate(
                         NetworkNote,
@@ -1205,9 +1206,9 @@ class NetworkNote(NoteBaseWidget):
         return self.outgoing
 
     def get_link_id(self):
-        if self.side == "left" and len(self.outgoing) == 1:
+        if self.side == "left" and len(self.outgoing) == 1 and not self.outgoing[0].is_virtual():
             return self.outgoing[0].link_id
-        if self.side == "right" and len(self.incoming) == 1:
+        if self.side == "right" and len(self.incoming) == 1 and not self.incoming[0].is_virtual():
             return self.incoming[0].link_id
 
     def get_center(self):
@@ -1254,16 +1255,19 @@ class NetworkNote(NoteBaseWidget):
 
 class LinkWidget(Widget):
 
-    def __init__(self, window, parent, db, link_id, start, end):
+    def __init__(self, window, parent, link_id, link_data, start, end):
         Widget.__init__(self, window, parent)
-        self.db = db
         self.link_id = link_id
+        self.link_data = link_data
         self.start = start
         self.end = end
         self.start.outgoing.append(self)
         self.end.incoming.append(self)
         self.start_pos = None
         self.end_pos = None
+
+    def is_virtual(self):
+        return self.link_data.get("virtual", False)
 
     def update(self, rect, elapsed_ms):
         Widget.update(self, rect, elapsed_ms)
@@ -1317,7 +1321,7 @@ class LinkWidget(Widget):
         canvas.line_to(startx+0.02*(endx-startx), starty)
         canvas.curve_to(c1x, c1y, c2x, c2y, endx-0.02*(endx-startx), endy)
         canvas.line_to(endx, endy)
-        canvas._set_color(COLOR_LINE)
+        canvas._set_color(COLOR_VIRTUAL_LINE if self.is_virtual() else COLOR_LINE)
         canvas.set_line_width(1.5)
         canvas.stroke()
 
@@ -1561,7 +1565,9 @@ class NoteDb(Immutable):
             "links": {},
         }))
         self.path = path
+        self.virtual_links = {}
         self.consolidate_files()
+        self._create_virtual_links()
 
     def write_files(self):
         parts = self.collect_parts()
@@ -1766,19 +1772,46 @@ class NoteDb(Immutable):
         for link_id, link in self.get_outgoing_links(note_id):
             yield link["to"]
 
+    def _create_virtual_links(self):
+        self.virtual_links = {}
+        code_notes = []
+        parts = defaultdict(list)
+        for note_id, note in reversed(self.get_notes()):
+            if note.get("type", None) == "code":
+                key = (tuple(note["filepath"]), tuple(note["chunkpath"]))
+                parts[key].append((note_id, note["fragments"]))
+                code_notes.append((note_id, note))
+        for note_id, note in code_notes:
+            for fragment in note["fragments"]:
+                if fragment["type"] == "chunk":
+                    for (child_note_id, _) in parts[(
+                        tuple(note["filepath"]),
+                        tuple(note["chunkpath"]+fragment["path"])
+                    )]:
+                        self.virtual_links[genid()] = {
+                            "from": note_id,
+                            "to": child_note_id,
+                            "timestamp_created": utcnow_timestamp_string(),
+                            "virtual": True,
+                        }
+
     def get_outgoing_links(self, note_id):
         return self._sort_links([
             (link_id, link)
-            for link_id, link in self._get("links").items()
+            for link_id, link in self._links()
             if link["from"] == note_id
         ])
 
     def get_incoming_links(self, note_id):
         return self._sort_links([
             (link_id, link)
-            for link_id, link in self._get("links").items()
+            for link_id, link in self._links()
             if link["to"] == note_id
         ])
+
+    def _links(self):
+        yield from self._get("links").items()
+        yield from self.virtual_links.items()
 
     def _sort_links(self, links):
         return sorted(
@@ -1846,6 +1879,7 @@ class NoteDb(Immutable):
     def _data_changed(self):
         write_json_file(self.path, self._get())
         self.write_files()
+        self._create_virtual_links()
 
 class NoteNotFound(ValueError):
     pass

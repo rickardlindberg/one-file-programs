@@ -2024,7 +2024,7 @@
         "13b90445c95940309b6615d56d6c5a61": {
             "links": [],
             "tags": [],
-            "text": "Automatic notes such as \"file tree\", \"links to sub-chunks\".\n",
+            "text": "Automatic/Virtual notes such as \"file tree\".\n",
             "timestamp_created": "2021-06-20T09:34:17.227581",
             "type": "text"
         },
@@ -2502,11 +2502,11 @@
                     "type": "line"
                 },
                 {
-                    "text": "                    self.db,",
+                    "text": "                    link_id,",
                     "type": "line"
                 },
                 {
-                    "text": "                    link_id,",
+                    "text": "                    link_data,",
                     "type": "line"
                 },
                 {
@@ -2602,11 +2602,11 @@
                     "type": "line"
                 },
                 {
-                    "text": "                    self.db,",
+                    "text": "                    link_id,",
                     "type": "line"
                 },
                 {
-                    "text": "                    link_id,",
+                    "text": "                    link_data,",
                     "type": "line"
                 },
                 {
@@ -2662,7 +2662,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "        if self.side == \"left\" and len(self.outgoing) == 1:",
+                    "text": "        if self.side == \"left\" and len(self.outgoing) == 1 and not self.outgoing[0].is_virtual():",
                     "type": "line"
                 },
                 {
@@ -2670,7 +2670,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "        if self.side == \"right\" and len(self.incoming) == 1:",
+                    "text": "        if self.side == \"right\" and len(self.incoming) == 1 and not self.incoming[0].is_virtual():",
                     "type": "line"
                 },
                 {
@@ -5633,6 +5633,8 @@
                     "type": "line"
                 }
             ],
+            "links": [],
+            "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:53.061172",
             "type": "code"
@@ -6444,7 +6446,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "    def __init__(self, window, parent, db, link_id, start, end):",
+                    "text": "    def __init__(self, window, parent, link_id, link_data, start, end):",
                     "type": "line"
                 },
                 {
@@ -6452,11 +6454,11 @@
                     "type": "line"
                 },
                 {
-                    "text": "        self.db = db",
+                    "text": "        self.link_id = link_id",
                     "type": "line"
                 },
                 {
-                    "text": "        self.link_id = link_id",
+                    "text": "        self.link_data = link_data",
                     "type": "line"
                 },
                 {
@@ -6481,6 +6483,18 @@
                 },
                 {
                     "text": "        self.end_pos = None",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def is_virtual(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "        return self.link_data.get(\"virtual\", False)",
                     "type": "line"
                 },
                 {
@@ -6696,7 +6710,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "        canvas._set_color(COLOR_LINE)",
+                    "text": "        canvas._set_color(COLOR_VIRTUAL_LINE if self.is_virtual() else COLOR_LINE)",
                     "type": "line"
                 },
                 {
@@ -7896,7 +7910,15 @@
                     "type": "line"
                 },
                 {
+                    "text": "        self.virtual_links = {}",
+                    "type": "line"
+                },
+                {
                     "text": "        self.consolidate_files()",
+                    "type": "line"
+                },
+                {
+                    "text": "        self._create_virtual_links()",
                     "type": "line"
                 },
                 {
@@ -8716,6 +8738,98 @@
                     "type": "line"
                 },
                 {
+                    "text": "    def _create_virtual_links(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "        self.virtual_links = {}",
+                    "type": "line"
+                },
+                {
+                    "text": "        code_notes = []",
+                    "type": "line"
+                },
+                {
+                    "text": "        parts = defaultdict(list)",
+                    "type": "line"
+                },
+                {
+                    "text": "        for note_id, note in reversed(self.get_notes()):",
+                    "type": "line"
+                },
+                {
+                    "text": "            if note.get(\"type\", None) == \"code\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                key = (tuple(note[\"filepath\"]), tuple(note[\"chunkpath\"]))",
+                    "type": "line"
+                },
+                {
+                    "text": "                parts[key].append((note_id, note[\"fragments\"]))",
+                    "type": "line"
+                },
+                {
+                    "text": "                code_notes.append((note_id, note))",
+                    "type": "line"
+                },
+                {
+                    "text": "        for note_id, note in code_notes:",
+                    "type": "line"
+                },
+                {
+                    "text": "            for fragment in note[\"fragments\"]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                if fragment[\"type\"] == \"chunk\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                    for (child_note_id, _) in parts[(",
+                    "type": "line"
+                },
+                {
+                    "text": "                        tuple(note[\"filepath\"]),",
+                    "type": "line"
+                },
+                {
+                    "text": "                        tuple(note[\"chunkpath\"]+fragment[\"path\"])",
+                    "type": "line"
+                },
+                {
+                    "text": "                    )]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        self.virtual_links[genid()] = {",
+                    "type": "line"
+                },
+                {
+                    "text": "                            \"from\": note_id,",
+                    "type": "line"
+                },
+                {
+                    "text": "                            \"to\": child_note_id,",
+                    "type": "line"
+                },
+                {
+                    "text": "                            \"timestamp_created\": utcnow_timestamp_string(),",
+                    "type": "line"
+                },
+                {
+                    "text": "                            \"virtual\": True,",
+                    "type": "line"
+                },
+                {
+                    "text": "                        }",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
                     "text": "    def get_outgoing_links(self, note_id):",
                     "type": "line"
                 },
@@ -8728,7 +8842,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "            for link_id, link in self._get(\"links\").items()",
+                    "text": "            for link_id, link in self._links()",
                     "type": "line"
                 },
                 {
@@ -8756,7 +8870,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "            for link_id, link in self._get(\"links\").items()",
+                    "text": "            for link_id, link in self._links()",
                     "type": "line"
                 },
                 {
@@ -8765,6 +8879,22 @@
                 },
                 {
                     "text": "        ])",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def _links(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "        yield from self._get(\"links\").items()",
+                    "type": "line"
+                },
+                {
+                    "text": "        yield from self.virtual_links.items()",
                     "type": "line"
                 },
                 {
@@ -9033,6 +9163,10 @@
                 },
                 {
                     "text": "        self.write_files()",
+                    "type": "line"
+                },
+                {
+                    "text": "        self._create_virtual_links()",
                     "type": "line"
                 }
             ],
@@ -11309,6 +11443,10 @@
                 },
                 {
                     "text": "COLOR_LINE               = (114, 127, 178)",
+                    "type": "line"
+                },
+                {
+                    "text": "COLOR_VIRTUAL_LINE       = (185, 118, 169)",
                     "type": "line"
                 },
                 {
