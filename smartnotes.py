@@ -1893,6 +1893,7 @@ class NoteText(ExternalTextEntry):
     TAG_PREFIX = "tag: "
     FILEPATH_PREFIX = "filepath: "
     CHUNKPATH_PREFIX = "chunkpath: "
+    SPLIT_SYNAX = "<<SPLIT>>"
 
     def __init__(self, db, note_id=None):
         self.db = db
@@ -1919,6 +1920,10 @@ class NoteText(ExternalTextEntry):
         extra.append("# {}foo/bar.py\n".format(self.FILEPATH_PREFIX))
         extra.append("# {}classes/Foo\n".format(self.CHUNKPATH_PREFIX))
         extra.append("#\n")
+        extra.append("# Code Syntax:\n")
+        extra.append("# <<foo, blank_lines_before=1>>\n")
+        extra.append("# {}\n".format(self.SPLIT_SYNAX))
+        extra.append("#\n")
         extra.append("# Tags with special formatting:\n")
         for tag in TAG_ATTRIBUTES:
             extra.append("# {}{}\n".format(self.TAG_PREFIX, tag["name"]))
@@ -1929,7 +1934,15 @@ class NoteText(ExternalTextEntry):
             return data["text"] + "".join(extra)
 
     def _new_text(self):
-        self.db.update_note(self.note_id, **self._text_to_note_fields())
+        with self.db.transaction():
+            fields = self._text_to_note_fields()
+            if "splits" in fields:
+                splits = fields.pop("splits")
+                self.db.update_note(self.note_id, **dict(fields, fragments=splits[0]))
+                for fragments in splits[1:]:
+                    self.db.create_note(**dict(fields, fragments=fragments, text="<code>"))
+            else:
+                self.db.update_note(self.note_id, **fields)
 
     def _text_to_note_fields(self):
         try:
@@ -1957,19 +1970,22 @@ class NoteText(ExternalTextEntry):
         return "\n".join(lines) + "\n"
 
     def _text_to_code_fragments(self, text):
-        fragments = []
+        splits = [[]]
         for line in text.splitlines():
-            match = re.match(r'^(.*)<<(.*), blank_lines_before=(\d+)>>$', line)
-            if match:
-                fragments.append({
-                    "type": "chunk",
-                    "prefix": match.group(1),
-                    "path": match.group(2).split("/"),
-                    "blank_lines_before": int(match.group(3))
-                })
+            if line == self.SPLIT_SYNAX:
+                splits.append([])
             else:
-                fragments.append({"type": "line", "text": line})
-        return fragments
+                match = re.match(r'^(.*)<<(.*), blank_lines_before=(\d+)>>$', line)
+                if match:
+                    splits[-1].append({
+                        "type": "chunk",
+                        "prefix": match.group(1),
+                        "path": match.group(2).split("/"),
+                        "blank_lines_before": int(match.group(3))
+                    })
+                else:
+                    splits[-1].append({"type": "line", "text": line})
+        return splits
 
     def _parse_footer(self):
         data = {
@@ -2012,7 +2028,7 @@ class NoteText(ExternalTextEntry):
                 data["text"] = "".join(parts)
                 if data["filepath"] or data["chunkpath"]:
                     data["type"] = "code"
-                    data["fragments"] = self._text_to_code_fragments(data["text"])
+                    data["splits"] = self._text_to_code_fragments(data["text"])
                     data.pop("text")
                 else:
                     data["type"] = "text"

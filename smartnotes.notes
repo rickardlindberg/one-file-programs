@@ -300,11 +300,6 @@
             "timestamp_created": "2021-06-19T07:27:53.773803",
             "to": "25ce5b2877d94c10b54dcad84500c9f9"
         },
-        "5add8280fb854bf38d42ff32752c1b44": {
-            "from": "e12a127c468640ac8711bf9d401cfd80",
-            "timestamp_created": "2021-06-20T10:22:44.121036",
-            "to": "b9ead1e5dbad4a97abb50aad507341ca"
-        },
         "5bcee5d7d1434165b756ea5829fc8359": {
             "from": "12310f4824d94c3189ab50c782e3d9c3",
             "timestamp_created": "2021-04-25T05:32:37.651751",
@@ -699,6 +694,11 @@
             "from": "ab07169ee24042a5ac67ed97b41db1fd",
             "timestamp_created": "2021-04-25T05:47:31.899880",
             "to": "bff6c2de92c6405cb51883b79c03ba4b"
+        },
+        "bd46cdde4c4f441d854eec1d3b8e2539": {
+            "from": "ba108f5d9a264dad8d85d6fc7f2d8080",
+            "timestamp_created": "2021-06-20T12:15:32.471441",
+            "to": "b9ead1e5dbad4a97abb50aad507341ca"
         },
         "be1684cd130340ceafb747e6df974735": {
             "from": "8e8d2b99b72c4be9a46637d9688c1cf1",
@@ -1547,6 +1547,30 @@
             "text": "User Interface\n",
             "timestamp_created": "2021-04-25T05:29:43.498035",
             "type": "text"
+        },
+        "0da709e2882d42318300793b0f13b740": {
+            "chunkpath": [
+                "classes",
+                "SearchResults"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def set_num_results(self, num):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.num_results = max(3, min(12, num))",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:14:33.776732",
+            "type": "code"
         },
         "0ee427a47e9e4eeeb4fbbe487f1440c1": {
             "chunkpath": [
@@ -5899,6 +5923,10 @@
                     "type": "line"
                 },
                 {
+                    "text": "    SPLIT_SYNAX = \"<<SPLIT>>\"",
+                    "type": "line"
+                },
+                {
                     "text": "",
                     "type": "line"
                 },
@@ -6003,6 +6031,22 @@
                     "type": "line"
                 },
                 {
+                    "text": "        extra.append(\"# Code Syntax:\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "        extra.append(\"# <<foo, blank_lines_before=1>>\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "        extra.append(\"# {}\\n\".format(self.SPLIT_SYNAX))",
+                    "type": "line"
+                },
+                {
+                    "text": "        extra.append(\"#\\n\")",
+                    "type": "line"
+                },
+                {
                     "text": "        extra.append(\"# Tags with special formatting:\\n\")",
                     "type": "line"
                 },
@@ -6043,7 +6087,39 @@
                     "type": "line"
                 },
                 {
-                    "text": "        self.db.update_note(self.note_id, **self._text_to_note_fields())",
+                    "text": "        with self.db.transaction():",
+                    "type": "line"
+                },
+                {
+                    "text": "            fields = self._text_to_note_fields()",
+                    "type": "line"
+                },
+                {
+                    "text": "            if \"splits\" in fields:",
+                    "type": "line"
+                },
+                {
+                    "text": "                splits = fields.pop(\"splits\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                self.db.update_note(self.note_id, **dict(fields, fragments=splits[0]))",
+                    "type": "line"
+                },
+                {
+                    "text": "                for fragments in splits[1:]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    self.db.create_note(**dict(fields, fragments=fragments, text=\"<code>\"))",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                self.db.update_note(self.note_id, **fields)",
                     "type": "line"
                 },
                 {
@@ -6155,7 +6231,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "        fragments = []",
+                    "text": "        splits = [[]]",
                     "type": "line"
                 },
                 {
@@ -6163,35 +6239,11 @@
                     "type": "line"
                 },
                 {
-                    "text": "            match = re.match(r'^(.*)<<(.*), blank_lines_before=(\\d+)>>$', line)",
+                    "text": "            if line == self.SPLIT_SYNAX:",
                     "type": "line"
                 },
                 {
-                    "text": "            if match:",
-                    "type": "line"
-                },
-                {
-                    "text": "                fragments.append({",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"type\": \"chunk\",",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"prefix\": match.group(1),",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"path\": match.group(2).split(\"/\"),",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"blank_lines_before\": int(match.group(3))",
-                    "type": "line"
-                },
-                {
-                    "text": "                })",
+                    "text": "                splits.append([])",
                     "type": "line"
                 },
                 {
@@ -6199,11 +6251,47 @@
                     "type": "line"
                 },
                 {
-                    "text": "                fragments.append({\"type\": \"line\", \"text\": line})",
+                    "text": "                match = re.match(r'^(.*)<<(.*), blank_lines_before=(\\d+)>>$', line)",
                     "type": "line"
                 },
                 {
-                    "text": "        return fragments",
+                    "text": "                if match:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    splits[-1].append({",
+                    "type": "line"
+                },
+                {
+                    "text": "                        \"type\": \"chunk\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                        \"prefix\": match.group(1),",
+                    "type": "line"
+                },
+                {
+                    "text": "                        \"path\": match.group(2).split(\"/\"),",
+                    "type": "line"
+                },
+                {
+                    "text": "                        \"blank_lines_before\": int(match.group(3))",
+                    "type": "line"
+                },
+                {
+                    "text": "                    })",
+                    "type": "line"
+                },
+                {
+                    "text": "                else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    splits[-1].append({\"type\": \"line\", \"text\": line})",
+                    "type": "line"
+                },
+                {
+                    "text": "        return splits",
                     "type": "line"
                 },
                 {
@@ -6375,7 +6463,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "                    data[\"fragments\"] = self._text_to_code_fragments(data[\"text\"])",
+                    "text": "                    data[\"splits\"] = self._text_to_code_fragments(data[\"text\"])",
                     "type": "line"
                 },
                 {
@@ -9276,6 +9364,30 @@
             "text": "Smart Notes",
             "timestamp_created": "2021-06-19T07:27:52.609041"
         },
+        "b310f483289c47f59030fb3c25f47123": {
+            "chunkpath": [
+                "classes",
+                "SearchResults"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def update_search_text(self, text):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.text = text",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:14:33.776761",
+            "type": "code"
+        },
         "b4922ecf5d984d408bcdaab9fdeeb064": {
             "chunkpath": [
                 "functions"
@@ -9603,6 +9715,114 @@
             ],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:52.648657",
+            "type": "code"
+        },
+        "ba108f5d9a264dad8d85d6fc7f2d8080": {
+            "chunkpath": [
+                "classes",
+                "SearchResults"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _update_notes_list(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    by_id = {}",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.clear()",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.add(self.instantiate(Widget, width=self.hpadding/2))",
+                    "type": "line"
+                },
+                {
+                    "text": "    for note_id, note_data in self.db.get_notes(self.text)[:self.num_results]:",
+                    "type": "line"
+                },
+                {
+                    "text": "        if note_id in self.by_id:",
+                    "type": "line"
+                },
+                {
+                    "text": "            note = self.add(self.by_id[note_id])",
+                    "type": "line"
+                },
+                {
+                    "text": "        else:",
+                    "type": "line"
+                },
+                {
+                    "text": "            note = self.add(self.instantiate(Padding,",
+                    "type": "line"
+                },
+                {
+                    "text": "                self.instantiate(SearchNote,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    self.db,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    self.overlay,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    self.note_settings,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    note_id,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    self.open_callback",
+                    "type": "line"
+                },
+                {
+                    "text": "                ),",
+                    "type": "line"
+                },
+                {
+                    "text": "                hpadding=lambda rect: self.hpadding/2",
+                    "type": "line"
+                },
+                {
+                    "text": "            ))",
+                    "type": "line"
+                },
+                {
+                    "text": "        by_id[note_id] = note",
+                    "type": "line"
+                },
+                {
+                    "text": "    while len(self.children) <= self.num_results:",
+                    "type": "line"
+                },
+                {
+                    "text": "        self.add(self.instantiate(Widget))",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.add(self.instantiate(Widget, width=self.hpadding/2))",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.by_id = by_id",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:14:33.776808",
             "type": "code"
         },
         "ba947625790e456a8e4824e9fda0d8e9": {
@@ -10456,6 +10676,62 @@
             "tags": [],
             "text": "The incoming arrow should be drawn by the Note so it is only drawn once.\n",
             "timestamp_created": "2021-04-25T05:44:22.948737"
+        },
+        "c54edb9b2d204a6b89d5faf2c51b13da": {
+            "chunkpath": [
+                "classes",
+                "SearchResults"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def __init__(self, window, parent, db, overlay, note_settings, open_callback, hpadding):",
+                    "type": "line"
+                },
+                {
+                    "text": "    HBox.__init__(self, window, parent)",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.db = db",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.overlay = overlay",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.note_settings = note_settings",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.open_callback = open_callback",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.hpadding = hpadding",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.update_search_text(\"\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.set_num_results(NUM_SEARCH_RESULTS)",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.by_id = {}",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "def __init__(self, window, parent, db, overlay, note_settings, open_callback, hpadding):\n    HBox.__init__(self, window, parent)\n    self.db = db\n    self.overlay = overlay\n    self.note_settings = note_settings\n    self.open_callback = open_callback\n    self.hpadding = hpadding\n    self.update_search_text(\"\")\n    self.set_num_results(NUM_SEARCH_RESULTS)\n    self.by_id = {}\n\ndef inc_results(self):\n    self.set_num_results(self.num_results + 1)\n\ndef dec_results(self):\n    self.set_num_results(self.num_results - 1)\n\ndef set_num_results(self, num):\n    self.num_results = max(3, min(12, num))\n\ndef update_search_text(self, text):\n    self.text = text\n\ndef update(self, rect, elapsed_ms):\n    self.wanted_height = int(round(\n        (rect.width-self.hpadding) / self.num_results\n        *\n        self.note_settings.get_height_width_ratio()\n    ))\n    self._update_notes_list()\n    HBox.update(self, rect, elapsed_ms)\n\ndef _update_notes_list(self):\n    by_id = {}\n    self.clear()\n    self.add(self.instantiate(Widget, width=self.hpadding/2))\n    for note_id, note_data in self.db.get_notes(self.text)[:self.num_results]:\n        if note_id in self.by_id:\n            note = self.add(self.by_id[note_id])\n        else:\n            note = self.add(self.instantiate(Padding,\n                self.instantiate(SearchNote,\n                    self.db,\n                    self.overlay,\n                    self.note_settings,\n                    note_id,\n                    self.open_callback\n                ),\n                hpadding=lambda rect: self.hpadding/2\n            ))\n        by_id[note_id] = note\n    while len(self.children) <= self.num_results:\n        self.add(self.instantiate(Widget))\n    self.add(self.instantiate(Widget, width=self.hpadding/2))\n    self.by_id = by_id\n",
+            "timestamp_created": "2021-06-20T12:13:16.558067",
+            "type": "code"
         },
         "c55248cf1ef74c2a9df030ffab9ccf90": {
             "links": [],
@@ -11607,6 +11883,30 @@
             "text": "`Box.update` gets passed a rect.",
             "timestamp_created": "2021-06-19T07:27:53.353145"
         },
+        "e0d03a4a4ec0439fbea92d4625623a2c": {
+            "chunkpath": [
+                "classes",
+                "SearchResults"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def dec_results(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.set_num_results(self.num_results - 1)",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:14:33.776704",
+            "type": "code"
+        },
         "e12a127c468640ac8711bf9d401cfd80": {
             "chunkpath": [
                 "classes"
@@ -11624,226 +11924,16 @@
                     "type": "line"
                 },
                 {
-                    "text": "    def __init__(self, window, parent, db, overlay, note_settings, open_callback, hpadding):",
-                    "type": "line"
-                },
-                {
-                    "text": "        HBox.__init__(self, window, parent)",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.db = db",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.overlay = overlay",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.note_settings = note_settings",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.open_callback = open_callback",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.hpadding = hpadding",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.update_search_text(\"\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.set_num_results(NUM_SEARCH_RESULTS)",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.by_id = {}",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def inc_results(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.set_num_results(self.num_results + 1)",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def dec_results(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.set_num_results(self.num_results - 1)",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def set_num_results(self, num):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.num_results = max(3, min(12, num))",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def update_search_text(self, text):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.text = text",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def update(self, rect, elapsed_ms):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.wanted_height = int(round(",
-                    "type": "line"
-                },
-                {
-                    "text": "            (rect.width-self.hpadding) / self.num_results",
-                    "type": "line"
-                },
-                {
-                    "text": "            *",
-                    "type": "line"
-                },
-                {
-                    "text": "            self.note_settings.get_height_width_ratio()",
-                    "type": "line"
-                },
-                {
-                    "text": "        ))",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._update_notes_list()",
-                    "type": "line"
-                },
-                {
-                    "text": "        HBox.update(self, rect, elapsed_ms)",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _update_notes_list(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        by_id = {}",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.clear()",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.add(self.instantiate(Widget, width=self.hpadding/2))",
-                    "type": "line"
-                },
-                {
-                    "text": "        for note_id, note_data in self.db.get_notes(self.text)[:self.num_results]:",
-                    "type": "line"
-                },
-                {
-                    "text": "            if note_id in self.by_id:",
-                    "type": "line"
-                },
-                {
-                    "text": "                note = self.add(self.by_id[note_id])",
-                    "type": "line"
-                },
-                {
-                    "text": "            else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                note = self.add(self.instantiate(Padding,",
-                    "type": "line"
-                },
-                {
-                    "text": "                    self.instantiate(SearchNote,",
-                    "type": "line"
-                },
-                {
-                    "text": "                        self.db,",
-                    "type": "line"
-                },
-                {
-                    "text": "                        self.overlay,",
-                    "type": "line"
-                },
-                {
-                    "text": "                        self.note_settings,",
-                    "type": "line"
-                },
-                {
-                    "text": "                        note_id,",
-                    "type": "line"
-                },
-                {
-                    "text": "                        self.open_callback",
-                    "type": "line"
-                },
-                {
-                    "text": "                    ),",
-                    "type": "line"
-                },
-                {
-                    "text": "                    hpadding=lambda rect: self.hpadding/2",
-                    "type": "line"
-                },
-                {
-                    "text": "                ))",
-                    "type": "line"
-                },
-                {
-                    "text": "            by_id[note_id] = note",
-                    "type": "line"
-                },
-                {
-                    "text": "        while len(self.children) <= self.num_results:",
-                    "type": "line"
-                },
-                {
-                    "text": "            self.add(self.instantiate(Widget))",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.add(self.instantiate(Widget, width=self.hpadding/2))",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.by_id = by_id",
-                    "type": "line"
+                    "blank_lines_before": 1,
+                    "path": [
+                        "SearchResults"
+                    ],
+                    "prefix": "    ",
+                    "type": "chunk"
                 }
             ],
+            "links": [],
+            "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:52.636280",
             "type": "code"
@@ -11969,6 +12059,30 @@
             "timestamp_created": "2021-06-19T07:27:54.107447",
             "type": "code"
         },
+        "e34e1d945517490780c5740d84167d26": {
+            "chunkpath": [
+                "classes",
+                "SearchResults"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def inc_results(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.set_num_results(self.num_results + 1)",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:14:33.776664",
+            "type": "code"
+        },
         "e4178f58125741c88e14bc1f690f539e": {
             "tags": [
                 "title"
@@ -11987,6 +12101,54 @@
             "tags": [],
             "text": "Why does not test fail when Widget.allotted_rect is not set?\n",
             "timestamp_created": "2021-04-25T04:54:35.659994"
+        },
+        "e85f5881242b472e95e2d665ab98b94c": {
+            "chunkpath": [
+                "classes",
+                "SearchResults"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def update(self, rect, elapsed_ms):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.wanted_height = int(round(",
+                    "type": "line"
+                },
+                {
+                    "text": "        (rect.width-self.hpadding) / self.num_results",
+                    "type": "line"
+                },
+                {
+                    "text": "        *",
+                    "type": "line"
+                },
+                {
+                    "text": "        self.note_settings.get_height_width_ratio()",
+                    "type": "line"
+                },
+                {
+                    "text": "    ))",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._update_notes_list()",
+                    "type": "line"
+                },
+                {
+                    "text": "    HBox.update(self, rect, elapsed_ms)",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:14:33.776785",
+            "type": "code"
         },
         "e86e435137dc469188e80c3579924929": {
             "links": [],
