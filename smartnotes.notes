@@ -1030,6 +1030,74 @@
             "text": "Link",
             "timestamp_created": "2021-06-19T07:27:52.679680"
         },
+        "03d0dac1ff7c4124b85b2ed8896e232a": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def collect(self, file, chunk, parts):",
+                    "type": "line"
+                },
+                {
+                    "text": "    lines = []",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.collect_lines(lines, file, chunk, parts)",
+                    "type": "line"
+                },
+                {
+                    "text": "    return \"\\n\".join(line[1] for line in lines) + \"\\n\"",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076740",
+            "type": "code"
+        },
+        "04e38881c82644fe822dfd8a7d0c43ef": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def strip_prefix(self, prefix, line):",
+                    "type": "line"
+                },
+                {
+                    "text": "    if line.startswith(prefix):",
+                    "type": "line"
+                },
+                {
+                    "text": "        return line[len(prefix):]",
+                    "type": "line"
+                },
+                {
+                    "text": "    else:",
+                    "type": "line"
+                },
+                {
+                    "text": "        return line",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076693",
+            "type": "code"
+        },
         "05a20094744b470f987e5c67947f8c30": {
             "text": "`process_event` should not call methods that change focus or any other attributes that affects `process_event` calls in other widgets. To solve a situation like this, you can set a flag in the `process_event` call and act on that flag in the `update` call.",
             "timestamp_created": "2021-06-19T07:27:53.295747"
@@ -2028,6 +2096,34 @@
             ],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:52.627580",
+            "type": "code"
+        },
+        "11425f028b434e938fd0c378eaeffcc3": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _ensure_note_id(self, note_id):",
+                    "type": "line"
+                },
+                {
+                    "text": "    if note_id not in self._get(\"notes\"):",
+                    "type": "line"
+                },
+                {
+                    "text": "        raise NoteNotFound(str(note_id))",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.077089",
             "type": "code"
         },
         "11b1c0c63fb446ddb348d60f48f8c943": {
@@ -3755,6 +3851,110 @@
             "text": "Canvas",
             "timestamp_created": "2021-06-19T07:27:53.852281"
         },
+        "2f28fa5ea9fb489aa0673676b9c11fbe": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def get_incoming_links(self, note_id):",
+                    "type": "line"
+                },
+                {
+                    "text": "    return self._sort_links([",
+                    "type": "line"
+                },
+                {
+                    "text": "        (link_id, link)",
+                    "type": "line"
+                },
+                {
+                    "text": "        for link_id, link in self._links()",
+                    "type": "line"
+                },
+                {
+                    "text": "        if link[\"to\"] == note_id",
+                    "type": "line"
+                },
+                {
+                    "text": "    ])",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076900",
+            "type": "code"
+        },
+        "2fbe7efc504d440094effd4f88d3981c": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def delete_note(self, note_id):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._ensure_note_id(note_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "    new_notes = dict(self._get(\"notes\"))",
+                    "type": "line"
+                },
+                {
+                    "text": "    new_notes.pop(note_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "    new_links = dict(self._get(\"links\"))",
+                    "type": "line"
+                },
+                {
+                    "text": "    dead_links = []",
+                    "type": "line"
+                },
+                {
+                    "text": "    for link_id, link in new_links.items():",
+                    "type": "line"
+                },
+                {
+                    "text": "        if link[\"to\"] == note_id or link[\"from\"] == note_id:",
+                    "type": "line"
+                },
+                {
+                    "text": "            dead_links.append(link_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "    for link_id in dead_links:",
+                    "type": "line"
+                },
+                {
+                    "text": "        new_links.pop(link_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._replace(notes=new_notes, links=new_links)",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.077016",
+            "type": "code"
+        },
         "30096585cb4e4f0290bce0505032e629": {
             "links": [],
             "tags": [],
@@ -3832,6 +4032,50 @@
             ],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:53.030085",
+            "type": "code"
+        },
+        "38347e24de1c4e54b57cd05cce1dc113": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def create_note(self, **params):",
+                    "type": "line"
+                },
+                {
+                    "text": "    note_id = genid()",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._replace(notes=dict(",
+                    "type": "line"
+                },
+                {
+                    "text": "        self._get(\"notes\"),",
+                    "type": "line"
+                },
+                {
+                    "text": "        **{note_id: dict(params, timestamp_created=utcnow_timestamp_string())}",
+                    "type": "line"
+                },
+                {
+                    "text": "    ))",
+                    "type": "line"
+                },
+                {
+                    "text": "    return note_id",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076969",
             "type": "code"
         },
         "398ad55085fc451383e54a64291de937": {
@@ -4995,6 +5239,110 @@
             "text": "Feature idea: Pin feature. Notes can be pinned so they wont disappear when navigating. Kind of like a search bar that has a search for \"pinned\".\n",
             "timestamp_created": "2021-05-24T19:59:25.057776"
         },
+        "586475030d3a4ea5bade4e61a34f4dd2": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _create_virtual_links(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.virtual_links = {}",
+                    "type": "line"
+                },
+                {
+                    "text": "    code_notes = []",
+                    "type": "line"
+                },
+                {
+                    "text": "    parts = defaultdict(list)",
+                    "type": "line"
+                },
+                {
+                    "text": "    for note_id, note in reversed(self.get_notes()):",
+                    "type": "line"
+                },
+                {
+                    "text": "        if note.get(\"type\", None) == \"code\":",
+                    "type": "line"
+                },
+                {
+                    "text": "            key = (tuple(note[\"filepath\"]), tuple(note[\"chunkpath\"]))",
+                    "type": "line"
+                },
+                {
+                    "text": "            parts[key].append((note_id, note[\"fragments\"]))",
+                    "type": "line"
+                },
+                {
+                    "text": "            code_notes.append((note_id, note))",
+                    "type": "line"
+                },
+                {
+                    "text": "    for note_id, note in code_notes:",
+                    "type": "line"
+                },
+                {
+                    "text": "        for fragment in note[\"fragments\"]:",
+                    "type": "line"
+                },
+                {
+                    "text": "            if fragment[\"type\"] == \"chunk\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                for (child_note_id, _) in parts[(",
+                    "type": "line"
+                },
+                {
+                    "text": "                    tuple(note[\"filepath\"]),",
+                    "type": "line"
+                },
+                {
+                    "text": "                    tuple(note[\"chunkpath\"]+fragment[\"path\"])",
+                    "type": "line"
+                },
+                {
+                    "text": "                )]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    self.virtual_links[genid()] = {",
+                    "type": "line"
+                },
+                {
+                    "text": "                        \"from\": note_id,",
+                    "type": "line"
+                },
+                {
+                    "text": "                        \"to\": child_note_id,",
+                    "type": "line"
+                },
+                {
+                    "text": "                        \"timestamp_created\": utcnow_timestamp_string(),",
+                    "type": "line"
+                },
+                {
+                    "text": "                        \"virtual\": True,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    }",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076854",
+            "type": "code"
+        },
         "58b1b56e5208481a8732c664d989bfe8": {
             "text": "It calculates a rect for each child and calls `child.update` with the new rect.",
             "timestamp_created": "2021-06-19T07:27:53.372159"
@@ -5123,6 +5471,146 @@
             "tags": [],
             "text": "Add Widget.register_event_handler(predicate, action).\n",
             "timestamp_created": "2021-04-25T05:51:19.736856"
+        },
+        "607b61604277474f977cb173f78f450e": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _ensure_link_id(self, link_id):",
+                    "type": "line"
+                },
+                {
+                    "text": "    if link_id not in self._get(\"links\"):",
+                    "type": "line"
+                },
+                {
+                    "text": "        raise LinkNotFound(str(link_id))",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.077117",
+            "type": "code"
+        },
+        "61897cd565d84372bd561681d67dd702": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def get_notes(self, expression=\"\"):",
+                    "type": "line"
+                },
+                {
+                    "text": "    def match(item):",
+                    "type": "line"
+                },
+                {
+                    "text": "        lower_text = item[\"text\"].lower()",
+                    "type": "line"
+                },
+                {
+                    "text": "        for part in expression.split(\" \"):",
+                    "type": "line"
+                },
+                {
+                    "text": "            if part.startswith(\"#\"):",
+                    "type": "line"
+                },
+                {
+                    "text": "                tagpart = part[1:]",
+                    "type": "line"
+                },
+                {
+                    "text": "                for tag in item.get(\"tags\", []):",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if tagpart in tag:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        break",
+                    "type": "line"
+                },
+                {
+                    "text": "                else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    return False",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                if part.lower() not in lower_text:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    return False",
+                    "type": "line"
+                },
+                {
+                    "text": "        return True",
+                    "type": "line"
+                },
+                {
+                    "text": "    return sorted(",
+                    "type": "line"
+                },
+                {
+                    "text": "        (",
+                    "type": "line"
+                },
+                {
+                    "text": "            item",
+                    "type": "line"
+                },
+                {
+                    "text": "            for item in self._get(\"notes\").items()",
+                    "type": "line"
+                },
+                {
+                    "text": "            if match(item[1])",
+                    "type": "line"
+                },
+                {
+                    "text": "        ),",
+                    "type": "line"
+                },
+                {
+                    "text": "        key=lambda item: item[1][\"timestamp_created\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "        reverse=True",
+                    "type": "line"
+                },
+                {
+                    "text": "    )",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076785",
+            "type": "code"
         },
         "649a10bfa42a46a8b72a14a20dbf700d": {
             "chunkpath": [
@@ -5509,6 +5997,110 @@
             "timestamp_created": "2021-06-19T07:27:52.705079",
             "type": "code"
         },
+        "658f97b5683d4343a6021ffce9d57186": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def collect_lines(self, lines, file, chunk, parts, prefix=\"\", blank_lines_before=0):",
+                    "type": "line"
+                },
+                {
+                    "text": "    for index, (note_id, fragments) in enumerate(parts.get((file, chunk), [])):",
+                    "type": "line"
+                },
+                {
+                    "text": "        if index > 0:",
+                    "type": "line"
+                },
+                {
+                    "text": "            for foo in range(blank_lines_before):",
+                    "type": "line"
+                },
+                {
+                    "text": "                lines.append((None, \"\"))",
+                    "type": "line"
+                },
+                {
+                    "text": "        for fragment_index, fragment in enumerate(fragments):",
+                    "type": "line"
+                },
+                {
+                    "text": "            if fragment[\"type\"] == \"line\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                if fragment[\"text\"]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    lines.append(((note_id, prefix, fragment_index), prefix+fragment[\"text\"]))",
+                    "type": "line"
+                },
+                {
+                    "text": "                else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    lines.append(((note_id, prefix, fragment_index), \"\"))",
+                    "type": "line"
+                },
+                {
+                    "text": "            elif fragment[\"type\"] == \"chunk\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                self.collect_lines(",
+                    "type": "line"
+                },
+                {
+                    "text": "                    lines,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    file,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    tuple(list(chunk)+fragment[\"path\"]),",
+                    "type": "line"
+                },
+                {
+                    "text": "                    parts,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    prefix=prefix+fragment[\"prefix\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "                    blank_lines_before=fragment[\"blank_lines_before\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "                )",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                raise ValueError(f\"Unknown code fragment type {fragment['type']}\")",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076763",
+            "type": "code"
+        },
         "663b1555bdd643f6a873ee3d75c0fa1f": {
             "tags": [
                 "title"
@@ -5571,6 +6163,38 @@
             "text": "It is possible to create invalid event sequences in end-to-end tests. For example mouse move + mouse up in a different location.\n",
             "timestamp_created": "2021-05-22T09:35:38.693453",
             "type": "text"
+        },
+        "6f1c3a8cf62d4199952ee29aa0f13ea7": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _data_changed(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    write_json_file(self.path, self._get())",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.write_files()",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._create_virtual_links()",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.077157",
+            "type": "code"
         },
         "726500679d284eb494c0900f5c305cda": {
             "links": [],
@@ -5669,6 +6293,30 @@
             "text": "Draw incoming arrow on links between notes.\n",
             "timestamp_created": "2021-04-25T05:43:48.840082"
         },
+        "747762cbc02d47dba2225e680da2b6a3": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _replace(self, **kwargs):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._set(dict(self._get(), **kwargs))",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.077138",
+            "type": "code"
+        },
         "7750cba42afa49e2bc1ff1765d005014": {
             "links": [],
             "tags": [
@@ -5682,6 +6330,34 @@
             "tags": [],
             "text": "Closing search should focus network/table.\n",
             "timestamp_created": "2021-04-25T05:36:57.056129"
+        },
+        "7887a860b3e84b8183630dc4b8effb5d": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _links(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    yield from self._get(\"links\").items()",
+                    "type": "line"
+                },
+                {
+                    "text": "    yield from self.virtual_links.items()",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076923",
+            "type": "code"
         },
         "79b1ae3dad3c44a285b57fb88b01e561": {
             "text": "<unordered list>",
@@ -5706,6 +6382,46 @@
             ],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:52.894362",
+            "type": "code"
+        },
+        "7d30e52fce194eee91cae8dc92df8f82": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def write_files(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    parts = self.collect_parts()",
+                    "type": "line"
+                },
+                {
+                    "text": "    for (file, chunk) in parts.keys():",
+                    "type": "line"
+                },
+                {
+                    "text": "        if file != tuple() and chunk == tuple():",
+                    "type": "line"
+                },
+                {
+                    "text": "            with open(os.path.join(*file), \"w\") as f:",
+                    "type": "line"
+                },
+                {
+                    "text": "                f.write(self.collect(file, chunk, parts))",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076580",
             "type": "code"
         },
         "7d7f4a4f4b894086ace8287b083ab4f1": {
@@ -5883,6 +6599,34 @@
             ],
             "text": "Animation",
             "timestamp_created": "2021-06-19T07:27:53.674343"
+        },
+        "8084d282c0c8444a97105a26c6027cee": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def get_children(self, note_id):",
+                    "type": "line"
+                },
+                {
+                    "text": "    for link_id, link in self.get_outgoing_links(note_id):",
+                    "type": "line"
+                },
+                {
+                    "text": "        yield link[\"to\"]",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076831",
+            "type": "code"
         },
         "81c03dd935934f6988dbe6800d2a0013": {
             "links": [],
@@ -6919,12 +7663,96 @@
             "text": "Box",
             "timestamp_created": "2021-06-19T07:27:53.549767"
         },
+        "91a7888b14b04e7280795ebc78275bfa": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def update_note(self, note_id, **params):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._ensure_note_id(note_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._replace(notes=dict(",
+                    "type": "line"
+                },
+                {
+                    "text": "        self._get(\"notes\"),",
+                    "type": "line"
+                },
+                {
+                    "text": "        **{note_id: dict(self._get(\"notes\", note_id), **params)}",
+                    "type": "line"
+                },
+                {
+                    "text": "    ))",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076993",
+            "type": "code"
+        },
         "9373b6fe256a4eee9478e30d701ddc90": {
             "tags": [
                 "title"
             ],
             "text": "External Text Entry",
             "timestamp_created": "2021-06-19T07:27:54.054471"
+        },
+        "9393d6fdfb5d4d918199e9cee8ed0025": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def collect_parts(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    parts = defaultdict(list)",
+                    "type": "line"
+                },
+                {
+                    "text": "    for note_id, note in reversed(self.get_notes()):",
+                    "type": "line"
+                },
+                {
+                    "text": "        if note.get(\"type\", None) == \"code\":",
+                    "type": "line"
+                },
+                {
+                    "text": "            key = (tuple(note[\"filepath\"]), tuple(note[\"chunkpath\"]))",
+                    "type": "line"
+                },
+                {
+                    "text": "            parts[key].append((note_id, note[\"fragments\"]))",
+                    "type": "line"
+                },
+                {
+                    "text": "    return parts",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076643",
+            "type": "code"
         },
         "94df86b13b0a46039880954fcd6f2c43": {
             "tags": [
@@ -7153,6 +7981,34 @@
             ],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:52.757346",
+            "type": "code"
+        },
+        "99b97696eb76490d811118c5d23e97af": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def get_note_data(self, note_id):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._ensure_note_id(note_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "    return self._get(\"notes\", note_id)",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076808",
             "type": "code"
         },
         "9b67b722e8aa4a2a913fe18905e369af": {
@@ -7970,1292 +8826,12 @@
                     "type": "line"
                 },
                 {
-                    "text": "    def __init__(self, path):",
-                    "type": "line"
-                },
-                {
-                    "text": "        Immutable.__init__(self, read_json_file(path, {",
-                    "type": "line"
-                },
-                {
-                    "text": "            \"version\": 1,",
-                    "type": "line"
-                },
-                {
-                    "text": "            \"notes\": {},",
-                    "type": "line"
-                },
-                {
-                    "text": "            \"links\": {},",
-                    "type": "line"
-                },
-                {
-                    "text": "        }))",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.path = path",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.virtual_links = {}",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.consolidate_files()",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._create_virtual_links()",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def write_files(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        parts = self.collect_parts()",
-                    "type": "line"
-                },
-                {
-                    "text": "        for (file, chunk) in parts.keys():",
-                    "type": "line"
-                },
-                {
-                    "text": "            if file != tuple() and chunk == tuple():",
-                    "type": "line"
-                },
-                {
-                    "text": "                with open(os.path.join(*file), \"w\") as f:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    f.write(self.collect(file, chunk, parts))",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def consolidate_files(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        with self.transaction():",
-                    "type": "line"
-                },
-                {
-                    "text": "            parts = self.collect_parts()",
-                    "type": "line"
-                },
-                {
-                    "text": "            notes = set()",
-                    "type": "line"
-                },
-                {
-                    "text": "            for (file, chunk) in parts.keys():",
-                    "type": "line"
-                },
-                {
-                    "text": "                if file != tuple() and chunk == tuple():",
-                    "type": "line"
-                },
-                {
-                    "text": "                    notes.update(self.consolidate(os.path.join(*file), file, chunk, parts))",
-                    "type": "line"
-                },
-                {
-                    "text": "            if notes:",
-                    "type": "line"
-                },
-                {
-                    "text": "                parts = self.collect_parts()",
-                    "type": "line"
-                },
-                {
-                    "text": "                report = [",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"Consolidation report:\",",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"\",",
-                    "type": "line"
-                },
-                {
-                    "text": "                ]",
-                    "type": "line"
-                },
-                {
-                    "text": "                for (file, chunk) in parts.keys():",
-                    "type": "line"
-                },
-                {
-                    "text": "                    if file != tuple() and chunk == tuple():",
-                    "type": "line"
-                },
-                {
-                    "text": "                        path = os.path.join(*file)",
-                    "type": "line"
-                },
-                {
-                    "text": "                        with open(path) as f:",
-                    "type": "line"
-                },
-                {
-                    "text": "                            file_on_disk = f.read()",
-                    "type": "line"
-                },
-                {
-                    "text": "                        file_in_memory = self.collect(file, chunk, parts)",
-                    "type": "line"
-                },
-                {
-                    "text": "                        if file_on_disk != file_in_memory:",
-                    "type": "line"
-                },
-                {
-                    "text": "                            report.append(f\"  FAIL: {path}\")",
-                    "type": "line"
-                },
-                {
-                    "text": "                            with open(f\"{path}.orig\", \"w\") as f:",
-                    "type": "line"
-                },
-                {
-                    "text": "                                f.write(file_on_disk)",
-                    "type": "line"
-                },
-                {
-                    "text": "                        else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                            report.append(f\"  OK:   {path}\")",
-                    "type": "line"
-                },
-                {
-                    "text": "                report_id = self.create_note(**{",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"type\": \"code\",",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"text\": \"<code>\",",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"filepath\": [],",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"chunkpath\": [],",
-                    "type": "line"
-                },
-                {
-                    "text": "                    \"fragments\": [{\"type\": \"line\", \"text\": x} for x in report]",
-                    "type": "line"
-                },
-                {
-                    "text": "                })",
-                    "type": "line"
-                },
-                {
-                    "text": "                for affected_note in notes:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    self.create_link(report_id, affected_note)",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def collect_parts(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        parts = defaultdict(list)",
-                    "type": "line"
-                },
-                {
-                    "text": "        for note_id, note in reversed(self.get_notes()):",
-                    "type": "line"
-                },
-                {
-                    "text": "            if note.get(\"type\", None) == \"code\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                key = (tuple(note[\"filepath\"]), tuple(note[\"chunkpath\"]))",
-                    "type": "line"
-                },
-                {
-                    "text": "                parts[key].append((note_id, note[\"fragments\"]))",
-                    "type": "line"
-                },
-                {
-                    "text": "        return parts",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def consolidate(self, path, file, chunk, parts):",
-                    "type": "line"
-                },
-                {
-                    "text": "        old_lines = []",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.collect_lines(old_lines, file, chunk, parts)",
-                    "type": "line"
-                },
-                {
-                    "text": "        with open(path) as f:",
-                    "type": "line"
-                },
-                {
-                    "text": "            new_lines = f.read().splitlines()",
-                    "type": "line"
-                },
-                {
-                    "text": "        sm = difflib.SequenceMatcher(a=[x[1] for x in old_lines], b=new_lines)",
-                    "type": "line"
-                },
-                {
-                    "text": "        note_actions = defaultdict(list)",
-                    "type": "line"
-                },
-                {
-                    "text": "        for tag, i1, i2, j1, j2 in sm.get_opcodes():",
-                    "type": "line"
-                },
-                {
-                    "text": "            if tag == \"replace\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                first = None",
-                    "type": "line"
-                },
-                {
-                    "text": "                for tag, line in old_lines[i1:i2]:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    if tag is not None:",
-                    "type": "line"
-                },
-                {
-                    "text": "                        note_id, prefix, fragment_index = tag",
-                    "type": "line"
-                },
-                {
-                    "text": "                        if first is None:",
-                    "type": "line"
-                },
-                {
-                    "text": "                            first = tag",
-                    "type": "line"
-                },
-                {
-                    "text": "                        note_actions[note_id].append(('remove', fragment_index))",
-                    "type": "line"
-                },
-                {
-                    "text": "                if first:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    note_actions[first[0]].append((",
-                    "type": "line"
-                },
-                {
-                    "text": "                        'extend',",
-                    "type": "line"
-                },
-                {
-                    "text": "                        first[2],",
-                    "type": "line"
-                },
-                {
-                    "text": "                        [self.strip_prefix(first[1], x) for x in new_lines[j1:j2]]",
-                    "type": "line"
-                },
-                {
-                    "text": "                    ))",
-                    "type": "line"
-                },
-                {
-                    "text": "            elif tag == \"delete\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                for tag, line in old_lines[i1:i2]:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    if tag is not None:",
-                    "type": "line"
-                },
-                {
-                    "text": "                        note_id, prefix, fragment_index = tag",
-                    "type": "line"
-                },
-                {
-                    "text": "                        note_actions[note_id].append(('remove', fragment_index))",
-                    "type": "line"
-                },
-                {
-                    "text": "            elif tag == \"insert\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                def indices(index, items):",
-                    "type": "line"
-                },
-                {
-                    "text": "                    index_up = index - 1",
-                    "type": "line"
-                },
-                {
-                    "text": "                    index_down = index",
-                    "type": "line"
-                },
-                {
-                    "text": "                    while index_up >= 0 or index_down < len(items):",
-                    "type": "line"
-                },
-                {
-                    "text": "                        if index_up >= 0:",
-                    "type": "line"
-                },
-                {
-                    "text": "                            yield (index_up, 1)",
-                    "type": "line"
-                },
-                {
-                    "text": "                            index_up -= 1",
-                    "type": "line"
-                },
-                {
-                    "text": "                        if index_down < len(items):",
-                    "type": "line"
-                },
-                {
-                    "text": "                            yield (index_down, 0)",
-                    "type": "line"
-                },
-                {
-                    "text": "                            index_down += 1",
-                    "type": "line"
-                },
-                {
-                    "text": "                    raise ValueError(\"ran out of indices to try\")",
-                    "type": "line"
-                },
-                {
-                    "text": "                for index, offset in indices(i1, old_lines):",
-                    "type": "line"
-                },
-                {
-                    "text": "                    tag, line = old_lines[index]",
-                    "type": "line"
-                },
-                {
-                    "text": "                    if tag:",
-                    "type": "line"
-                },
-                {
-                    "text": "                        note_id, prefix, fragment_index = tag",
-                    "type": "line"
-                },
-                {
-                    "text": "                        note_actions[note_id].append((",
-                    "type": "line"
-                },
-                {
-                    "text": "                            'extend',",
-                    "type": "line"
-                },
-                {
-                    "text": "                            fragment_index+offset,",
-                    "type": "line"
-                },
-                {
-                    "text": "                            [self.strip_prefix(prefix, x) for x in new_lines[j1:j2]]",
-                    "type": "line"
-                },
-                {
-                    "text": "                        ))",
-                    "type": "line"
-                },
-                {
-                    "text": "                        break",
-                    "type": "line"
-                },
-                {
-                    "text": "            elif tag == \"equal\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                # Nothing to do",
-                    "type": "line"
-                },
-                {
-                    "text": "                pass",
-                    "type": "line"
-                },
-                {
-                    "text": "            else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                raise ValueError(f\"Unknown op_code tag {tag}\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        notes = set()",
-                    "type": "line"
-                },
-                {
-                    "text": "        for note_id, actions in note_actions.items():",
-                    "type": "line"
-                },
-                {
-                    "text": "            note = self.get_note_data(note_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "            self.update_note(",
-                    "type": "line"
-                },
-                {
-                    "text": "                note_id,",
-                    "type": "line"
-                },
-                {
-                    "text": "                fragments=self.consolidate_fragments(note[\"fragments\"], actions)",
-                    "type": "line"
-                },
-                {
-                    "text": "            )",
-                    "type": "line"
-                },
-                {
-                    "text": "            notes.add(note_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "        return notes",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def strip_prefix(self, prefix, line):",
-                    "type": "line"
-                },
-                {
-                    "text": "        if line.startswith(prefix):",
-                    "type": "line"
-                },
-                {
-                    "text": "            return line[len(prefix):]",
-                    "type": "line"
-                },
-                {
-                    "text": "        else:",
-                    "type": "line"
-                },
-                {
-                    "text": "            return line",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def consolidate_fragments(self, fragments, actions):",
-                    "type": "line"
-                },
-                {
-                    "text": "        removes = set()",
-                    "type": "line"
-                },
-                {
-                    "text": "        extends = {}",
-                    "type": "line"
-                },
-                {
-                    "text": "        for action in actions:",
-                    "type": "line"
-                },
-                {
-                    "text": "            if action[0] == 'remove':",
-                    "type": "line"
-                },
-                {
-                    "text": "                removes.add(action[1])",
-                    "type": "line"
-                },
-                {
-                    "text": "            elif action[0] == 'extend':",
-                    "type": "line"
-                },
-                {
-                    "text": "                extends[action[1]] = action[2]",
-                    "type": "line"
-                },
-                {
-                    "text": "            else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                raise ValueError(f\"Unknown action {action}\")",
-                    "type": "line"
-                },
-                {
-                    "text": "        new_fragments = []",
-                    "type": "line"
-                },
-                {
-                    "text": "        for index, fragment in enumerate(fragments):",
-                    "type": "line"
-                },
-                {
-                    "text": "            if index in extends:",
-                    "type": "line"
-                },
-                {
-                    "text": "                for line in extends[index]:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    new_fragments.append({\"type\": \"line\", \"text\": line})",
-                    "type": "line"
-                },
-                {
-                    "text": "            if index not in removes:",
-                    "type": "line"
-                },
-                {
-                    "text": "                new_fragments.append(fragment)",
-                    "type": "line"
-                },
-                {
-                    "text": "        if (index+1) in extends:",
-                    "type": "line"
-                },
-                {
-                    "text": "            for line in extends[index+1]:",
-                    "type": "line"
-                },
-                {
-                    "text": "                new_fragments.append({\"type\": \"line\", \"text\": line})",
-                    "type": "line"
-                },
-                {
-                    "text": "        return new_fragments",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def collect(self, file, chunk, parts):",
-                    "type": "line"
-                },
-                {
-                    "text": "        lines = []",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.collect_lines(lines, file, chunk, parts)",
-                    "type": "line"
-                },
-                {
-                    "text": "        return \"\\n\".join(line[1] for line in lines) + \"\\n\"",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def collect_lines(self, lines, file, chunk, parts, prefix=\"\", blank_lines_before=0):",
-                    "type": "line"
-                },
-                {
-                    "text": "        for index, (note_id, fragments) in enumerate(parts.get((file, chunk), [])):",
-                    "type": "line"
-                },
-                {
-                    "text": "            if index > 0:",
-                    "type": "line"
-                },
-                {
-                    "text": "                for foo in range(blank_lines_before):",
-                    "type": "line"
-                },
-                {
-                    "text": "                    lines.append((None, \"\"))",
-                    "type": "line"
-                },
-                {
-                    "text": "            for fragment_index, fragment in enumerate(fragments):",
-                    "type": "line"
-                },
-                {
-                    "text": "                if fragment[\"type\"] == \"line\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                    if fragment[\"text\"]:",
-                    "type": "line"
-                },
-                {
-                    "text": "                        lines.append(((note_id, prefix, fragment_index), prefix+fragment[\"text\"]))",
-                    "type": "line"
-                },
-                {
-                    "text": "                    else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                        lines.append(((note_id, prefix, fragment_index), \"\"))",
-                    "type": "line"
-                },
-                {
-                    "text": "                elif fragment[\"type\"] == \"chunk\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                    self.collect_lines(",
-                    "type": "line"
-                },
-                {
-                    "text": "                        lines,",
-                    "type": "line"
-                },
-                {
-                    "text": "                        file,",
-                    "type": "line"
-                },
-                {
-                    "text": "                        tuple(list(chunk)+fragment[\"path\"]),",
-                    "type": "line"
-                },
-                {
-                    "text": "                        parts,",
-                    "type": "line"
-                },
-                {
-                    "text": "                        prefix=prefix+fragment[\"prefix\"],",
-                    "type": "line"
-                },
-                {
-                    "text": "                        blank_lines_before=fragment[\"blank_lines_before\"],",
-                    "type": "line"
-                },
-                {
-                    "text": "                    )",
-                    "type": "line"
-                },
-                {
-                    "text": "                else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    raise ValueError(f\"Unknown code fragment type {fragment['type']}\")",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def get_notes(self, expression=\"\"):",
-                    "type": "line"
-                },
-                {
-                    "text": "        def match(item):",
-                    "type": "line"
-                },
-                {
-                    "text": "            lower_text = item[\"text\"].lower()",
-                    "type": "line"
-                },
-                {
-                    "text": "            for part in expression.split(\" \"):",
-                    "type": "line"
-                },
-                {
-                    "text": "                if part.startswith(\"#\"):",
-                    "type": "line"
-                },
-                {
-                    "text": "                    tagpart = part[1:]",
-                    "type": "line"
-                },
-                {
-                    "text": "                    for tag in item.get(\"tags\", []):",
-                    "type": "line"
-                },
-                {
-                    "text": "                        if tagpart in tag:",
-                    "type": "line"
-                },
-                {
-                    "text": "                            break",
-                    "type": "line"
-                },
-                {
-                    "text": "                    else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                        return False",
-                    "type": "line"
-                },
-                {
-                    "text": "                else:",
-                    "type": "line"
-                },
-                {
-                    "text": "                    if part.lower() not in lower_text:",
-                    "type": "line"
-                },
-                {
-                    "text": "                        return False",
-                    "type": "line"
-                },
-                {
-                    "text": "            return True",
-                    "type": "line"
-                },
-                {
-                    "text": "        return sorted(",
-                    "type": "line"
-                },
-                {
-                    "text": "            (",
-                    "type": "line"
-                },
-                {
-                    "text": "                item",
-                    "type": "line"
-                },
-                {
-                    "text": "                for item in self._get(\"notes\").items()",
-                    "type": "line"
-                },
-                {
-                    "text": "                if match(item[1])",
-                    "type": "line"
-                },
-                {
-                    "text": "            ),",
-                    "type": "line"
-                },
-                {
-                    "text": "            key=lambda item: item[1][\"timestamp_created\"],",
-                    "type": "line"
-                },
-                {
-                    "text": "            reverse=True",
-                    "type": "line"
-                },
-                {
-                    "text": "        )",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def get_note_data(self, note_id):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._ensure_note_id(note_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "        return self._get(\"notes\", note_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def get_children(self, note_id):",
-                    "type": "line"
-                },
-                {
-                    "text": "        for link_id, link in self.get_outgoing_links(note_id):",
-                    "type": "line"
-                },
-                {
-                    "text": "            yield link[\"to\"]",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _create_virtual_links(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.virtual_links = {}",
-                    "type": "line"
-                },
-                {
-                    "text": "        code_notes = []",
-                    "type": "line"
-                },
-                {
-                    "text": "        parts = defaultdict(list)",
-                    "type": "line"
-                },
-                {
-                    "text": "        for note_id, note in reversed(self.get_notes()):",
-                    "type": "line"
-                },
-                {
-                    "text": "            if note.get(\"type\", None) == \"code\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                key = (tuple(note[\"filepath\"]), tuple(note[\"chunkpath\"]))",
-                    "type": "line"
-                },
-                {
-                    "text": "                parts[key].append((note_id, note[\"fragments\"]))",
-                    "type": "line"
-                },
-                {
-                    "text": "                code_notes.append((note_id, note))",
-                    "type": "line"
-                },
-                {
-                    "text": "        for note_id, note in code_notes:",
-                    "type": "line"
-                },
-                {
-                    "text": "            for fragment in note[\"fragments\"]:",
-                    "type": "line"
-                },
-                {
-                    "text": "                if fragment[\"type\"] == \"chunk\":",
-                    "type": "line"
-                },
-                {
-                    "text": "                    for (child_note_id, _) in parts[(",
-                    "type": "line"
-                },
-                {
-                    "text": "                        tuple(note[\"filepath\"]),",
-                    "type": "line"
-                },
-                {
-                    "text": "                        tuple(note[\"chunkpath\"]+fragment[\"path\"])",
-                    "type": "line"
-                },
-                {
-                    "text": "                    )]:",
-                    "type": "line"
-                },
-                {
-                    "text": "                        self.virtual_links[genid()] = {",
-                    "type": "line"
-                },
-                {
-                    "text": "                            \"from\": note_id,",
-                    "type": "line"
-                },
-                {
-                    "text": "                            \"to\": child_note_id,",
-                    "type": "line"
-                },
-                {
-                    "text": "                            \"timestamp_created\": utcnow_timestamp_string(),",
-                    "type": "line"
-                },
-                {
-                    "text": "                            \"virtual\": True,",
-                    "type": "line"
-                },
-                {
-                    "text": "                        }",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def get_outgoing_links(self, note_id):",
-                    "type": "line"
-                },
-                {
-                    "text": "        return self._sort_links([",
-                    "type": "line"
-                },
-                {
-                    "text": "            (link_id, link)",
-                    "type": "line"
-                },
-                {
-                    "text": "            for link_id, link in self._links()",
-                    "type": "line"
-                },
-                {
-                    "text": "            if link[\"from\"] == note_id",
-                    "type": "line"
-                },
-                {
-                    "text": "        ])",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def get_incoming_links(self, note_id):",
-                    "type": "line"
-                },
-                {
-                    "text": "        return self._sort_links([",
-                    "type": "line"
-                },
-                {
-                    "text": "            (link_id, link)",
-                    "type": "line"
-                },
-                {
-                    "text": "            for link_id, link in self._links()",
-                    "type": "line"
-                },
-                {
-                    "text": "            if link[\"to\"] == note_id",
-                    "type": "line"
-                },
-                {
-                    "text": "        ])",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _links(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        yield from self._get(\"links\").items()",
-                    "type": "line"
-                },
-                {
-                    "text": "        yield from self.virtual_links.items()",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _sort_links(self, links):",
-                    "type": "line"
-                },
-                {
-                    "text": "        return sorted(",
-                    "type": "line"
-                },
-                {
-                    "text": "            links,",
-                    "type": "line"
-                },
-                {
-                    "text": "            key=lambda item: item[1][\"timestamp_created\"]",
-                    "type": "line"
-                },
-                {
-                    "text": "        )",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def create_note(self, **params):",
-                    "type": "line"
-                },
-                {
-                    "text": "        note_id = genid()",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._replace(notes=dict(",
-                    "type": "line"
-                },
-                {
-                    "text": "            self._get(\"notes\"),",
-                    "type": "line"
-                },
-                {
-                    "text": "            **{note_id: dict(params, timestamp_created=utcnow_timestamp_string())}",
-                    "type": "line"
-                },
-                {
-                    "text": "        ))",
-                    "type": "line"
-                },
-                {
-                    "text": "        return note_id",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def update_note(self, note_id, **params):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._ensure_note_id(note_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._replace(notes=dict(",
-                    "type": "line"
-                },
-                {
-                    "text": "            self._get(\"notes\"),",
-                    "type": "line"
-                },
-                {
-                    "text": "            **{note_id: dict(self._get(\"notes\", note_id), **params)}",
-                    "type": "line"
-                },
-                {
-                    "text": "        ))",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def delete_note(self, note_id):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._ensure_note_id(note_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "        new_notes = dict(self._get(\"notes\"))",
-                    "type": "line"
-                },
-                {
-                    "text": "        new_notes.pop(note_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "        new_links = dict(self._get(\"links\"))",
-                    "type": "line"
-                },
-                {
-                    "text": "        dead_links = []",
-                    "type": "line"
-                },
-                {
-                    "text": "        for link_id, link in new_links.items():",
-                    "type": "line"
-                },
-                {
-                    "text": "            if link[\"to\"] == note_id or link[\"from\"] == note_id:",
-                    "type": "line"
-                },
-                {
-                    "text": "                dead_links.append(link_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "        for link_id in dead_links:",
-                    "type": "line"
-                },
-                {
-                    "text": "            new_links.pop(link_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._replace(notes=new_notes, links=new_links)",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def create_link(self, from_id, to_id):",
-                    "type": "line"
-                },
-                {
-                    "text": "        link_id = genid()",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._replace(links=dict(",
-                    "type": "line"
-                },
-                {
-                    "text": "            self._get(\"links\"),",
-                    "type": "line"
-                },
-                {
-                    "text": "            **{link_id: {",
-                    "type": "line"
-                },
-                {
-                    "text": "                \"from\": from_id,",
-                    "type": "line"
-                },
-                {
-                    "text": "                \"to\": to_id,",
-                    "type": "line"
-                },
-                {
-                    "text": "                \"timestamp_created\": utcnow_timestamp_string(),",
-                    "type": "line"
-                },
-                {
-                    "text": "            }}",
-                    "type": "line"
-                },
-                {
-                    "text": "        ))",
-                    "type": "line"
-                },
-                {
-                    "text": "        return link_id",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def delete_link(self, link_id):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._ensure_link_id(link_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "        new_links = dict(self._get(\"links\"))",
-                    "type": "line"
-                },
-                {
-                    "text": "        new_links.pop(link_id)",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._replace(links=new_links)",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _ensure_note_id(self, note_id):",
-                    "type": "line"
-                },
-                {
-                    "text": "        if note_id not in self._get(\"notes\"):",
-                    "type": "line"
-                },
-                {
-                    "text": "            raise NoteNotFound(str(note_id))",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _ensure_link_id(self, link_id):",
-                    "type": "line"
-                },
-                {
-                    "text": "        if link_id not in self._get(\"links\"):",
-                    "type": "line"
-                },
-                {
-                    "text": "            raise LinkNotFound(str(link_id))",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _replace(self, **kwargs):",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._set(dict(self._get(), **kwargs))",
-                    "type": "line"
-                },
-                {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _data_changed(self):",
-                    "type": "line"
-                },
-                {
-                    "text": "        write_json_file(self.path, self._get())",
-                    "type": "line"
-                },
-                {
-                    "text": "        self.write_files()",
-                    "type": "line"
-                },
-                {
-                    "text": "        self._create_virtual_links()",
-                    "type": "line"
+                    "blank_lines_before": 1,
+                    "path": [
+                        "NoteDb"
+                    ],
+                    "prefix": "    ",
+                    "type": "chunk"
                 }
             ],
             "links": [],
@@ -9823,6 +9399,106 @@
             "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-20T12:14:33.776808",
+            "type": "code"
+        },
+        "ba5a9b5e721346e3a6265dff1c5139c4": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def consolidate_fragments(self, fragments, actions):",
+                    "type": "line"
+                },
+                {
+                    "text": "    removes = set()",
+                    "type": "line"
+                },
+                {
+                    "text": "    extends = {}",
+                    "type": "line"
+                },
+                {
+                    "text": "    for action in actions:",
+                    "type": "line"
+                },
+                {
+                    "text": "        if action[0] == 'remove':",
+                    "type": "line"
+                },
+                {
+                    "text": "            removes.add(action[1])",
+                    "type": "line"
+                },
+                {
+                    "text": "        elif action[0] == 'extend':",
+                    "type": "line"
+                },
+                {
+                    "text": "            extends[action[1]] = action[2]",
+                    "type": "line"
+                },
+                {
+                    "text": "        else:",
+                    "type": "line"
+                },
+                {
+                    "text": "            raise ValueError(f\"Unknown action {action}\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    new_fragments = []",
+                    "type": "line"
+                },
+                {
+                    "text": "    for index, fragment in enumerate(fragments):",
+                    "type": "line"
+                },
+                {
+                    "text": "        if index in extends:",
+                    "type": "line"
+                },
+                {
+                    "text": "            for line in extends[index]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                new_fragments.append({\"type\": \"line\", \"text\": line})",
+                    "type": "line"
+                },
+                {
+                    "text": "        if index not in removes:",
+                    "type": "line"
+                },
+                {
+                    "text": "            new_fragments.append(fragment)",
+                    "type": "line"
+                },
+                {
+                    "text": "    if (index+1) in extends:",
+                    "type": "line"
+                },
+                {
+                    "text": "        for line in extends[index+1]:",
+                    "type": "line"
+                },
+                {
+                    "text": "            new_fragments.append({\"type\": \"line\", \"text\": line})",
+                    "type": "line"
+                },
+                {
+                    "text": "    return new_fragments",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076716",
             "type": "code"
         },
         "ba947625790e456a8e4824e9fda0d8e9": {
@@ -11022,6 +10698,194 @@
             "timestamp_created": "2021-06-19T07:27:54.321742",
             "type": "code"
         },
+        "cafedea05fb241ce84413b7558c1c608": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def _sort_links(self, links):",
+                    "type": "line"
+                },
+                {
+                    "text": "    return sorted(",
+                    "type": "line"
+                },
+                {
+                    "text": "        links,",
+                    "type": "line"
+                },
+                {
+                    "text": "        key=lambda item: item[1][\"timestamp_created\"]",
+                    "type": "line"
+                },
+                {
+                    "text": "    )",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076946",
+            "type": "code"
+        },
+        "cc229c995b024d06a40873c636aab254": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def consolidate_files(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "    with self.transaction():",
+                    "type": "line"
+                },
+                {
+                    "text": "        parts = self.collect_parts()",
+                    "type": "line"
+                },
+                {
+                    "text": "        notes = set()",
+                    "type": "line"
+                },
+                {
+                    "text": "        for (file, chunk) in parts.keys():",
+                    "type": "line"
+                },
+                {
+                    "text": "            if file != tuple() and chunk == tuple():",
+                    "type": "line"
+                },
+                {
+                    "text": "                notes.update(self.consolidate(os.path.join(*file), file, chunk, parts))",
+                    "type": "line"
+                },
+                {
+                    "text": "        if notes:",
+                    "type": "line"
+                },
+                {
+                    "text": "            parts = self.collect_parts()",
+                    "type": "line"
+                },
+                {
+                    "text": "            report = [",
+                    "type": "line"
+                },
+                {
+                    "text": "                \"Consolidation report:\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                \"\",",
+                    "type": "line"
+                },
+                {
+                    "text": "            ]",
+                    "type": "line"
+                },
+                {
+                    "text": "            for (file, chunk) in parts.keys():",
+                    "type": "line"
+                },
+                {
+                    "text": "                if file != tuple() and chunk == tuple():",
+                    "type": "line"
+                },
+                {
+                    "text": "                    path = os.path.join(*file)",
+                    "type": "line"
+                },
+                {
+                    "text": "                    with open(path) as f:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        file_on_disk = f.read()",
+                    "type": "line"
+                },
+                {
+                    "text": "                    file_in_memory = self.collect(file, chunk, parts)",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if file_on_disk != file_in_memory:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        report.append(f\"  FAIL: {path}\")",
+                    "type": "line"
+                },
+                {
+                    "text": "                        with open(f\"{path}.orig\", \"w\") as f:",
+                    "type": "line"
+                },
+                {
+                    "text": "                            f.write(file_on_disk)",
+                    "type": "line"
+                },
+                {
+                    "text": "                    else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        report.append(f\"  OK:   {path}\")",
+                    "type": "line"
+                },
+                {
+                    "text": "            report_id = self.create_note(**{",
+                    "type": "line"
+                },
+                {
+                    "text": "                \"type\": \"code\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                \"text\": \"<code>\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                \"filepath\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "                \"chunkpath\": [],",
+                    "type": "line"
+                },
+                {
+                    "text": "                \"fragments\": [{\"type\": \"line\", \"text\": x} for x in report]",
+                    "type": "line"
+                },
+                {
+                    "text": "            })",
+                    "type": "line"
+                },
+                {
+                    "text": "            for affected_note in notes:",
+                    "type": "line"
+                },
+                {
+                    "text": "                self.create_link(report_id, affected_note)",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076617",
+            "type": "code"
+        },
         "cd1a983e9fc54e32b67bddd67b11d5a5": {
             "chunkpath": [],
             "filepath": [],
@@ -11316,6 +11180,274 @@
             "timestamp_created": "2021-06-19T07:27:52.736704",
             "type": "code"
         },
+        "d06e4570dd5540be9f1b56f03c2574dd": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def consolidate(self, path, file, chunk, parts):",
+                    "type": "line"
+                },
+                {
+                    "text": "    old_lines = []",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.collect_lines(old_lines, file, chunk, parts)",
+                    "type": "line"
+                },
+                {
+                    "text": "    with open(path) as f:",
+                    "type": "line"
+                },
+                {
+                    "text": "        new_lines = f.read().splitlines()",
+                    "type": "line"
+                },
+                {
+                    "text": "    sm = difflib.SequenceMatcher(a=[x[1] for x in old_lines], b=new_lines)",
+                    "type": "line"
+                },
+                {
+                    "text": "    note_actions = defaultdict(list)",
+                    "type": "line"
+                },
+                {
+                    "text": "    for tag, i1, i2, j1, j2 in sm.get_opcodes():",
+                    "type": "line"
+                },
+                {
+                    "text": "        if tag == \"replace\":",
+                    "type": "line"
+                },
+                {
+                    "text": "            first = None",
+                    "type": "line"
+                },
+                {
+                    "text": "            for tag, line in old_lines[i1:i2]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                if tag is not None:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    note_id, prefix, fragment_index = tag",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if first is None:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        first = tag",
+                    "type": "line"
+                },
+                {
+                    "text": "                    note_actions[note_id].append(('remove', fragment_index))",
+                    "type": "line"
+                },
+                {
+                    "text": "            if first:",
+                    "type": "line"
+                },
+                {
+                    "text": "                note_actions[first[0]].append((",
+                    "type": "line"
+                },
+                {
+                    "text": "                    'extend',",
+                    "type": "line"
+                },
+                {
+                    "text": "                    first[2],",
+                    "type": "line"
+                },
+                {
+                    "text": "                    [self.strip_prefix(first[1], x) for x in new_lines[j1:j2]]",
+                    "type": "line"
+                },
+                {
+                    "text": "                ))",
+                    "type": "line"
+                },
+                {
+                    "text": "        elif tag == \"delete\":",
+                    "type": "line"
+                },
+                {
+                    "text": "            for tag, line in old_lines[i1:i2]:",
+                    "type": "line"
+                },
+                {
+                    "text": "                if tag is not None:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    note_id, prefix, fragment_index = tag",
+                    "type": "line"
+                },
+                {
+                    "text": "                    note_actions[note_id].append(('remove', fragment_index))",
+                    "type": "line"
+                },
+                {
+                    "text": "        elif tag == \"insert\":",
+                    "type": "line"
+                },
+                {
+                    "text": "            def indices(index, items):",
+                    "type": "line"
+                },
+                {
+                    "text": "                index_up = index - 1",
+                    "type": "line"
+                },
+                {
+                    "text": "                index_down = index",
+                    "type": "line"
+                },
+                {
+                    "text": "                while index_up >= 0 or index_down < len(items):",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if index_up >= 0:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        yield (index_up, 1)",
+                    "type": "line"
+                },
+                {
+                    "text": "                        index_up -= 1",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if index_down < len(items):",
+                    "type": "line"
+                },
+                {
+                    "text": "                        yield (index_down, 0)",
+                    "type": "line"
+                },
+                {
+                    "text": "                        index_down += 1",
+                    "type": "line"
+                },
+                {
+                    "text": "                raise ValueError(\"ran out of indices to try\")",
+                    "type": "line"
+                },
+                {
+                    "text": "            for index, offset in indices(i1, old_lines):",
+                    "type": "line"
+                },
+                {
+                    "text": "                tag, line = old_lines[index]",
+                    "type": "line"
+                },
+                {
+                    "text": "                if tag:",
+                    "type": "line"
+                },
+                {
+                    "text": "                    note_id, prefix, fragment_index = tag",
+                    "type": "line"
+                },
+                {
+                    "text": "                    note_actions[note_id].append((",
+                    "type": "line"
+                },
+                {
+                    "text": "                        'extend',",
+                    "type": "line"
+                },
+                {
+                    "text": "                        fragment_index+offset,",
+                    "type": "line"
+                },
+                {
+                    "text": "                        [self.strip_prefix(prefix, x) for x in new_lines[j1:j2]]",
+                    "type": "line"
+                },
+                {
+                    "text": "                    ))",
+                    "type": "line"
+                },
+                {
+                    "text": "                    break",
+                    "type": "line"
+                },
+                {
+                    "text": "        elif tag == \"equal\":",
+                    "type": "line"
+                },
+                {
+                    "text": "            # Nothing to do",
+                    "type": "line"
+                },
+                {
+                    "text": "            pass",
+                    "type": "line"
+                },
+                {
+                    "text": "        else:",
+                    "type": "line"
+                },
+                {
+                    "text": "            raise ValueError(f\"Unknown op_code tag {tag}\")",
+                    "type": "line"
+                },
+                {
+                    "text": "    notes = set()",
+                    "type": "line"
+                },
+                {
+                    "text": "    for note_id, actions in note_actions.items():",
+                    "type": "line"
+                },
+                {
+                    "text": "        note = self.get_note_data(note_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "        self.update_note(",
+                    "type": "line"
+                },
+                {
+                    "text": "            note_id,",
+                    "type": "line"
+                },
+                {
+                    "text": "            fragments=self.consolidate_fragments(note[\"fragments\"], actions)",
+                    "type": "line"
+                },
+                {
+                    "text": "        )",
+                    "type": "line"
+                },
+                {
+                    "text": "        notes.add(note_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "    return notes",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076669",
+            "type": "code"
+        },
         "d25059d661ca4f9fa6fc94c24c7969f3": {
             "chunkpath": [
                 "classes"
@@ -11391,6 +11523,66 @@
             ],
             "text": "Debug Bar",
             "timestamp_created": "2021-06-19T07:27:52.726691"
+        },
+        "d62438f0673249bf942eea26dd607d67": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def create_link(self, from_id, to_id):",
+                    "type": "line"
+                },
+                {
+                    "text": "    link_id = genid()",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._replace(links=dict(",
+                    "type": "line"
+                },
+                {
+                    "text": "        self._get(\"links\"),",
+                    "type": "line"
+                },
+                {
+                    "text": "        **{link_id: {",
+                    "type": "line"
+                },
+                {
+                    "text": "            \"from\": from_id,",
+                    "type": "line"
+                },
+                {
+                    "text": "            \"to\": to_id,",
+                    "type": "line"
+                },
+                {
+                    "text": "            \"timestamp_created\": utcnow_timestamp_string(),",
+                    "type": "line"
+                },
+                {
+                    "text": "        }}",
+                    "type": "line"
+                },
+                {
+                    "text": "    ))",
+                    "type": "line"
+                },
+                {
+                    "text": "    return link_id",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.077040",
+            "type": "code"
         },
         "d89ad9a23c64463b80cc41d4701d3dfb": {
             "links": [],
@@ -13026,6 +13218,46 @@
             "timestamp_created": "2021-06-19T07:27:52.613418",
             "type": "code"
         },
+        "f1074c3a654540e19be2076e664e8c25": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def get_outgoing_links(self, note_id):",
+                    "type": "line"
+                },
+                {
+                    "text": "    return self._sort_links([",
+                    "type": "line"
+                },
+                {
+                    "text": "        (link_id, link)",
+                    "type": "line"
+                },
+                {
+                    "text": "        for link_id, link in self._links()",
+                    "type": "line"
+                },
+                {
+                    "text": "        if link[\"from\"] == note_id",
+                    "type": "line"
+                },
+                {
+                    "text": "    ])",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.076877",
+            "type": "code"
+        },
         "f2b1415b9cbb451a877ce3cb5785d01d": {
             "text": "This architecture has a few consequences documented below.",
             "timestamp_created": "2021-06-19T07:27:53.257464"
@@ -13221,6 +13453,42 @@
             ],
             "text": "Text Field",
             "timestamp_created": "2021-06-19T07:27:53.631955"
+        },
+        "fbfdbf74e6d9470c8f74bfec3d7c6ef7": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def delete_link(self, link_id):",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._ensure_link_id(link_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "    new_links = dict(self._get(\"links\"))",
+                    "type": "line"
+                },
+                {
+                    "text": "    new_links.pop(link_id)",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._replace(links=new_links)",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2021-06-20T12:22:06.077070",
+            "type": "code"
         },
         "fd5643308b3b4e00b07082d1aa948ed9": {
             "chunkpath": [
@@ -13478,6 +13746,62 @@
             ],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:53.181465",
+            "type": "code"
+        },
+        "ffb4f91f871f473c9bf19c90c543cbe3": {
+            "chunkpath": [
+                "classes",
+                "NoteDb"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "def __init__(self, path):",
+                    "type": "line"
+                },
+                {
+                    "text": "    Immutable.__init__(self, read_json_file(path, {",
+                    "type": "line"
+                },
+                {
+                    "text": "        \"version\": 1,",
+                    "type": "line"
+                },
+                {
+                    "text": "        \"notes\": {},",
+                    "type": "line"
+                },
+                {
+                    "text": "        \"links\": {},",
+                    "type": "line"
+                },
+                {
+                    "text": "    }))",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.path = path",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.virtual_links = {}",
+                    "type": "line"
+                },
+                {
+                    "text": "    self.consolidate_files()",
+                    "type": "line"
+                },
+                {
+                    "text": "    self._create_virtual_links()",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "Enter note text...\n",
+            "timestamp_created": "2021-06-20T12:19:36.810701",
             "type": "code"
         }
     },
