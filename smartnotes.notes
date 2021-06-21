@@ -145,6 +145,11 @@
             "timestamp_created": "2021-06-19T07:27:53.324515",
             "to": "c180b5ec4c2447009a4ac1a87d7dad40"
         },
+        "3290ca7b546447399e144ada52155631": {
+            "from": "19c4146f24a34fd692f02a722b9041d2",
+            "timestamp_created": "2021-06-21T05:42:54.884163",
+            "to": "51ee3d6700744fbab1b1371fdc800190"
+        },
         "333f82ad4137405daf3b46ef330cc922": {
             "from": "378ad330e3104287820d0abc9669577b",
             "timestamp_created": "2021-06-19T07:27:53.190773",
@@ -430,11 +435,6 @@
             "timestamp_created": "2021-06-20T10:33:09.594890",
             "to": "0307b3ea3c4a4d3b9216ab7b9e2e0bbd"
         },
-        "6fcc036994f8474a9b2e68b1165ea994": {
-            "from": "2a3c18b5f0914536be66afe1ea8aee44",
-            "timestamp_created": "2021-06-20T10:30:09.276156",
-            "to": "066bfafcddf84e72abc59a89cf1a8947"
-        },
         "729128adf4504a2fb3f0ea450c44d82a": {
             "from": "bb1078db928c4a689b896659d62e5e4c",
             "timestamp_created": "2021-06-19T07:27:52.700614",
@@ -489,11 +489,6 @@
             "from": "28bb50737b9843fea003e2659b62a1cb",
             "timestamp_created": "2021-06-19T07:27:52.629169",
             "to": "11126df08c334d5592ccc9d288e1be87"
-        },
-        "84306233eba2414cb9703b03a949000b": {
-            "from": "19c4146f24a34fd692f02a722b9041d2",
-            "timestamp_created": "2021-06-20T09:34:55.377586",
-            "to": "066bfafcddf84e72abc59a89cf1a8947"
         },
         "848c44b820574216a03a2306779dafea": {
             "from": "de4893d9140f4fc0b623a31c81af267c",
@@ -594,6 +589,11 @@
             "from": "42fc6bb887984f2780bacd47e8fb3e08",
             "timestamp_created": "2021-06-19T07:27:52.646587",
             "to": "bb1078db928c4a689b896659d62e5e4c"
+        },
+        "a424153b7f5a4068ab360243d6024403": {
+            "from": "19c4146f24a34fd692f02a722b9041d2",
+            "timestamp_created": "2021-06-21T05:45:41.349586",
+            "to": "e93c1a192b0349c69178e5163045e8a8"
         },
         "a577a174271545e3b8cc33e2a795827f": {
             "from": "ba04a2b92b7f49a99a25a0af26d3b3aa",
@@ -810,6 +810,11 @@
             "timestamp_created": "2021-06-19T07:27:52.668556",
             "to": "9b67b722e8aa4a2a913fe18905e369af"
         },
+        "d747233fa08549098e9faee4a3e2cba1": {
+            "from": "e93c1a192b0349c69178e5163045e8a8",
+            "timestamp_created": "2021-06-21T05:46:26.130516",
+            "to": "1a0560811c6e487a864e5bcf2b576ebc"
+        },
         "daa5062fa11a49d0ad02b600c02bc0f8": {
             "from": "01bd457b2d52424da9a9f2fd914133c3",
             "timestamp_created": "2021-06-19T07:27:53.519552",
@@ -834,6 +839,11 @@
             "from": "f67f7af3474d431f9994be06dbb1bd61",
             "timestamp_created": "2021-06-19T07:27:52.626162",
             "to": "28bb50737b9843fea003e2659b62a1cb"
+        },
+        "e0c307b0806a49079a1481fdd1d59068": {
+            "from": "19c4146f24a34fd692f02a722b9041d2",
+            "timestamp_created": "2021-06-21T05:43:34.752472",
+            "to": "a343b9c995084d61a41a57413018dbe3"
         },
         "e24a475910db43de859d2ab0696c7828": {
             "from": "2a3c18b5f0914536be66afe1ea8aee44",
@@ -1224,13 +1234,6 @@
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:53.529461",
             "type": "code"
-        },
-        "066bfafcddf84e72abc59a89cf1a8947": {
-            "links": [],
-            "tags": [],
-            "text": "Way to split chunks.\n",
-            "timestamp_created": "2021-06-20T09:34:55.377499",
-            "type": "text"
         },
         "06ac8f7d9aee44658310cfbd877dd8b9": {
             "text": "The child resizes itself causing it to possibly get a different rect in the next `update` call.",
@@ -2218,6 +2221,13 @@
             "tags": [],
             "text": "Do we have to clear quick focus when opening event editor?\n",
             "timestamp_created": "2021-05-23T08:11:31.860272"
+        },
+        "1a0560811c6e487a864e5bcf2b576ebc": {
+            "links": [],
+            "tags": [],
+            "text": "If the center note in network view is a code note, add ability to switch to file mode.\n",
+            "timestamp_created": "2021-06-21T05:46:26.130455",
+            "type": "text"
         },
         "1a43d8044ac040139a660e961ae77d02": {
             "links": [],
@@ -5492,6 +5502,13 @@
             "text": "Note Database",
             "timestamp_created": "2021-06-19T07:27:52.825734"
         },
+        "51ee3d6700744fbab1b1371fdc800190": {
+            "links": [],
+            "tags": [],
+            "text": "Make sure file writing/consolidation works when there is no file and when directories are lacking.\n",
+            "timestamp_created": "2021-06-21T05:42:54.884089",
+            "type": "text"
+        },
         "527270aa4bd14cf1b5388d0d63ad53bd": {
             "links": [],
             "tags": [
@@ -8565,6 +8582,13 @@
             "tags": [],
             "text": "Ctrl+g to hide search bar should work in network as well.\n",
             "timestamp_created": "2021-04-25T05:39:37.941350"
+        },
+        "a343b9c995084d61a41a57413018dbe3": {
+            "links": [],
+            "tags": [],
+            "text": "Add SPLIT-AND-EXTRACT to chunk. This will be the first step of extracting class members to new chunk.\n",
+            "timestamp_created": "2021-06-21T05:43:34.752409",
+            "type": "text"
         },
         "a555b9e3b8a84bdbb662786cf96773ac": {
             "tags": [
@@ -13261,6 +13285,13 @@
             ],
             "text": "Automated Tests",
             "timestamp_created": "2021-06-19T07:27:52.983072"
+        },
+        "e93c1a192b0349c69178e5163045e8a8": {
+            "links": [],
+            "tags": [],
+            "text": "Add a file view.\n",
+            "timestamp_created": "2021-06-21T05:45:41.349527",
+            "type": "text"
         },
         "ecb1efa5b4a44970928ac9a69160769f": {
             "links": [],
