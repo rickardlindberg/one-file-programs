@@ -80,6 +80,11 @@
             "timestamp_created": "2021-06-19T07:27:52.683722",
             "to": "03b9695f2aeb409ca19e899c73715bcb"
         },
+        "14e94f3cda904360a8bea9189a1f3865": {
+            "from": "19c4146f24a34fd692f02a722b9041d2",
+            "timestamp_created": "2021-06-29T04:38:19.342205",
+            "to": "8a46759e02c64d18985a34df2011d16f"
+        },
         "1771def46975480d90b4eab650e102f7": {
             "from": "5aa33f5f89b343b690209ac5ae1aaa79",
             "timestamp_created": "2021-04-25T06:19:59.542519",
@@ -190,6 +195,11 @@
             "timestamp_created": "2021-06-19T07:27:52.819348",
             "to": "5115170d4f7747c2a4fb0a20eab851aa"
         },
+        "3a88d580f9c04521a611f208575ffb3f": {
+            "from": "2a3c18b5f0914536be66afe1ea8aee44",
+            "timestamp_created": "2021-06-29T04:44:52.042815",
+            "to": "ca9f011e75d64457bd5f8e22c8de3065"
+        },
         "3bb706ef735e45099f08dc96cfe3abdf": {
             "from": "c55248cf1ef74c2a9df030ffab9ccf90",
             "timestamp_created": "2021-04-25T05:30:36.073936",
@@ -249,6 +259,11 @@
             "from": "2a3c18b5f0914536be66afe1ea8aee44",
             "timestamp_created": "2021-04-25T05:38:07.477796",
             "to": "dd14b09c919e48f2b13caed0256c7c18"
+        },
+        "4a2a266a81694fd7a798483c720d096a": {
+            "from": "8a46759e02c64d18985a34df2011d16f",
+            "timestamp_created": "2021-06-29T04:38:45.877140",
+            "to": "f6e8867943f84532b3133a8a82c75777"
         },
         "4bfaaa7eaa5544549e55b31bc0dfe088": {
             "from": "51b4a680f3b741b7ae3d407bcbfaa6a4",
@@ -379,6 +394,11 @@
             "from": "ee8e6fa26d14437490223461461e9fb4",
             "timestamp_created": "2021-06-19T07:27:53.439572",
             "to": "3d9747ab26b64a78a40915de14abec3c"
+        },
+        "63a09cf1706c42daa1159d8f930d6a2f": {
+            "from": "19c4146f24a34fd692f02a722b9041d2",
+            "timestamp_created": "2021-06-29T04:41:47.783606",
+            "to": "4fdfd7756f0d4fcdae1d17eeaafbe720"
         },
         "652ee23bd42e4618991745fc073b40cd": {
             "from": "01bd457b2d52424da9a9f2fd914133c3",
@@ -5410,6 +5430,13 @@
             "timestamp_created": "2021-06-19T07:27:53.489523",
             "type": "code"
         },
+        "4fdfd7756f0d4fcdae1d17eeaafbe720": {
+            "links": [],
+            "tags": [],
+            "text": "Monitor external files for changes. Not only external files that SN has written, but also external files that it manages.\n",
+            "timestamp_created": "2021-06-29T04:41:47.783548",
+            "type": "text"
+        },
         "5055f50fea9241ffaf34adf03f78ae34": {
             "chunkpath": [
                 "classes"
@@ -7021,6 +7048,13 @@
             "tags": [],
             "text": "Can be invoked from process_event/bubble_event.\n",
             "timestamp_created": "2021-04-25T05:51:38.991479"
+        },
+        "8a46759e02c64d18985a34df2011d16f": {
+            "links": [],
+            "tags": [],
+            "text": "Annotate source code with special comment to add a note with the annotation text.\n",
+            "timestamp_created": "2021-06-29T04:38:19.342147",
+            "type": "text"
         },
         "8a68350969694fc3b66f97d0a704da94": {
             "chunkpath": [
@@ -10552,6 +10586,15 @@
             "timestamp_created": "2021-06-19T07:27:54.266785",
             "type": "code"
         },
+        "ca9f011e75d64457bd5f8e22c8de3065": {
+            "links": [
+                "https://twitter.com/neilsardesai/status/1403514239550164993"
+            ],
+            "tags": [],
+            "text": "\"A more space-efficient context menu\"\n",
+            "timestamp_created": "2021-06-29T04:44:52.042748",
+            "type": "text"
+        },
         "cadbc90bb17945089ec28f4f4c1b18f3": {
             "chunkpath": [
                 "functions"
@@ -13598,6 +13641,13 @@
             ],
             "text": "Search Bar",
             "timestamp_created": "2021-06-19T07:27:52.619575"
+        },
+        "f6e8867943f84532b3133a8a82c75777": {
+            "links": [],
+            "tags": [],
+            "text": "Smart Notes must be able to write back to external files and somehow \"notify\" the external editor about it.\n",
+            "timestamp_created": "2021-06-29T04:38:45.877083",
+            "type": "text"
         },
         "f72d5c244592499caeb7d9671f33b554": {
             "links": [],
