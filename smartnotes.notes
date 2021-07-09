@@ -11128,6 +11128,14 @@
                     "type": "line"
                 },
                 {
+                    "text": "    if not os.path.exists(path):",
+                    "type": "line"
+                },
+                {
+                    "text": "        return set()",
+                    "type": "line"
+                },
+                {
                     "text": "    old_lines = []",
                     "type": "line"
                 },

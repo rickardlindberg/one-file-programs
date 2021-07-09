@@ -1620,6 +1620,8 @@ class NoteDb(Immutable):
         return parts
 
     def consolidate(self, path, file, chunk, parts):
+        if not os.path.exists(path):
+            return set()
         old_lines = []
         self.collect_lines(old_lines, file, chunk, parts)
         with open(path) as f:
