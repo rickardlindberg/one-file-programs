@@ -5853,7 +5853,27 @@
                     "type": "line"
                 },
                 {
-                    "text": "        lower_text = item[\"text\"].lower()",
+                    "text": "        if item.get(\"type\", \"text\") == \"code\":",
+                    "type": "line"
+                },
+                {
+                    "text": "            lower_text = \"\".join(",
+                    "type": "line"
+                },
+                {
+                    "text": "                fragment.get(\"text\", \"\") for fragment in item[\"fragments\"]",
+                    "type": "line"
+                },
+                {
+                    "text": "            ).lower()",
+                    "type": "line"
+                },
+                {
+                    "text": "        else:",
+                    "type": "line"
+                },
+                {
+                    "text": "            lower_text = item[\"text\"].lower()",
                     "type": "line"
                 },
                 {

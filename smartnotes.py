@@ -1743,7 +1743,12 @@ class NoteDb(Immutable):
 
     def get_notes(self, expression=""):
         def match(item):
-            lower_text = item["text"].lower()
+            if item.get("type", "text") == "code":
+                lower_text = "".join(
+                    fragment.get("text", "") for fragment in item["fragments"]
+                ).lower()
+            else:
+                lower_text = item["text"].lower()
             for part in expression.split(" "):
                 if part.startswith("#"):
                     tagpart = part[1:]
