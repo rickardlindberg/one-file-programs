@@ -5,6 +5,11 @@
             "timestamp_created": "2021-06-19T07:27:53.381747",
             "to": "58b1b56e5208481a8732c664d989bfe8"
         },
+        "019a4cd218074354825a6dd61ee1967b": {
+            "from": "61897cd565d84372bd561681d67dd702",
+            "timestamp_created": "2021-08-04T19:51:11.269249",
+            "to": "03c875fc146c43669b8892851b6a1286"
+        },
         "022d7ed94b1f42008cb6522f8c0699af": {
             "from": "5113375cfc3f4d62ae828a31baf28344",
             "timestamp_created": "2021-06-20T10:33:19.577757",
@@ -469,6 +474,11 @@
             "from": "11b1c0c63fb446ddb348d60f48f8c943",
             "timestamp_created": "2021-06-19T07:27:54.147289",
             "to": "5d02a07589c84bb6a913b5d99708c603"
+        },
+        "76b107c071084384968122eda968d62d": {
+            "from": "2a3c18b5f0914536be66afe1ea8aee44",
+            "timestamp_created": "2021-08-04T19:52:29.400872",
+            "to": "03c875fc146c43669b8892851b6a1286"
         },
         "77e541a5ec234d018518738f465ed06e": {
             "from": "5aa33f5f89b343b690209ac5ae1aaa79",
@@ -1079,6 +1089,13 @@
             ],
             "text": "Link",
             "timestamp_created": "2021-06-19T07:27:52.679680"
+        },
+        "03c875fc146c43669b8892851b6a1286": {
+            "links": [],
+            "tags": [],
+            "text": "Search function should search in text as shown in note. There should be a function used everywhere to generate that text.\n",
+            "timestamp_created": "2021-08-04T19:51:11.269101",
+            "type": "text"
         },
         "03d0dac1ff7c4124b85b2ed8896e232a": {
             "chunkpath": [
