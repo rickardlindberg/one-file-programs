@@ -57,6 +57,8 @@ KEY_OPEN_LINKS           = "g"
 KEY_TOGGLE_TABLE_NETWORK = "t"
 TAG_ATTRIBUTES           = [
     {"name": "title", "textalign": "center"},
+    {"name": "bib",   "bg": (250, 150, 150)},
+    {"name": "lit",   "bg": (150, 250, 150)},
 ]
 
 class Widget(object):
@@ -235,6 +237,15 @@ class NoteBaseWidget(Widget):
         self.card_full_rect = pygame.Rect((0, 0), self.card_full_size)
 
     def draw(self, canvas):
+        attributes = {
+            "textalign": "left",
+            "bg": COLOR_NOTE_BG,
+        }
+        for tag in TAG_ATTRIBUTES:
+            if tag["name"] in self.data.get("tags", []):
+                for key in list(attributes.keys()):
+                    if key in tag:
+                        attributes[key] = tag[key]
         border_size = 3
         border = self.rect.copy()
         border.width -= border_size
@@ -244,12 +255,12 @@ class NoteBaseWidget(Widget):
         canvas.fill_rect(border, color=(0, 0, 0, 50))
         border.x -= border_size
         border.y -= border_size
-        canvas.fill_rect(border, color=COLOR_NOTE_BG)
+        canvas.fill_rect(border, color=attributes["bg"])
         canvas.draw_rect(border, (0, 0, 0, 120), 1)
         canvas.blit(
             canvas.create_image(
                 self.card_full_size,
-                self._draw_card
+                lambda canvas: self._draw_card(canvas, attributes)
             ),
             self.rect,
             scale_to_fit=self.rect.size
@@ -263,7 +274,7 @@ class NoteBaseWidget(Widget):
         border.height -= border_size
         return border.inflate(-7, -7).move(1, 1).inflate(2, 2)
 
-    def _draw_card(self, canvas):
+    def _draw_card(self, canvas, attributes):
         border = 8
         status_height = self.full_width/20
         rect = self.card_full_rect
@@ -271,14 +282,6 @@ class NoteBaseWidget(Widget):
         rect.top = border
         if DEBUG_NOTE_BORDER:
             canvas.draw_rect(rect, (200, 50, 50), 1)
-        attributes = {
-            "textalign": "left",
-        }
-        for tag in TAG_ATTRIBUTES:
-            if tag["name"] in self.data.get("tags", []):
-                for key in list(attributes.keys()):
-                    if key in tag:
-                        attributes[key] = tag[key]
         if self.data.get("type", "text") == "code":
             header = rect.copy()
             header.height = status_height

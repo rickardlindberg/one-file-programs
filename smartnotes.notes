@@ -4732,6 +4732,42 @@
                     "type": "line"
                 },
                 {
+                    "text": "        attributes = {",
+                    "type": "line"
+                },
+                {
+                    "text": "            \"textalign\": \"left\",",
+                    "type": "line"
+                },
+                {
+                    "text": "            \"bg\": COLOR_NOTE_BG,",
+                    "type": "line"
+                },
+                {
+                    "text": "        }",
+                    "type": "line"
+                },
+                {
+                    "text": "        for tag in TAG_ATTRIBUTES:",
+                    "type": "line"
+                },
+                {
+                    "text": "            if tag[\"name\"] in self.data.get(\"tags\", []):",
+                    "type": "line"
+                },
+                {
+                    "text": "                for key in list(attributes.keys()):",
+                    "type": "line"
+                },
+                {
+                    "text": "                    if key in tag:",
+                    "type": "line"
+                },
+                {
+                    "text": "                        attributes[key] = tag[key]",
+                    "type": "line"
+                },
+                {
                     "text": "        border_size = 3",
                     "type": "line"
                 },
@@ -4768,7 +4804,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "        canvas.fill_rect(border, color=COLOR_NOTE_BG)",
+                    "text": "        canvas.fill_rect(border, color=attributes[\"bg\"])",
                     "type": "line"
                 },
                 {
@@ -4788,7 +4824,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "                self._draw_card",
+                    "text": "                lambda canvas: self._draw_card(canvas, attributes)",
                     "type": "line"
                 },
                 {
@@ -4844,7 +4880,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "    def _draw_card(self, canvas):",
+                    "text": "    def _draw_card(self, canvas, attributes):",
                     "type": "line"
                 },
                 {
@@ -4873,38 +4909,6 @@
                 },
                 {
                     "text": "            canvas.draw_rect(rect, (200, 50, 50), 1)",
-                    "type": "line"
-                },
-                {
-                    "text": "        attributes = {",
-                    "type": "line"
-                },
-                {
-                    "text": "            \"textalign\": \"left\",",
-                    "type": "line"
-                },
-                {
-                    "text": "        }",
-                    "type": "line"
-                },
-                {
-                    "text": "        for tag in TAG_ATTRIBUTES:",
-                    "type": "line"
-                },
-                {
-                    "text": "            if tag[\"name\"] in self.data.get(\"tags\", []):",
-                    "type": "line"
-                },
-                {
-                    "text": "                for key in list(attributes.keys()):",
-                    "type": "line"
-                },
-                {
-                    "text": "                    if key in tag:",
-                    "type": "line"
-                },
-                {
-                    "text": "                        attributes[key] = tag[key]",
                     "type": "line"
                 },
                 {
@@ -12054,6 +12058,14 @@
                 },
                 {
                     "text": "    {\"name\": \"title\", \"textalign\": \"center\"},",
+                    "type": "line"
+                },
+                {
+                    "text": "    {\"name\": \"bib\",   \"bg\": (250, 150, 150)},",
+                    "type": "line"
+                },
+                {
+                    "text": "    {\"name\": \"lit\",   \"bg\": (150, 250, 150)},",
                     "type": "line"
                 },
                 {
