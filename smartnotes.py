@@ -2276,30 +2276,19 @@ class CairoCanvas(object):
         return metrics, 1
 
     def _find_best_split(self, text, box):
-        text = text.strip().replace("\n", " ")
-        split_times = 1
+        raw_text = RawText(text)
         target_ratio = box.width / box.height
-        metrics = self._get_metrics(self._split_text(text, split_times))
+        metrics = self._get_metrics(raw_text.to_lines())
         diff = abs(metrics["ratio"] - target_ratio)
-        while True:
-            split_times += 1
-            new_metrics = self._get_metrics(self._split_text(text, split_times))
+        while raw_text.shrink():
+            new_metrics = self._get_metrics(raw_text.to_lines())
             new_diff = abs(new_metrics["ratio"] - target_ratio)
-            if new_metrics == metrics or new_diff > diff:
-                return metrics
+            if new_diff > diff:
+                break
             else:
                 diff = new_diff
                 metrics = new_metrics
-
-    def _split_text(self, text, times):
-        words = text.split(" ")
-        words_per_part = max(1, int(round(len(words) / times)))
-        parts = []
-        start = 0
-        while start < len(words):
-            parts.append(" ".join(words[start:start+words_per_part]))
-            start += words_per_part
-        return parts
+        return metrics
 
     def _get_metrics(self, splits):
         width = 0
@@ -2310,7 +2299,10 @@ class CairoCanvas(object):
         extra = font_descent*0.9
         for text in splits:
             extents = self.ctx.text_extents(text)
-            height += font_ascent
+            if text == "":
+                height += font_ascent*0.2
+            else:
+                height += font_ascent
             parts.append((-extents.x_bearing, height, extents.width, text))
             width = max(width, extents.width)
             height += font_descent
@@ -2368,6 +2360,42 @@ class CairoCanvas(object):
             self.surface.get_width(),
             self.surface.get_height()
         )
+
+class RawText:
+
+    def __init__(self, text):
+        self.paragraphs = [
+            x.replace("\n", " ").strip()
+            for x
+            in text.strip().split("\n\n")
+        ]
+        self.character_limit = max(len(x) for x in self.paragraphs)
+
+    def shrink(self):
+        MIN = 10
+        if self.character_limit > MIN:
+            self.character_limit = max(MIN, int(self.character_limit*0.9))
+            return True
+        return False
+
+    def to_lines(self):
+        lines = []
+        for x in self.paragraphs:
+            if lines:
+                lines.append("")
+            lines.extend(self.split_on_limit(x))
+        return lines
+
+    def split_on_limit(self, line):
+        lines = []
+        word_buffer = []
+        for word in line.split(" "):
+            word_buffer.append(word)
+            if len(" ".join(word_buffer)) > self.character_limit:
+                lines.append(" ".join(word_buffer[:-1]))
+                word_buffer = [word]
+        lines.append(" ".join(word_buffer))
+        return [x for x in lines if x]
 
 class ExternalTextEntries(object):
 
