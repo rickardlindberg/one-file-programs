@@ -313,15 +313,43 @@ class NoteBaseWidget(Widget):
                 split=False
             )
         else:
-            canvas.render_text(
-                self.data["text"],
-                rect,
-                size=self.full_width/10,
-                textalign=attributes["textalign"],
-                boxalign="center",
-                color=COLOR_NOTE_TEXT,
-                face=FONT_TEXT
-            )
+            if self.data["text"].startswith("# "):
+                lines = self.data["text"].splitlines()
+                header_text = lines[0][2:]
+                body_text = "\n".join(lines[1:])
+                header = rect.copy()
+                header.height = int(rect.height*0.2)
+                body = rect.copy()
+                body.y += (header.height*1.1)
+                body.height -= (header.height*1.1)
+                canvas.render_text(
+                    header_text,
+                    header,
+                    size=self.full_width/10,
+                    textalign="center",
+                    boxalign="center",
+                    color=COLOR_NOTE_TEXT,
+                    face=FONT_TEXT
+                )
+                canvas.render_text(
+                    body_text,
+                    body,
+                    size=self.full_width/10,
+                    textalign=attributes["textalign"],
+                    boxalign="center",
+                    color=COLOR_NOTE_TEXT,
+                    face=FONT_TEXT
+                )
+            else:
+                canvas.render_text(
+                    self.data["text"],
+                    rect,
+                    size=self.full_width/10,
+                    textalign=attributes["textalign"],
+                    boxalign="center",
+                    color=COLOR_NOTE_TEXT,
+                    face=FONT_TEXT
+                )
         rect = rect.inflate(border*2, 0)
         rect.height = status_height
         rect.bottom = self.card_full_rect.bottom - border
