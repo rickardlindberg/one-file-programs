@@ -2219,9 +2219,7 @@ class CairoCanvas(object):
     ):
         if box.height <= 0:
             return
-        if split:
-            text = text.strip().replace("\n", " ")
-        if not text:
+        if not text.strip():
             return
         if DEBUG_TEXT_BORDER:
             self.ctx.set_source_rgb(1, 0.1, 0.1)
@@ -2278,6 +2276,7 @@ class CairoCanvas(object):
         return metrics, 1
 
     def _find_best_split(self, text, box):
+        text = text.strip().replace("\n", " ")
         split_times = 1
         target_ratio = box.width / box.height
         metrics = self._get_metrics(self._split_text(text, split_times))
