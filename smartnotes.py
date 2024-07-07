@@ -57,7 +57,7 @@ KEY_OPEN_LINKS           = "g"
 KEY_TOGGLE_TABLE_NETWORK = "t"
 TAG_ATTRIBUTES           = [
     {"name": "title", "textalign": "center"},
-    {"name": "bib",   "bg": (250, 150, 150)},
+    {"name": "bib",   "textalign": "center", "bg": (250, 150, 150)},
     {"name": "lit",   "bg": (150, 250, 150)},
 ]
 
