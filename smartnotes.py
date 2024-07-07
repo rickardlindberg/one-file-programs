@@ -2311,7 +2311,7 @@ class CairoCanvas(object):
             new_metrics = self._get_metrics(raw_text.to_lines())
             new_diff = abs(new_metrics["ratio"] - target_ratio)
             if new_diff > diff:
-                break
+                pass
             else:
                 diff = new_diff
                 metrics = new_metrics
