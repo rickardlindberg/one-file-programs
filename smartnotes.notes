@@ -3334,15 +3334,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "        if split:",
-                    "type": "line"
-                },
-                {
-                    "text": "            text = text.strip().replace(\"\\n\", \" \")",
-                    "type": "line"
-                },
-                {
-                    "text": "        if not text:",
+                    "text": "        if not text.strip():",
                     "type": "line"
                 },
                 {
@@ -3570,7 +3562,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "        split_times = 1",
+                    "text": "        raw_text = RawText(text)",
                     "type": "line"
                 },
                 {
@@ -3578,7 +3570,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "        metrics = self._get_metrics(self._split_text(text, split_times))",
+                    "text": "        metrics = self._get_metrics(raw_text.to_lines())",
                     "type": "line"
                 },
                 {
@@ -3586,15 +3578,11 @@
                     "type": "line"
                 },
                 {
-                    "text": "        while True:",
+                    "text": "        while raw_text.shrink():",
                     "type": "line"
                 },
                 {
-                    "text": "            split_times += 1",
-                    "type": "line"
-                },
-                {
-                    "text": "            new_metrics = self._get_metrics(self._split_text(text, split_times))",
+                    "text": "            new_metrics = self._get_metrics(raw_text.to_lines())",
                     "type": "line"
                 },
                 {
@@ -3602,11 +3590,11 @@
                     "type": "line"
                 },
                 {
-                    "text": "            if new_metrics == metrics or new_diff > diff:",
+                    "text": "            if new_diff > diff:",
                     "type": "line"
                 },
                 {
-                    "text": "                return metrics",
+                    "text": "                break",
                     "type": "line"
                 },
                 {
@@ -3622,43 +3610,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "",
-                    "type": "line"
-                },
-                {
-                    "text": "    def _split_text(self, text, times):",
-                    "type": "line"
-                },
-                {
-                    "text": "        words = text.split(\" \")",
-                    "type": "line"
-                },
-                {
-                    "text": "        words_per_part = max(1, int(round(len(words) / times)))",
-                    "type": "line"
-                },
-                {
-                    "text": "        parts = []",
-                    "type": "line"
-                },
-                {
-                    "text": "        start = 0",
-                    "type": "line"
-                },
-                {
-                    "text": "        while start < len(words):",
-                    "type": "line"
-                },
-                {
-                    "text": "            parts.append(\" \".join(words[start:start+words_per_part]))",
-                    "type": "line"
-                },
-                {
-                    "text": "            start += words_per_part",
-                    "type": "line"
-                },
-                {
-                    "text": "        return parts",
+                    "text": "        return metrics",
                     "type": "line"
                 },
                 {
@@ -3702,7 +3654,19 @@
                     "type": "line"
                 },
                 {
-                    "text": "            height += font_ascent",
+                    "text": "            if text == \"\":",
+                    "type": "line"
+                },
+                {
+                    "text": "                height += font_ascent*0.2",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                height += font_ascent",
                     "type": "line"
                 },
                 {
@@ -3934,6 +3898,8 @@
                     "type": "line"
                 }
             ],
+            "links": [],
+            "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-19T07:27:53.875564",
             "type": "code"
@@ -5032,39 +4998,151 @@
                     "type": "line"
                 },
                 {
-                    "text": "            canvas.render_text(",
+                    "text": "            if self.data[\"text\"].startswith(\"# \"):",
                     "type": "line"
                 },
                 {
-                    "text": "                self.data[\"text\"],",
+                    "text": "                lines = self.data[\"text\"].splitlines()",
                     "type": "line"
                 },
                 {
-                    "text": "                rect,",
+                    "text": "                header_text = lines[0][2:]",
                     "type": "line"
                 },
                 {
-                    "text": "                size=self.full_width/10,",
+                    "text": "                body_text = \"\\n\".join(lines[1:])",
                     "type": "line"
                 },
                 {
-                    "text": "                textalign=attributes[\"textalign\"],",
+                    "text": "                header = rect.copy()",
                     "type": "line"
                 },
                 {
-                    "text": "                boxalign=\"center\",",
+                    "text": "                header.height = int(rect.height*0.2)",
                     "type": "line"
                 },
                 {
-                    "text": "                color=COLOR_NOTE_TEXT,",
+                    "text": "                body = rect.copy()",
                     "type": "line"
                 },
                 {
-                    "text": "                face=FONT_TEXT",
+                    "text": "                body.y += (header.height*1.1)",
                     "type": "line"
                 },
                 {
-                    "text": "            )",
+                    "text": "                body.height -= (header.height*1.1)",
+                    "type": "line"
+                },
+                {
+                    "text": "                canvas.render_text(",
+                    "type": "line"
+                },
+                {
+                    "text": "                    header_text,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    header,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    size=self.full_width/10,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    textalign=\"center\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                    boxalign=\"center\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                    color=COLOR_NOTE_TEXT,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    face=FONT_TEXT",
+                    "type": "line"
+                },
+                {
+                    "text": "                )",
+                    "type": "line"
+                },
+                {
+                    "text": "                canvas.render_text(",
+                    "type": "line"
+                },
+                {
+                    "text": "                    body_text,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    body,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    size=self.full_width/10,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    textalign=attributes[\"textalign\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "                    boxalign=\"center\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                    color=COLOR_NOTE_TEXT,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    face=FONT_TEXT",
+                    "type": "line"
+                },
+                {
+                    "text": "                )",
+                    "type": "line"
+                },
+                {
+                    "text": "            else:",
+                    "type": "line"
+                },
+                {
+                    "text": "                canvas.render_text(",
+                    "type": "line"
+                },
+                {
+                    "text": "                    self.data[\"text\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "                    rect,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    size=self.full_width/10,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    textalign=attributes[\"textalign\"],",
+                    "type": "line"
+                },
+                {
+                    "text": "                    boxalign=\"center\",",
+                    "type": "line"
+                },
+                {
+                    "text": "                    color=COLOR_NOTE_TEXT,",
+                    "type": "line"
+                },
+                {
+                    "text": "                    face=FONT_TEXT",
+                    "type": "line"
+                },
+                {
+                    "text": "                )",
                     "type": "line"
                 },
                 {
@@ -5986,6 +6064,161 @@
             "tags": [],
             "text": "<code>",
             "timestamp_created": "2021-06-20T12:22:06.076785",
+            "type": "code"
+        },
+        "6483016db2d54149a330b7b32a6aafad": {
+            "chunkpath": [
+                "classes"
+            ],
+            "filepath": [
+                "smartnotes.py"
+            ],
+            "fragments": [
+                {
+                    "text": "class RawText:",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def __init__(self, text):",
+                    "type": "line"
+                },
+                {
+                    "text": "        self.paragraphs = [",
+                    "type": "line"
+                },
+                {
+                    "text": "            x.replace(\"\\n\", \" \").strip()",
+                    "type": "line"
+                },
+                {
+                    "text": "            for x",
+                    "type": "line"
+                },
+                {
+                    "text": "            in text.strip().split(\"\\n\\n\")",
+                    "type": "line"
+                },
+                {
+                    "text": "        ]",
+                    "type": "line"
+                },
+                {
+                    "text": "        self.character_limit = max(len(x) for x in self.paragraphs)",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def shrink(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "        MIN = 10",
+                    "type": "line"
+                },
+                {
+                    "text": "        if self.character_limit > MIN:",
+                    "type": "line"
+                },
+                {
+                    "text": "            self.character_limit = max(MIN, int(self.character_limit*0.9))",
+                    "type": "line"
+                },
+                {
+                    "text": "            return True",
+                    "type": "line"
+                },
+                {
+                    "text": "        return False",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def to_lines(self):",
+                    "type": "line"
+                },
+                {
+                    "text": "        lines = []",
+                    "type": "line"
+                },
+                {
+                    "text": "        for x in self.paragraphs:",
+                    "type": "line"
+                },
+                {
+                    "text": "            if lines:",
+                    "type": "line"
+                },
+                {
+                    "text": "                lines.append(\"\")",
+                    "type": "line"
+                },
+                {
+                    "text": "            lines.extend(self.split_on_limit(x))",
+                    "type": "line"
+                },
+                {
+                    "text": "        return lines",
+                    "type": "line"
+                },
+                {
+                    "text": "",
+                    "type": "line"
+                },
+                {
+                    "text": "    def split_on_limit(self, line):",
+                    "type": "line"
+                },
+                {
+                    "text": "        lines = []",
+                    "type": "line"
+                },
+                {
+                    "text": "        word_buffer = []",
+                    "type": "line"
+                },
+                {
+                    "text": "        for word in line.split(\" \"):",
+                    "type": "line"
+                },
+                {
+                    "text": "            word_buffer.append(word)",
+                    "type": "line"
+                },
+                {
+                    "text": "            if len(\" \".join(word_buffer)) > self.character_limit:",
+                    "type": "line"
+                },
+                {
+                    "text": "                lines.append(\" \".join(word_buffer[:-1]))",
+                    "type": "line"
+                },
+                {
+                    "text": "                word_buffer = [word]",
+                    "type": "line"
+                },
+                {
+                    "text": "        lines.append(\" \".join(word_buffer))",
+                    "type": "line"
+                },
+                {
+                    "text": "        return [x for x in lines if x]",
+                    "type": "line"
+                }
+            ],
+            "links": [],
+            "tags": [],
+            "text": "<code>",
+            "timestamp_created": "2024-07-07T09:53:26.230674",
             "type": "code"
         },
         "649a10bfa42a46a8b72a14a20dbf700d": {
@@ -12066,10 +12299,6 @@
                 },
                 {
                     "text": "    {\"name\": \"lit\",   \"bg\": (150, 250, 150)},",
-                    "type": "line"
-                },
-                {
-                    "text": "    {\"name\": \"ref\",   \"bg\": (150, 150, 150)},",
                     "type": "line"
                 },
                 {

@@ -2388,6 +2388,21 @@ class CairoCanvas(object):
             self.surface.get_height()
         )
 
+class ExternalTextEntries(object):
+
+    def __init__(self):
+        self.entries = []
+
+    def add(self, entry):
+        self.entries.append(entry)
+
+    def check(self):
+        self.entries = [
+            entry
+            for entry in self.entries
+            if entry.check()
+        ]
+
 class RawText:
 
     def __init__(self, text):
@@ -2423,21 +2438,6 @@ class RawText:
                 word_buffer = [word]
         lines.append(" ".join(word_buffer))
         return [x for x in lines if x]
-
-class ExternalTextEntries(object):
-
-    def __init__(self):
-        self.entries = []
-
-    def add(self, entry):
-        self.entries.append(entry)
-
-    def check(self):
-        self.entries = [
-            entry
-            for entry in self.entries
-            if entry.check()
-        ]
 
 def main():
     if len(sys.argv) < 2:
