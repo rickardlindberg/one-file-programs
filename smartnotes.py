@@ -59,6 +59,7 @@ TAG_ATTRIBUTES           = [
     {"name": "title", "textalign": "center"},
     {"name": "bib",   "textalign": "center", "bg": (250, 150, 150)},
     {"name": "lit",   "bg": (150, 250, 150)},
+    {"name": "toc",   "bg": (199, 134, 214)},
 ]
 
 class Widget(object):
