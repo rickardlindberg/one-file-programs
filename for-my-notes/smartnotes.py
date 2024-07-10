@@ -39,7 +39,7 @@ COLOR_NOTE_TAG_TEXT      = (100, 100, 255)
 FONT_MONOSPACE           = "Monospace"
 FONT_TEXT                = "San-Serif"
 EDITOR_COMMAND           = ["gvim", "--nofork", None]
-NUM_SEARCH_RESULTS       = 6
+NUM_SEARCH_RESULTS       = 8
 NEW_NOTE_TEXT            = "Enter note text...\n"
 KEY_QUIT                 = "ctrl+q"
 KEY_UNDO                 = "ctrl+z"
@@ -744,7 +744,7 @@ class SearchBar(VBox):
     VPADDING = 8
 
     def __init__(self, window, parent, db, overlay, note_settings, open_callback, dismiss_callback):
-        VBox.__init__(self, window, parent, height=0, visible=False)
+        VBox.__init__(self, window, parent, height=0, visible=True)
         self.db = db
         self.open_callback = open_callback
         self.dismiss_callback = dismiss_callback
@@ -863,7 +863,7 @@ class SearchResults(HBox):
         self.set_num_results(self.num_results - 1)
 
     def set_num_results(self, num):
-        self.num_results = max(3, min(12, num))
+        self.num_results = max(3, num)
 
     def update_search_text(self, text):
         self.text = text
