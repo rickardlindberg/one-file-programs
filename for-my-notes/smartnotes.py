@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 
 from collections import defaultdict
-import difflib
-import re
+import cairo
+import contextlib
 import datetime
+import difflib
+import doctest
+import json
+import math
+import os
+import pygame
+import re
+import subprocess
 import sys
+import tempfile
 import uuid
 import webbrowser
-import math
-import cairo
-import pygame
-import contextlib
-import json
-import os
-import subprocess
-import tempfile
 
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_TEXT_BORDER = os.environ.get("DEBUG_TEXT_BORDER") == "yes"
@@ -2528,6 +2529,10 @@ def format_title(name, path):
     )
 
 def strip_last_word(text):
+    """
+    >>> strip_last_word("hello there")
+    'hello '
+    """
     remaining_parts = text.rstrip().split(" ")[:-1]
     if remaining_parts:
         return " ".join(remaining_parts) + " "
@@ -2535,4 +2540,10 @@ def strip_last_word(text):
         return ""
 
 if __name__ == "__main__":
-    main()
+    if "--selftest" in sys.argv:
+        (failure_count, test_count) = doctest.testmod(
+            optionflags=doctest.REPORT_NDIFF|doctest.FAIL_FAST
+        )
+        sys.exit(1 if failure_count > 0 or test_count == 0 else 0)
+    else:
+        main()
