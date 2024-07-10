@@ -3594,7 +3594,7 @@
                     "type": "line"
                 },
                 {
-                    "text": "                break",
+                    "text": "                pass",
                     "type": "line"
                 },
                 {
@@ -12294,11 +12294,15 @@
                     "type": "line"
                 },
                 {
-                    "text": "    {\"name\": \"bib\",   \"bg\": (250, 150, 150)},",
+                    "text": "    {\"name\": \"bib\",   \"textalign\": \"center\", \"bg\": (250, 150, 150)},",
                     "type": "line"
                 },
                 {
                     "text": "    {\"name\": \"lit\",   \"bg\": (150, 250, 150)},",
+                    "type": "line"
+                },
+                {
+                    "text": "    {\"name\": \"toc\",   \"bg\": (199, 134, 214)},",
                     "type": "line"
                 },
                 {
