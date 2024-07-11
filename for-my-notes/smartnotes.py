@@ -9,13 +9,15 @@ import doctest
 import json
 import math
 import os
-import pygame
 import re
 import subprocess
 import sys
 import tempfile
 import uuid
 import webbrowser
+
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "yes"
+import pygame
 
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_TEXT_BORDER = os.environ.get("DEBUG_TEXT_BORDER") == "yes"
