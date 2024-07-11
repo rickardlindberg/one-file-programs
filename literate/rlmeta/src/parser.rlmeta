@@ -1,0 +1,57 @@
+Parser {
+  file =
+    | (space namespace)*:xs space !.          -> xs
+  namespace =
+    | name:x space '{' rule*:ys space '}'     -> ["Namespace" x ~ys]
+  rule =
+    | name:x space '=' choice:y               -> ["Rule" x y]
+  choice =
+    | (space '|')?
+      sequence:x (space '|' sequence)*:xs     -> ["Or" x ~xs]
+  sequence =
+    | expr*:xs maybeAction:ys                 -> ["Scope" ["And" ~xs ~ys]]
+  expr =
+    | expr1:x space ':' name:y                -> ["Bind" y x]
+    | space '[' expr*:xs space ']'            -> ["MatchList" ["And" ~xs]]
+    | expr1
+  expr1 =
+    | expr2:x space '*'                       -> ["Star" x]
+    | expr2:x space '?'                       -> ["Or" x ["And"]]
+    | space '!' expr2:x                       -> ["Not" x]
+    | space '%'                               -> ["MatchCallRule"]
+    | expr2
+  expr2 =
+    | name:x !(space '=')                     -> ["MatchRule" x]
+    | space char:x '-' char:y                 -> ["MatchObject" ["Range" x y]]
+    | space '\'' (!'\'' matchChar)*:xs '\''   -> ["And" ~xs]
+    | space '.'                               -> ["MatchObject" ["Any"]]
+    | space '(' choice:x space ')'            -> x
+  matchChar =
+    | innerChar:x                             -> ["MatchObject" ["Eq" x]]
+  maybeAction =
+    | actionExpr:x                            -> [["Action" x]]
+    |                                         -> []
+  actionExpr =
+    | space '->' hostExpr:x
+      (space ':' name | -> ""):y actionExpr:z -> ["Set" y x z]
+    | space '->' hostExpr
+  hostExpr =
+    | space string:x                          -> ["String" x]
+    | space '[' hostListItem*:xs space ']'    -> ["List" ~xs]
+    | space '{' hostExpr*:xs space '}'        -> ["Format" ~xs]
+    | var:x space '(' hostExpr*:ys space ')'  -> ["Call" x ~ys]
+    | var
+  hostListItem =
+    | space '~'*:ys hostExpr:x                -> ["ListItem" len(ys) x]
+  var =
+    | name:x !(space '=')                     -> ["Lookup" x]
+  string    = '"'  (!'"'  innerChar)*:xs '"'  -> { xs }
+  char      = '\''  !'\'' innerChar  :x  '\'' -> x
+  innerChar = '\\' escape | .
+  escape    = '\\' -> "\\" | '\'' -> "'"
+            | '"'  -> "\"" | 'n'  -> "\n"
+  name      = space nameStart:x nameChar*:xs  -> { x xs }
+  nameStart = 'a'-'z' | 'A'-'Z'
+  nameChar  = 'a'-'z' | 'A'-'Z' | '0'-'9'
+  space     = (' ' | '\n')*
+}
