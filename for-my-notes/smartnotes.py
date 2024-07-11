@@ -661,8 +661,8 @@ class ExternalTextEntry(object):
 
 class SmartNotesWidget(VBox):
 
-    def __init__(self, window, parent):
-        VBox.__init__(self, window, parent)
+    def __init__(self, window):
+        VBox.__init__(self, window, None)
         if len(sys.argv) < 2:
             sys.exit("Usage: smartnotes.py <file>")
         else:
@@ -2452,7 +2452,7 @@ class PygameCairoEngine:
     def run(self, app):
         pygame.init()
         pygame.key.set_repeat(500, 30)
-        root_widget = app(PygameWindow(), None)
+        root_widget = app(PygameWindow())
         screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
         clock = pygame.time.Clock()
         external_text_entries = ExternalTextEntries()
