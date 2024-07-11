@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from collections import defaultdict
-import cairo
 import contextlib
 import datetime
 import difflib
@@ -21,6 +20,8 @@ import webbrowser
 ###############################################################################
 
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "yes"
+
+import cairo
 import pygame
 
 class PygameCairoEngine:
@@ -73,6 +74,201 @@ class PygameCairoEngine:
             *pygame_cairo_surface.get_size()
         )
 
+class CairoCanvas(object):
+
+    def __init__(self, surface):
+        self.surface = surface
+        self.ctx = cairo.Context(self.surface)
+
+    def create_image(self, size, fn):
+        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, size[0], size[1])
+        fn(CairoCanvas(surface))
+        return surface
+
+    def blit(self, image, pos, alpha=255, scale_to_fit=None):
+        self.ctx.save()
+        self.ctx.translate(pos[0], pos[1])
+        if scale_to_fit:
+            self.ctx.scale(
+                max(0.001, scale_to_fit[0] / image.get_width()),
+                max(0.001, scale_to_fit[1] / image.get_height())
+            )
+        self.ctx.set_source_surface(image, 0, 0)
+        self.ctx.paint_with_alpha(alpha/255)
+        self.ctx.restore()
+
+    def fill_rect(self, rect, color=(0, 0, 0)):
+        self._set_color(color)
+        self.ctx.rectangle(rect.x, rect.y, rect.width, rect.height)
+        self.ctx.fill()
+
+    def draw_rect(self, rect, color, width):
+        if width % 2 == 0:
+            offset = 0
+        else:
+            offset = 0.5
+        self._set_color(color)
+        self.ctx.rectangle(rect.x+offset, rect.y+offset, rect.width, rect.height)
+        self.ctx.set_line_width(width)
+        self.ctx.stroke()
+
+    def _set_color(self, color):
+        if len(color) == 4:
+            self.ctx.set_source_rgba(color[0]/255, color[1]/255, color[2]/255, color[3]/255)
+        else:
+            self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)
+
+    def render_text(self, text, box,
+        size=40,
+        boxalign="center",
+        face=None,
+        textalign="left",
+        split=True,
+        color=(0, 0, 0)
+    ):
+        if box.height <= 0:
+            return
+        if not text.strip():
+            return
+        if DEBUG_TEXT_BORDER:
+            self.ctx.set_source_rgb(1, 0.1, 0.1)
+            self.ctx.rectangle(box[0], box[1], box[2], box[3])
+            self.ctx.set_line_width(1)
+            self.ctx.stroke()
+        if face is not None:
+            self.ctx.select_font_face(face)
+        self._set_color(color)
+        metrics, scale_factor = self._find_best_fit(text, box, split, size)
+        self.ctx.save()
+        xoffset = 0
+        yoffset = 0
+        self._translate_box(box, metrics["width"]*scale_factor, metrics["height"]*scale_factor, boxalign)
+        self.ctx.scale(scale_factor, scale_factor)
+        for x, y, width, part in metrics["parts"]:
+            if not split:
+                x = 0
+            if textalign == "center":
+                x_align_offset = (metrics["width"]-width)/2
+            elif textalign == "right":
+                x_align_offset = metrics["width"]-width
+            else:
+                x_align_offset = 0
+            self.ctx.move_to(x+x_align_offset, y)
+            self.ctx.show_text(part)
+        if DEBUG_TEXT_BORDER:
+            self.ctx.set_source_rgb(0.1, 1, 0.1)
+            self.ctx.rectangle(0, 0, metrics["width"], metrics["height"])
+            self.ctx.set_line_width(2/scale_factor)
+            self.ctx.stroke()
+        self.ctx.restore()
+
+    def _find_best_fit(self, text, box, split, size):
+        self.ctx.set_font_size(size)
+        if split:
+            metrics = self._find_best_split(text, box)
+        else:
+            metrics = self._get_metrics(text.splitlines())
+        scale_factor = box.width / metrics["width"]
+        if metrics["height"] * scale_factor > box.height:
+            scale_factor = box.height / metrics["height"]
+        scale_factor = min(scale_factor, 1)
+        size = int(size*scale_factor)
+        if scale_factor < 1:
+            while True:
+                self.ctx.set_font_size(size)
+                metrics = self._get_metrics([x[-1] for x in metrics["parts"]])
+                if size < 2:
+                    break
+                if metrics["width"] <= box.width and metrics["height"] <= box.height:
+                    break
+                size -= 1
+        return metrics, 1
+
+    def _find_best_split(self, text, box):
+        raw_text = RawText(text)
+        target_ratio = box.width / box.height
+        metrics = self._get_metrics(raw_text.to_lines())
+        diff = abs(metrics["ratio"] - target_ratio)
+        while raw_text.shrink():
+            new_metrics = self._get_metrics(raw_text.to_lines())
+            new_diff = abs(new_metrics["ratio"] - target_ratio)
+            if new_diff > diff:
+                pass
+            else:
+                diff = new_diff
+                metrics = new_metrics
+        return metrics
+
+    def _get_metrics(self, splits):
+        width = 0
+        height = 0
+        start_y = None
+        parts = []
+        font_ascent, font_descent = self.ctx.font_extents()[0:2]
+        extra = font_descent*0.9
+        for text in splits:
+            extents = self.ctx.text_extents(text)
+            if text == "":
+                height += font_ascent*0.2
+            else:
+                height += font_ascent
+            parts.append((-extents.x_bearing, height, extents.width, text))
+            width = max(width, extents.width)
+            height += font_descent
+            height += extra
+        height -= extra
+        if height == 0:
+            height = 0.1
+        return {
+            "parts": parts,
+            "width": width,
+            "height": height,
+            "ratio": width / height,
+        }
+
+    def _translate_box(self, box, text_width, text_height, boxalign):
+        # topleft      topcenter     topright
+        # midleft        center      midright
+        # bottomleft  bottomcenter  bottomright
+        if boxalign in ["topright", "midright", "bottomright"]:
+            xoffset = box[2]-text_width
+        elif boxalign in ["topcenter", "center", "bottomcenter"]:
+            xoffset = box[2]/2-text_width/2
+        else:
+            xoffset = 0
+        if boxalign in ["bottomleft", "bottomcenter", "bottomright"]:
+            yoffset = box[3]-text_height
+        elif boxalign in ["midleft", "center", "midright"]:
+            yoffset = box[3]/2-text_height/2
+        else:
+            yoffset = 0
+        self.ctx.translate(box[0]+xoffset, box[1]+yoffset)
+
+    def move_to(self, x, y):
+        self.ctx.move_to(x, y)
+
+    def line_to(self, x, y):
+        self.ctx.line_to(x, y)
+
+    def curve_to(self, *args):
+        self.ctx.curve_to(*args)
+
+    def set_source_rgb(self, *args):
+        self.ctx.set_source_rgb(*args)
+
+    def set_line_width(self, *args):
+        self.ctx.set_line_width(*args)
+
+    def stroke(self, *args):
+        self.ctx.stroke(*args)
+
+    def get_rect(self):
+        return pygame.Rect(
+            0,
+            0,
+            self.surface.get_width(),
+            self.surface.get_height()
+        )
 
 ###############################################################################
 # App
@@ -2257,202 +2453,6 @@ class PygameEvent(object):
             self.event.type == pygame.ACTIVEEVENT and
             self.event.state == 1 and
             not self.event.gain
-        )
-
-class CairoCanvas(object):
-
-    def __init__(self, surface):
-        self.surface = surface
-        self.ctx = cairo.Context(self.surface)
-
-    def create_image(self, size, fn):
-        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, size[0], size[1])
-        fn(CairoCanvas(surface))
-        return surface
-
-    def blit(self, image, pos, alpha=255, scale_to_fit=None):
-        self.ctx.save()
-        self.ctx.translate(pos[0], pos[1])
-        if scale_to_fit:
-            self.ctx.scale(
-                max(0.001, scale_to_fit[0] / image.get_width()),
-                max(0.001, scale_to_fit[1] / image.get_height())
-            )
-        self.ctx.set_source_surface(image, 0, 0)
-        self.ctx.paint_with_alpha(alpha/255)
-        self.ctx.restore()
-
-    def fill_rect(self, rect, color=(0, 0, 0)):
-        self._set_color(color)
-        self.ctx.rectangle(rect.x, rect.y, rect.width, rect.height)
-        self.ctx.fill()
-
-    def draw_rect(self, rect, color, width):
-        if width % 2 == 0:
-            offset = 0
-        else:
-            offset = 0.5
-        self._set_color(color)
-        self.ctx.rectangle(rect.x+offset, rect.y+offset, rect.width, rect.height)
-        self.ctx.set_line_width(width)
-        self.ctx.stroke()
-
-    def _set_color(self, color):
-        if len(color) == 4:
-            self.ctx.set_source_rgba(color[0]/255, color[1]/255, color[2]/255, color[3]/255)
-        else:
-            self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)
-
-    def render_text(self, text, box,
-        size=40,
-        boxalign="center",
-        face=None,
-        textalign="left",
-        split=True,
-        color=(0, 0, 0)
-    ):
-        if box.height <= 0:
-            return
-        if not text.strip():
-            return
-        if DEBUG_TEXT_BORDER:
-            self.ctx.set_source_rgb(1, 0.1, 0.1)
-            self.ctx.rectangle(box[0], box[1], box[2], box[3])
-            self.ctx.set_line_width(1)
-            self.ctx.stroke()
-        if face is not None:
-            self.ctx.select_font_face(face)
-        self._set_color(color)
-        metrics, scale_factor = self._find_best_fit(text, box, split, size)
-        self.ctx.save()
-        xoffset = 0
-        yoffset = 0
-        self._translate_box(box, metrics["width"]*scale_factor, metrics["height"]*scale_factor, boxalign)
-        self.ctx.scale(scale_factor, scale_factor)
-        for x, y, width, part in metrics["parts"]:
-            if not split:
-                x = 0
-            if textalign == "center":
-                x_align_offset = (metrics["width"]-width)/2
-            elif textalign == "right":
-                x_align_offset = metrics["width"]-width
-            else:
-                x_align_offset = 0
-            self.ctx.move_to(x+x_align_offset, y)
-            self.ctx.show_text(part)
-        if DEBUG_TEXT_BORDER:
-            self.ctx.set_source_rgb(0.1, 1, 0.1)
-            self.ctx.rectangle(0, 0, metrics["width"], metrics["height"])
-            self.ctx.set_line_width(2/scale_factor)
-            self.ctx.stroke()
-        self.ctx.restore()
-
-    def _find_best_fit(self, text, box, split, size):
-        self.ctx.set_font_size(size)
-        if split:
-            metrics = self._find_best_split(text, box)
-        else:
-            metrics = self._get_metrics(text.splitlines())
-        scale_factor = box.width / metrics["width"]
-        if metrics["height"] * scale_factor > box.height:
-            scale_factor = box.height / metrics["height"]
-        scale_factor = min(scale_factor, 1)
-        size = int(size*scale_factor)
-        if scale_factor < 1:
-            while True:
-                self.ctx.set_font_size(size)
-                metrics = self._get_metrics([x[-1] for x in metrics["parts"]])
-                if size < 2:
-                    break
-                if metrics["width"] <= box.width and metrics["height"] <= box.height:
-                    break
-                size -= 1
-        return metrics, 1
-
-    def _find_best_split(self, text, box):
-        raw_text = RawText(text)
-        target_ratio = box.width / box.height
-        metrics = self._get_metrics(raw_text.to_lines())
-        diff = abs(metrics["ratio"] - target_ratio)
-        while raw_text.shrink():
-            new_metrics = self._get_metrics(raw_text.to_lines())
-            new_diff = abs(new_metrics["ratio"] - target_ratio)
-            if new_diff > diff:
-                pass
-            else:
-                diff = new_diff
-                metrics = new_metrics
-        return metrics
-
-    def _get_metrics(self, splits):
-        width = 0
-        height = 0
-        start_y = None
-        parts = []
-        font_ascent, font_descent = self.ctx.font_extents()[0:2]
-        extra = font_descent*0.9
-        for text in splits:
-            extents = self.ctx.text_extents(text)
-            if text == "":
-                height += font_ascent*0.2
-            else:
-                height += font_ascent
-            parts.append((-extents.x_bearing, height, extents.width, text))
-            width = max(width, extents.width)
-            height += font_descent
-            height += extra
-        height -= extra
-        if height == 0:
-            height = 0.1
-        return {
-            "parts": parts,
-            "width": width,
-            "height": height,
-            "ratio": width / height,
-        }
-
-    def _translate_box(self, box, text_width, text_height, boxalign):
-        # topleft      topcenter     topright
-        # midleft        center      midright
-        # bottomleft  bottomcenter  bottomright
-        if boxalign in ["topright", "midright", "bottomright"]:
-            xoffset = box[2]-text_width
-        elif boxalign in ["topcenter", "center", "bottomcenter"]:
-            xoffset = box[2]/2-text_width/2
-        else:
-            xoffset = 0
-        if boxalign in ["bottomleft", "bottomcenter", "bottomright"]:
-            yoffset = box[3]-text_height
-        elif boxalign in ["midleft", "center", "midright"]:
-            yoffset = box[3]/2-text_height/2
-        else:
-            yoffset = 0
-        self.ctx.translate(box[0]+xoffset, box[1]+yoffset)
-
-    def move_to(self, x, y):
-        self.ctx.move_to(x, y)
-
-    def line_to(self, x, y):
-        self.ctx.line_to(x, y)
-
-    def curve_to(self, *args):
-        self.ctx.curve_to(*args)
-
-    def set_source_rgb(self, *args):
-        self.ctx.set_source_rgb(*args)
-
-    def set_line_width(self, *args):
-        self.ctx.set_line_width(*args)
-
-    def stroke(self, *args):
-        self.ctx.stroke(*args)
-
-    def get_rect(self):
-        return pygame.Rect(
-            0,
-            0,
-            self.surface.get_width(),
-            self.surface.get_height()
         )
 
 class ExternalTextEntries(object):
