@@ -16,8 +16,67 @@ import tempfile
 import uuid
 import webbrowser
 
+###############################################################################
+# App Engine
+###############################################################################
+
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "yes"
 import pygame
+
+class PygameCairoEngine:
+
+    def run(self, app):
+        pygame.init()
+        pygame.key.set_repeat(500, 30)
+        root_widget = app(PygameWindow())
+        screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
+        clock = pygame.time.Clock()
+        external_text_entries = ExternalTextEntries()
+        pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
+        pygame_cairo_surface = self.create_pygame_cairo_surface(screen)
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+                elif event.type == pygame.VIDEORESIZE:
+                    pygame_cairo_surface = self.create_pygame_cairo_surface(screen)
+                elif event.type == USER_EVENT_CHECK_EXTERNAL:
+                    external_text_entries.check()
+                elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:
+                    external_text_entries.add(event.entry)
+                else:
+                    root_widget.process_event(PygameEvent(event))
+            root_widget.update(screen.get_rect(), clock.get_time())
+            pygame_cairo_surface.lock()
+            root_widget.draw(CairoCanvas(self.create_cairo_image(pygame_cairo_surface)))
+            pygame_cairo_surface.unlock()
+            screen.blit(pygame_cairo_surface, (0, 0))
+            pygame.display.flip()
+            clock.tick(60)
+
+    def create_pygame_cairo_surface(self, screen):
+        return pygame.Surface(
+            screen.get_size(),
+            depth=32,
+            masks=(
+                0x00FF0000,
+                0x0000FF00,
+                0x000000FF,
+                0x00000000,
+            )
+        )
+
+    def create_cairo_image(self, pygame_cairo_surface):
+        return cairo.ImageSurface.create_for_data(
+            pygame_cairo_surface.get_buffer(),
+            cairo.FORMAT_ARGB32,
+            *pygame_cairo_surface.get_size()
+        )
+
+
+###############################################################################
+# App
+###############################################################################
 
 DEBUG_NOTE_BORDER = os.environ.get("DEBUG_NOTE_BORDER") == "yes"
 DEBUG_TEXT_BORDER = os.environ.get("DEBUG_TEXT_BORDER") == "yes"
@@ -2446,56 +2505,6 @@ class RawText:
                 word_buffer = [word]
         lines.append(" ".join(word_buffer))
         return [x for x in lines if x]
-
-class PygameCairoEngine:
-
-    def run(self, app):
-        pygame.init()
-        pygame.key.set_repeat(500, 30)
-        root_widget = app(PygameWindow())
-        screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
-        clock = pygame.time.Clock()
-        external_text_entries = ExternalTextEntries()
-        pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
-        pygame_cairo_surface = self.create_pygame_cairo_surface(screen)
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return
-                elif event.type == pygame.VIDEORESIZE:
-                    pygame_cairo_surface = self.create_pygame_cairo_surface(screen)
-                elif event.type == USER_EVENT_CHECK_EXTERNAL:
-                    external_text_entries.check()
-                elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:
-                    external_text_entries.add(event.entry)
-                else:
-                    root_widget.process_event(PygameEvent(event))
-            root_widget.update(screen.get_rect(), clock.get_time())
-            pygame_cairo_surface.lock()
-            root_widget.draw(CairoCanvas(self.create_cairo_image(pygame_cairo_surface)))
-            pygame_cairo_surface.unlock()
-            screen.blit(pygame_cairo_surface, (0, 0))
-            pygame.display.flip()
-            clock.tick(60)
-
-    def create_pygame_cairo_surface(self, screen):
-        return pygame.Surface(
-            screen.get_size(),
-            depth=32,
-            masks=(
-                0x00FF0000,
-                0x0000FF00,
-                0x000000FF,
-                0x00000000,
-            )
-        )
-
-    def create_cairo_image(self, pygame_cairo_surface):
-        return cairo.ImageSurface.create_for_data(
-            pygame_cairo_surface.get_buffer(),
-            cairo.FORMAT_ARGB32,
-            *pygame_cairo_surface.get_size()
-        )
 
 def genid():
     return uuid.uuid4().hex
