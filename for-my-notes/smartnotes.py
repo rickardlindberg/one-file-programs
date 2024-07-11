@@ -2546,6 +2546,10 @@ if __name__ == "__main__":
         (failure_count, test_count) = doctest.testmod(
             optionflags=doctest.REPORT_NDIFF|doctest.FAIL_FAST
         )
-        sys.exit(1 if failure_count > 0 or test_count == 0 else 0)
+        if failure_count > 0 or test_count == 0:
+            sys.exit(1)
+        else:
+            print("OK")
+            sys.exit(0)
     else:
         main()
