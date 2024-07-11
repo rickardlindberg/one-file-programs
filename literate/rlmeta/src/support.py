@@ -124,6 +124,7 @@ class Runtime:
 
     def __init__(self, extra={"len": len, "repr": repr}):
         self.vars = extra
+        self.vars["compile"] = compile_chain
 
     def bind(self, name, value):
         return Runtime(dict(self.vars, **{name: value}))

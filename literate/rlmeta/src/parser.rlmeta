@@ -1,6 +1,6 @@
 Parser {
   file =
-    | (space namespace)*:xs space !.          -> xs
+    | (space namespace)*:xs space !.          -> compile(["CodeGenerator.asts"] xs)
   namespace =
     | name:x space '{' rule*:ys space '}'     -> ["Namespace" x ~ys]
   rule =

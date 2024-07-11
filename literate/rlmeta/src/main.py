@@ -19,7 +19,7 @@ if __name__ == "__main__":
             ))
         elif command == "--compile":
             sys.stdout.write(compile_chain(
-                ["Parser.file", "CodeGenerator.asts"],
+                ["Parser.file"],
                 read(args.pop(0))
             ))
         else:
