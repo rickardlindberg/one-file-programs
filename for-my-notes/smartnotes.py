@@ -661,8 +661,12 @@ class ExternalTextEntry(object):
 
 class SmartNotesWidget(VBox):
 
-    def __init__(self, window, parent, path):
+    def __init__(self, window, parent):
         VBox.__init__(self, window, parent)
+        if len(sys.argv) < 2:
+            sys.exit("Usage: smartnotes.py <file>")
+        else:
+            path = sys.argv[1]
         self.note_settings = NoteSettings()
         self.set_title(format_title("Smart Notes", path))
         self.toggle_table_network_after_event_processing = False
@@ -2443,48 +2447,42 @@ class RawText:
         lines.append(" ".join(word_buffer))
         return [x for x in lines if x]
 
-def main():
-    if len(sys.argv) < 2:
-        sys.exit("Usage: smartnotes.py <file>")
-    pygame_main(
-        SmartNotesWidget,
-        sys.argv[1]
-    )
+class PygameCairoEngine:
+
+    def run(self, app):
+        pygame.init()
+        pygame.key.set_repeat(500, 30)
+        root_widget = app(PygameWindow(), None)
+        screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
+        clock = pygame.time.Clock()
+        external_text_entries = ExternalTextEntries()
+        pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
+        pygame_cairo_surface = create_pygame_cairo_surface(screen)
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+                elif event.type == pygame.VIDEORESIZE:
+                    pygame_cairo_surface = create_pygame_cairo_surface(screen)
+                elif event.type == USER_EVENT_CHECK_EXTERNAL:
+                    external_text_entries.check()
+                elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:
+                    external_text_entries.add(event.entry)
+                else:
+                    root_widget.process_event(PygameEvent(event))
+            root_widget.update(screen.get_rect(), clock.get_time())
+            pygame_cairo_surface.lock()
+            root_widget.draw(CairoCanvas(create_cairo_image(pygame_cairo_surface)))
+            pygame_cairo_surface.unlock()
+            screen.blit(pygame_cairo_surface, (0, 0))
+            pygame.display.flip()
+            clock.tick(60)
 
 def genid():
     return uuid.uuid4().hex
 
 def utcnow_timestamp_string():
     return datetime.datetime.utcnow().isoformat()
-
-def pygame_main(root_widget_cls, *args, **kwargs):
-    pygame.init()
-    pygame.key.set_repeat(500, 30)
-    root_widget = root_widget_cls(PygameWindow(), None, *args, **kwargs)
-    screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
-    clock = pygame.time.Clock()
-    external_text_entries = ExternalTextEntries()
-    pygame.time.set_timer(USER_EVENT_CHECK_EXTERNAL, 1000)
-    pygame_cairo_surface = create_pygame_cairo_surface(screen)
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return
-            elif event.type == pygame.VIDEORESIZE:
-                pygame_cairo_surface = create_pygame_cairo_surface(screen)
-            elif event.type == USER_EVENT_CHECK_EXTERNAL:
-                external_text_entries.check()
-            elif event.type == USER_EVENT_EXTERNAL_TEXT_ENTRY:
-                external_text_entries.add(event.entry)
-            else:
-                root_widget.process_event(PygameEvent(event))
-        root_widget.update(screen.get_rect(), clock.get_time())
-        pygame_cairo_surface.lock()
-        root_widget.draw(CairoCanvas(create_cairo_image(pygame_cairo_surface)))
-        pygame_cairo_surface.unlock()
-        screen.blit(pygame_cairo_surface, (0, 0))
-        pygame.display.flip()
-        clock.tick(60)
 
 def create_pygame_cairo_surface(screen):
     return pygame.Surface(
@@ -2552,4 +2550,4 @@ if __name__ == "__main__":
             print("OK")
             sys.exit(0)
     else:
-        main()
+        PygameCairoEngine().run(SmartNotesWidget)
