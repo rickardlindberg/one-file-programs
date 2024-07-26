@@ -409,24 +409,10 @@ RUNS = {
             "weather": HOT,
             "effort": EASY,
         },
-    ],
-    "Test 8k, 120-130, 1km <120": [
         {
-            "date": date(2024, 7, 13),
-            "time": Time(55, 11),
-            "weather": COLD,
-            "effort": MEDIUM,
-        },
-        {
-            "date": date(2024, 7, 14),
-            "time": Time(56, 12),
-            "weather": COLD,
-            "effort": MEDIUM,
-        },
-        {
-            "date": date(2024, 7, 16),
-            "time": Time(54, 12),
-            "weather": COLD,
+            "date": date(2024, 7, 26),
+            "time": Time(35, 13),
+            "weather": HOT,
             "effort": MEDIUM,
         },
     ],
