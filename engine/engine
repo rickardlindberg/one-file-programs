@@ -1,0 +1,276 @@
+#!/usr/bin/env python3
+
+import os
+
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "yes"
+
+import cairo
+import pygame
+
+class PygameCairoEngine:
+
+    def run(self, app):
+        pygame.init()
+        pygame.key.set_repeat(500, 30)
+        screen = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
+        clock = pygame.time.Clock()
+        pygame_cairo_surface = self.create_pygame_cairo_surface(screen)
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+                elif event.type == pygame.VIDEORESIZE:
+                    pygame_cairo_surface = self.create_pygame_cairo_surface(screen)
+                else:
+                    app.event(PygameEvent(event))
+            app.update(clock.get_time())
+            pygame_cairo_surface.lock()
+            app.draw(
+                CairoCanvas(
+                    cairo.Context(self.create_cairo_image(pygame_cairo_surface)),
+                    Rectangle.from_xywh(*screen.get_rect())
+                )
+            )
+            pygame_cairo_surface.unlock()
+            screen.blit(pygame_cairo_surface, (0, 0))
+            pygame.display.flip()
+            clock.tick(60)
+
+    def create_pygame_cairo_surface(self, screen):
+        return pygame.Surface(
+            screen.get_size(),
+            depth=32,
+            masks=(
+                0x00FF0000,
+                0x0000FF00,
+                0x000000FF,
+                0x00000000,
+            )
+        )
+
+    def create_cairo_image(self, pygame_cairo_surface):
+        return cairo.ImageSurface.create_for_data(
+            pygame_cairo_surface.get_buffer(),
+            cairo.FORMAT_ARGB32,
+            *pygame_cairo_surface.get_size()
+        )
+
+class PygameEvent(object):
+
+    def __init__(self, event):
+        self.event = event
+
+    def mouse_motion(self, rect=None):
+        return (
+            self.event.type == pygame.MOUSEMOTION and
+            (rect is None or rect.collidepoint(self.event.pos))
+        )
+
+    def left_mouse_down(self, rect=None):
+        return (
+            self.event.type == pygame.MOUSEBUTTONDOWN and
+            self.event.button == 1 and
+            (rect is None or rect.collidepoint(self.event.pos))
+        )
+
+    def left_mouse_up(self, rect=None):
+        return (
+            self.event.type == pygame.MOUSEBUTTONUP and
+            self.event.button == 1 and
+            (rect is None or rect.collidepoint(self.event.pos))
+        )
+
+    def mouse_pos(self):
+        return self.event.pos
+
+    def key_down_text(self):
+        return (
+            self.event.type == pygame.KEYDOWN and
+            self.event.unicode
+        )
+
+    def key_down(self, description=None):
+        if description is None:
+            return self.event.type == pygame.KEYDOWN
+        parts = description.split("+")
+        ctrl = False
+        shift = False
+        alt = False
+        while parts:
+            part = parts.pop(0)
+            if part == "ctrl":
+                ctrl = True
+            elif part == "shift":
+                shift = True
+            elif part == "alt":
+                alt = True
+            elif not parts:
+                key = pygame.key.key_code(part)
+            else:
+                raise ValueError("unknown part {}".format(part))
+        return (
+            self.event.type == pygame.KEYDOWN and
+            self.event.key == key and
+            bool(self.event.mod & pygame.KMOD_CTRL) == ctrl and
+            bool(self.event.mod & pygame.KMOD_SHIFT) == shift and
+            bool(self.event.mod & pygame.KMOD_ALT) == alt
+        )
+
+    def window_gained_focus(self):
+        return (
+            self.event.type == pygame.ACTIVEEVENT and
+            self.event.state == 1 and
+            self.event.gain
+        )
+
+    def window_lost_focus(self):
+        return (
+            self.event.type == pygame.ACTIVEEVENT and
+            self.event.state == 1 and
+            not self.event.gain
+        )
+
+class CairoCanvas(object):
+
+    def __init__(self, ctx, rectangle):
+        self.ctx = ctx
+        self.rectangle = rectangle
+
+    def with_rectangle(self, fn):
+        return CairoCanvas(self.ctx, fn(self.rectangle))
+
+    def fill(self, **kwargs):
+        self.apply_color(**kwargs)
+        self.rectangle.cairo_path(self.ctx)
+        self.ctx.fill()
+
+    def stroke(self, **kwargs):
+        self.apply_color(**kwargs)
+        self.rectangle.cairo_path(self.ctx)
+        self.ctx.stroke()
+
+    def apply_color(self, **kwargs):
+        color = kwargs.get("color", (0, 0, 0))
+        self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)
+
+class Rectangle:
+
+    @classmethod
+    def from_xywh(cls, x, y, width, height):
+        return Rectangle(pos=Point(x, y), size=Point(width, height))
+
+    def __init__(self, pos, size):
+        self.pos = pos
+        self.size = size
+
+    def cairo_path(self, ctx):
+        ctx.rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y)
+
+    def resize(self, width=None, height=None, dw=0, dh=0):
+        return Rectangle(pos=self.pos, size=self.size.set(x=width,
+        y=height).move(dx=dw, dy=dh))
+
+    def move(self, dx=0, dy=0):
+        return Rectangle(pos=self.pos.move(dx=dx, dy=dy), size=self.size)
+
+    def deflate(self, amount):
+        return Rectangle(
+            pos=self.pos.move(dx=amount, dy=amount),
+            size=self.size.move(dx=amount*-2, dy=amount*-2)
+        )
+
+class Point:
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def set(self, x=None, y=None):
+        return Point(
+            x=self.x if x is None else x,
+            y=self.y if y is None else y
+        )
+
+    def move(self, dx=0, dy=0):
+        return Point(x=self.x+dx, y=self.y+dy)
+
+## COMPILE SEP
+
+import importlib
+import sys
+
+class LiveApp:
+
+    def __init__(self):
+        self.load_app()
+        self.reload_timer = Timer(300)
+
+    def event(self, event):
+        self.app.event(event)
+
+    def update(self, elapsed_ms):
+        if self.reload_timer.check_and_reset(elapsed_ms):
+            self.reload_app()
+        self.app.update(elapsed_ms)
+
+    def draw(self, canvas):
+        H = 20
+        live_header_canvas = canvas.with_rectangle(lambda x: x.resize(height=H))
+        app_canvas = canvas.with_rectangle(lambda x: x.move(dy=H).resize(dh=-H))
+        live_header_canvas.fill(color=(22, 55, 88))
+        self.app.draw(app_canvas)
+
+    def load_app(self):
+        sys.path.insert(0, os.getcwd())
+        executable, app_module = sys.argv
+        self.app_module = importlib.import_module(app_module)
+        self.app = self.app_module.App()
+        self.last_mtime = self.stat_app_mtime()
+
+    def reload_app(self):
+        current_mtime = self.stat_app_mtime()
+        if current_mtime != self.last_mtime:
+            self.app_module = importlib.reload(self.app_module)
+            self.app = self.app_module.App()
+            self.last_mtime = current_mtime
+            print("Reload")
+
+    def stat_app_mtime(self):
+        return os.stat(self.app_module.__file__).st_mtime
+
+class Timer:
+
+    def __init__(self, duration_ms):
+        self.duration_ms = duration_ms
+        self.value = 0
+
+    def check_and_reset(self, elapsed_ms):
+        check_value = self.check(elapsed_ms)
+        if check_value:
+            self.value = 0
+        return check_value
+
+    def check(self, elapsed_ms):
+        self.value += elapsed_ms
+        if self.value >= self.duration_ms:
+            return True
+        else:
+            return False
+
+if __name__ == "__main__":
+    if "--compile" in sys.argv:
+        executable, flag, app_name = sys.argv
+        with open(sys.modules["__main__"].__file__) as f:
+            for line in f:
+                if line == "## COMPILE SEP\n":
+                    break
+                else:
+                    sys.stdout.write(line)
+        with open(app_name) as f:
+            for line in f:
+                sys.stdout.write(line)
+        print("")
+        print("if __name__ == '__main__':")
+        print("    PygameCairoEngine().run(App())")
+    else:
+        PygameCairoEngine().run(LiveApp())
