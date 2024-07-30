@@ -149,9 +149,162 @@ class CairoCanvas(object):
         self.rectangle.cairo_path(self.ctx)
         self.ctx.stroke()
 
+    def text(self, text,
+        size=40,
+        boxalign="center",
+        face=None,
+        textalign="left",
+        split=True,
+        color=(0, 0, 0)
+    ):
+        box = self.rectangle
+        if box.height <= 0:
+            return
+        if not text.strip():
+            return
+        if face is not None:
+            self.ctx.select_font_face(face)
+        self.apply_color(color=color)
+        metrics, scale_factor = self._find_best_fit(text, box, split, size)
+        self.ctx.save()
+        xoffset = 0
+        yoffset = 0
+        self._translate_box(box, metrics["width"]*scale_factor, metrics["height"]*scale_factor, boxalign)
+        self.ctx.scale(scale_factor, scale_factor)
+        for x, y, width, part in metrics["parts"]:
+            if not split:
+                x = 0
+            if textalign == "center":
+                x_align_offset = (metrics["width"]-width)/2
+            elif textalign == "right":
+                x_align_offset = metrics["width"]-width
+            else:
+                x_align_offset = 0
+            self.ctx.move_to(x+x_align_offset, y)
+            self.ctx.show_text(part)
+        self.ctx.restore()
+
+    def _find_best_fit(self, text, box, split, size):
+        self.ctx.set_font_size(size)
+        if split:
+            metrics = self._find_best_split(text, box)
+        else:
+            metrics = self._get_metrics(text.splitlines())
+        scale_factor = box.width / metrics["width"]
+        if metrics["height"] * scale_factor > box.height:
+            scale_factor = box.height / metrics["height"]
+        scale_factor = min(scale_factor, 1)
+        size = int(size*scale_factor)
+        if scale_factor < 1:
+            while True:
+                self.ctx.set_font_size(size)
+                metrics = self._get_metrics([x[-1] for x in metrics["parts"]])
+                if size < 2:
+                    break
+                if metrics["width"] <= box.width and metrics["height"] <= box.height:
+                    break
+                size -= 1
+        return metrics, 1
+
+    def _find_best_split(self, text, box):
+        raw_text = RawText(text)
+        target_ratio = box.width / box.height
+        metrics = self._get_metrics(raw_text.to_lines())
+        diff = abs(metrics["ratio"] - target_ratio)
+        while raw_text.shrink():
+            new_metrics = self._get_metrics(raw_text.to_lines())
+            new_diff = abs(new_metrics["ratio"] - target_ratio)
+            if new_diff > diff:
+                pass
+            else:
+                diff = new_diff
+                metrics = new_metrics
+        return metrics
+
+    def _get_metrics(self, splits):
+        width = 0
+        height = 0
+        start_y = None
+        parts = []
+        font_ascent, font_descent = self.ctx.font_extents()[0:2]
+        extra = font_descent*0.9
+        for text in splits:
+            extents = self.ctx.text_extents(text)
+            if text == "":
+                height += font_ascent*0.2
+            else:
+                height += font_ascent
+            parts.append((-extents.x_bearing, height, extents.width, text))
+            width = max(width, extents.width)
+            height += font_descent
+            height += extra
+        height -= extra
+        if height == 0:
+            height = 0.1
+        return {
+            "parts": parts,
+            "width": width,
+            "height": height,
+            "ratio": width / height,
+        }
+
+    def _translate_box(self, box, text_width, text_height, boxalign):
+        # topleft      topcenter     topright
+        # midleft        center      midright
+        # bottomleft  bottomcenter  bottomright
+        if boxalign in ["topright", "midright", "bottomright"]:
+            xoffset = box.width-text_width
+        elif boxalign in ["topcenter", "center", "bottomcenter"]:
+            xoffset = box.width/2-text_width/2
+        else:
+            xoffset = 0
+        if boxalign in ["bottomleft", "bottomcenter", "bottomright"]:
+            yoffset = box.height-text_height
+        elif boxalign in ["midleft", "center", "midright"]:
+            yoffset = box.height/2-text_height/2
+        else:
+            yoffset = 0
+        self.ctx.translate(box.x+xoffset, box.y+yoffset)
+
     def apply_color(self, **kwargs):
         color = kwargs.get("color", (0, 0, 0))
         self.ctx.set_source_rgb(color[0]/255, color[1]/255, color[2]/255)
+
+class RawText:
+
+    def __init__(self, text):
+        self.paragraphs = [
+            x.replace("\n", " ").strip()
+            for x
+            in text.strip().split("\n\n")
+        ]
+        self.character_limit = max(len(x) for x in self.paragraphs)
+
+    def shrink(self):
+        MIN = 10
+        if self.character_limit > MIN:
+            self.character_limit = max(MIN, int(self.character_limit*0.9))
+            return True
+        return False
+
+    def to_lines(self):
+        lines = []
+        for x in self.paragraphs:
+            if lines:
+                lines.append("")
+            lines.extend(self.split_on_limit(x))
+        return lines
+
+    def split_on_limit(self, line):
+        lines = []
+        word_buffer = []
+        for word in line.split(" "):
+            word_buffer.append(word)
+            if len(" ".join(word_buffer)) > self.character_limit:
+                lines.append(" ".join(word_buffer[:-1]))
+                word_buffer = [word]
+        lines.append(" ".join(word_buffer))
+        return [x for x in lines if x]
 
 class Rectangle:
 
@@ -162,6 +315,22 @@ class Rectangle:
     def __init__(self, pos, size):
         self.pos = pos
         self.size = size
+
+    @property
+    def x(self):
+        return self.pos.x
+
+    @property
+    def y(self):
+        return self.pos.y
+
+    @property
+    def width(self):
+        return self.size.x
+
+    @property
+    def height(self):
+        return self.size.y
 
     def cairo_path(self, ctx):
         ctx.rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y)
@@ -218,6 +387,7 @@ class LiveApp:
         live_header_canvas = canvas.with_rectangle(lambda x: x.resize(height=H))
         app_canvas = canvas.with_rectangle(lambda x: x.move(dy=H).resize(dh=-H))
         live_header_canvas.fill(color=(22, 55, 88))
+        live_header_canvas.text(str(self.last_mtime))
         self.app.draw(app_canvas)
 
     def load_app(self):
@@ -233,7 +403,6 @@ class LiveApp:
             self.app_module = importlib.reload(self.app_module)
             self.app = self.app_module.App()
             self.last_mtime = current_mtime
-            print("Reload")
 
     def stat_app_mtime(self):
         return os.stat(self.app_module.__file__).st_mtime
