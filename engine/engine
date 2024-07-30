@@ -139,6 +139,17 @@ class CairoCanvas(object):
     def with_rectangle(self, fn):
         return CairoCanvas(self.ctx, fn(self.rectangle))
 
+    def deflate(self, *args, **kwargs):
+        return CairoCanvas(self.ctx, self.rectangle.deflate(*args, **kwargs))
+
+    def rows(self, *args, **kwargs):
+        for rectangle, item in self.rectangle.rows(*args, **kwargs):
+            item["fn"](CairoCanvas(self.ctx, rectangle))
+
+    def columns(self, *args, **kwargs):
+        for rectangle, item in self.rectangle.columns(*args, **kwargs):
+            item["fn"](CairoCanvas(self.ctx, rectangle))
+
     def fill(self, **kwargs):
         self.apply_color(**kwargs)
         self.rectangle.cairo_path(self.ctx)
@@ -335,9 +346,37 @@ class Rectangle:
     def cairo_path(self, ctx):
         ctx.rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y)
 
+    def columns(self, spec):
+        dx = 0
+        for size, item in self.split(self.size.x, spec):
+            yield self.resize(width=size).move(dx=dx), item
+            dx += size
+
+    def rows(self, spec):
+        dy = 0
+        for size, item in self.split(self.size.y, spec):
+            yield self.resize(height=size).move(dy=dy), item
+            dy += size
+
+    def split(self, total_space, spec):
+        total_proportion = 0
+        for item in spec:
+            if "size" in item:
+                total_space -= item["size"]
+            else:
+                total_proportion += item.get("proportion", 1)
+        for item in spec:
+            if "size" in item:
+                size = item["size"]
+            else:
+                size = total_space * item.get("proportion", 1) / total_proportion
+            yield size, item
+
     def resize(self, width=None, height=None, dw=0, dh=0):
-        return Rectangle(pos=self.pos, size=self.size.set(x=width,
-        y=height).move(dx=dw, dy=dh))
+        return Rectangle(
+            pos=self.pos,
+            size=self.size.set(x=width, y=height).move(dx=dw, dy=dh)
+        )
 
     def move(self, dx=0, dy=0):
         return Rectangle(pos=self.pos.move(dx=dx, dy=dy), size=self.size)
@@ -383,12 +422,19 @@ class LiveApp:
         self.app.update(elapsed_ms)
 
     def draw(self, canvas):
-        H = 20
-        live_header_canvas = canvas.with_rectangle(lambda x: x.resize(height=H))
-        app_canvas = canvas.with_rectangle(lambda x: x.move(dy=H).resize(dh=-H))
-        live_header_canvas.fill(color=(22, 55, 88))
-        live_header_canvas.text(str(self.last_mtime))
-        self.app.draw(app_canvas)
+        canvas.rows([
+            {
+                "fn": self.draw_header,
+                "size": 20,
+            },
+            {
+                "fn": self.app.draw,
+            },
+        ])
+
+    def draw_header(self, canvas):
+        canvas.fill(color=(22, 55, 88))
+        canvas.text(str(self.last_mtime))
 
     def load_app(self):
         sys.path.insert(0, os.getcwd())
