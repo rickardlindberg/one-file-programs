@@ -5,9 +5,14 @@ CLIP_LENGHTS = [random.randint(10, 25*60) for x in range(40)]
 
 class App:
 
+    def __init__(self):
+        self.main_rectangle = None
+
     def event(self, event):
         if event.key_down("ctrl+q"):
             sys.exit(0)
+        elif event.mouse_motion(inside=self.main_rectangle):
+            print(event.mouse_point())
 
     def update(self, elapsed_ms):
         pass
@@ -24,3 +29,4 @@ class App:
             for length
             in CLIP_LENGHTS
         ])
+        self.main_rectangle = main.rectangle

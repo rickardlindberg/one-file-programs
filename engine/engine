@@ -60,28 +60,28 @@ class PygameEvent(object):
     def __init__(self, event):
         self.event = event
 
-    def mouse_motion(self, rect=None):
+    def mouse_motion(self, inside=None):
         return (
             self.event.type == pygame.MOUSEMOTION and
-            (rect is None or rect.collidepoint(self.event.pos))
+            (inside is None or inside.contains(self.mouse_point()))
         )
 
-    def left_mouse_down(self, rect=None):
+    def left_mouse_down(self, inside=None):
         return (
             self.event.type == pygame.MOUSEBUTTONDOWN and
             self.event.button == 1 and
-            (rect is None or rect.collidepoint(self.event.pos))
+            (inside is None or inside.contains(self.mouse_point()))
         )
 
-    def left_mouse_up(self, rect=None):
+    def left_mouse_up(self, inside=None):
         return (
             self.event.type == pygame.MOUSEBUTTONUP and
             self.event.button == 1 and
-            (rect is None or rect.collidepoint(self.event.pos))
+            (inside is None or inside.contains(self.mouse_point()))
         )
 
-    def mouse_pos(self):
-        return self.event.pos
+    def mouse_point(self):
+        return Point(*self.event.pos)
 
     def key_down_text(self):
         return (
@@ -326,6 +326,10 @@ class Rectangle:
     def __init__(self, pos, size):
         self.pos = pos
         self.size = size
+
+    def contains(self, point):
+        return (self.pos.x <= point.x <= (self.pos.x + self.width) and
+                self.pos.y <= point.y <= (self.pos.y + self.height))
 
     @property
     def x(self):
