@@ -54,6 +54,7 @@ class Frames:
                 frame.deflate_height = 0
                 inverse_percent_away = (1 - abs(self.position - frame.number - 0.5) / offset)
                 frame.proportion = 1 + (2*inverse_percent_away)**2
+                frame.deflate_height = (1-inverse_percent_away)*20
                 self.magnify.append(frame)
 
     def draw(self, canvas):
