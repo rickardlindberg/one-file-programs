@@ -331,6 +331,12 @@ class Rectangle:
         return (self.pos.x <= point.x <= (self.pos.x + self.width) and
                 self.pos.y <= point.y <= (self.pos.y + self.height))
 
+    def percent(self, point):
+        return Point(
+            x=(point.x-self.x)/self.width,
+            y=(point.y-self.y)/self.height,
+        )
+
     @property
     def x(self):
         return self.pos.x
