@@ -25,25 +25,35 @@ class Frames:
         self.frames = [Frame(x) for x in range(50)]
         self.rectangle = None
         self.position = self.find_position()
+        self.number_of_frames_to_magnify = 5
+        self.magnification_percent = 0.3
 
     def event(self, event):
         if event.mouse_motion():
             self.position = self.find_position(event.mouse_point())
+            if self.rectangle.contains(event.mouse_point()):
+                percent_away_from_vertical_center = 2*abs(0.5 - self.rectangle.percent(event.mouse_point()).y)
+                self.magnification_percent = 1 * percent_away_from_vertical_center
+            else:
+                self.number_of_frames_to_magnify = 5
+                self.magnification_percent = 0.3
 
     def update(self, elapsed_ms):
         self.before = []
         self.magnify = []
         self.after = []
-        number_of_frames_to_magnify = 5
+        offset = self.number_of_frames_to_magnify / 2
         for frame in self.frames:
-            if frame.number < self.position - number_of_frames_to_magnify/2:
+            if frame.number + 0.5 < self.position - offset:
                 frame.deflate_height = 20
                 self.before.append(frame)
-            elif frame.number > self.position + number_of_frames_to_magnify/2:
+            elif frame.number + 0.5 > self.position + offset:
                 frame.deflate_height = 20
                 self.after.append(frame)
             else:
                 frame.deflate_height = 0
+                inverse_percent_away = (1 - abs(self.position - frame.number - 0.5) / offset)
+                frame.proportion = 1 + (2*inverse_percent_away)**2
                 self.magnify.append(frame)
 
     def draw(self, canvas):
@@ -56,7 +66,10 @@ class Frames:
             },
             {
                 "fn": self.draw_magnify,
-                "size": 2 * len(self.magnify) * (self.rectangle.width / len(self.frames)),
+                "size": max(
+                    2 * len(self.magnify) * self.rectangle.width / len(self.frames),
+                    self.rectangle.width * self.magnification_percent,
+                )
             },
             {
                 "fn": self.draw_after,
@@ -68,7 +81,7 @@ class Frames:
         canvas.columns([{"fn": frame.draw} for frame in self.before])
 
     def draw_magnify(self, canvas):
-        canvas.columns([{"fn": frame.draw} for frame in self.magnify])
+        canvas.columns([{"fn": frame.draw, "proportion": frame.proportion} for frame in self.magnify])
 
     def draw_after(self, canvas):
         canvas.columns([{"fn": frame.draw} for frame in self.after])
