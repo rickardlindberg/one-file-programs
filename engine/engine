@@ -435,21 +435,32 @@ class LiveApp:
         self.reload_timer = Timer(300)
 
     def event(self, event):
-        self.app.event(event)
+        try:
+            self.app.event(event)
+        except Exception as e:
+            self.app = ErrorApp(str(e))
 
     def update(self, elapsed_ms):
         if self.reload_timer.check_and_reset(elapsed_ms):
             self.reload_app()
-        self.app.update(elapsed_ms)
+        try:
+            self.app.update(elapsed_ms)
+        except Exception as e:
+            self.app = ErrorApp(str(e))
 
     def draw(self, canvas):
+        def draw_app(canvas):
+            try:
+                self.app.draw(canvas)
+            except Exception as e:
+                self.app = ErrorApp(str(e))
         canvas.rows([
             {
                 "fn": self.draw_header,
                 "size": 20,
             },
             {
-                "fn": self.app.draw,
+                "fn": draw_app,
             },
         ])
 
@@ -473,6 +484,20 @@ class LiveApp:
 
     def stat_app_mtime(self):
         return os.stat(self.app_module.__file__).st_mtime
+
+class ErrorApp:
+
+    def __init__(self, text):
+        self.text = text
+
+    def event(self, event):
+        pass
+
+    def update(self, elapsed_ms):
+        pass
+
+    def draw(self, canvas):
+        canvas.text(self.text)
 
 class Timer:
 
