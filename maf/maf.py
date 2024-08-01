@@ -415,6 +415,12 @@ RUNS = {
             "weather": HOT,
             "effort": MEDIUM,
         },
+        {
+            "date": date(2024, 8, 1),
+            "time": Time(35, 24),
+            "weather": HOT,
+            "effort": EASY,
+        },
     ],
 }
 
