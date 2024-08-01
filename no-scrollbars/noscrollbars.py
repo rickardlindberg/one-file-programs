@@ -27,6 +27,7 @@ class Frames:
         self.position = self.find_position()
         self.number_of_frames_to_magnify = 5
         self.magnification_percent = 0.3
+        self.deflation_base = 30
 
     def event(self, event):
         if event.mouse_motion():
@@ -45,16 +46,16 @@ class Frames:
         offset = self.number_of_frames_to_magnify / 2
         for frame in self.frames:
             if frame.number + 0.5 < self.position - offset:
-                frame.deflate_height = 20
+                frame.deflate_height = self.deflation_base
                 self.before.append(frame)
             elif frame.number + 0.5 > self.position + offset:
-                frame.deflate_height = 20
+                frame.deflate_height = self.deflation_base
                 self.after.append(frame)
             else:
                 frame.deflate_height = 0
                 inverse_percent_away = (1 - abs(self.position - frame.number - 0.5) / offset)
                 frame.proportion = 1 + (2*inverse_percent_away)**2
-                frame.deflate_height = (1-inverse_percent_away)*20
+                frame.deflate_height = (1-inverse_percent_away)*self.deflation_base
                 self.magnify.append(frame)
 
     def draw(self, canvas):
