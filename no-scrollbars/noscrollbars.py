@@ -24,24 +24,19 @@ class Frames:
     def __init__(self):
         self.frames = [Frame(x) for x in range(50)]
         self.rectangle = None
-        self.reset()
-
-    def reset(self):
         self.position = len(self.frames) / 2
-        self.number_of_frames_to_magnify = 5
-        self.magnification_percent = 0.3
-        self.deflation_base = 30
+        self.percent_away_from_vertical_center = 0
 
     def event(self, event):
         if event.mouse_motion():
             if event.mouse_motion(inside=self.rectangle):
                 self.position = self.find_position(event.mouse_point())
-                percent_away_from_vertical_center = 2*abs(0.5 - self.rectangle.percent(event.mouse_point()).y)
-                self.magnification_percent = 1 * percent_away_from_vertical_center
-            else:
-                self.reset()
+                self.percent_away_from_vertical_center = 2*abs(0.5 - self.rectangle.percent(event.mouse_point()).y)
 
     def update(self, elapsed_ms):
+        self.magnification_percent = 1 * self.percent_away_from_vertical_center
+        self.number_of_frames_to_magnify = 5
+        self.deflation_base = 30
         self.before = []
         self.magnify = []
         self.after = []
