@@ -2236,7 +2236,7 @@ class NoteDb(Immutable):
             if link_id == link_id_to_move:
                 link_index = index
         link = links_to_sort.pop(link_index)
-        links_to_sort.insert(max(0, index+delta), link)
+        links_to_sort.insert(max(0, link_index+delta), link)
         new_links = dict(self._get("links"))
         for index, (link_id, link) in enumerate(links_to_sort):
             new_links[link_id] = dict(link, **{end_keys["sort_index_key"]: index})
