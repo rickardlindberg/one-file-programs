@@ -123,6 +123,7 @@ class CairoCanvas(object):
         boxalign="center",
         face=None,
         textalign="left",
+        italic=False,
         split=True,
         color=(0, 0, 0)
     ):
@@ -136,7 +137,12 @@ class CairoCanvas(object):
             self.ctx.set_line_width(1)
             self.ctx.stroke()
         if face is not None:
-            self.ctx.select_font_face(face)
+            cairo_family = face
+            cairo_slant = cairo.FontSlant.ITALIC if italic else cairo.FontSlant.NORMAL
+            self.ctx.select_font_face(
+                cairo_family,
+                cairo_slant
+            )
         self._set_color(color)
         metrics, scale_factor = self._find_best_fit(text, box, split, size)
         self.ctx.save()
@@ -319,9 +325,10 @@ TAG_ATTRIBUTES           = [
     {"name": "bib",   "textalign": "center", "bg": BIB_COLOR},
     {"name": "blog",  "textalign": "center", "bg": BIB_COLOR},
     {"name": "lit",   "bg": (150, 250, 150)},
+    {"name": "quote", "bg": (150, 250, 150), "italic": True},
     {"name": "toc",   "bg": (199, 134, 214)},
     {"name": "main",  "bg": (238, 238, 205)},
-    {"name": "link",  "bg": (134, 209, 214)},
+    {"name": "link",  "bg": (134, 209, 214), "italic": True, "textalign": "center"},
 ]
 
 class Widget(object):
@@ -503,6 +510,7 @@ class NoteBaseWidget(Widget):
         attributes = {
             "textalign": "left",
             "bg": COLOR_NOTE_BG,
+            "italic": False,
         }
         for tag in TAG_ATTRIBUTES:
             if tag["name"] in self.data.get("tags", []):
@@ -598,6 +606,7 @@ class NoteBaseWidget(Widget):
                     body,
                     size=self.full_width/10,
                     textalign=attributes["textalign"],
+                    italic=attributes["italic"],
                     boxalign="center",
                     color=COLOR_NOTE_TEXT,
                     face=FONT_TEXT
@@ -608,6 +617,7 @@ class NoteBaseWidget(Widget):
                     rect,
                     size=self.full_width/10,
                     textalign=attributes["textalign"],
+                    italic=attributes["italic"],
                     boxalign="center",
                     color=COLOR_NOTE_TEXT,
                     face=FONT_TEXT
