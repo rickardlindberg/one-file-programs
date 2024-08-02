@@ -323,15 +323,16 @@ KEY_MOVE_UP              = "1"
 KEY_MOVE_DOWN            = "2"
 BIB_COLOR                = (250, 150, 150)
 TAG_ATTRIBUTES           = [
-    {"name": "title", "textalign": "center"},
-    {"name": "bib",   "textalign": "center", "bg": BIB_COLOR},
-    {"name": "blog",  "textalign": "center", "bg": BIB_COLOR},
-    {"name": "book",  "textalign": "center", "bg": BIB_COLOR},
-    {"name": "lit",   "bg": (150, 250, 150)},
-    {"name": "quote", "bg": (150, 250, 150), "italic": True},
-    {"name": "toc",   "bg": (199, 134, 214)},
-    {"name": "main",  "bg": (238, 238, 205)},
-    {"name": "link",  "bg": (134, 209, 214), "italic": True, "textalign": "center"},
+    {"name": "title",     "textalign": "center"},
+    {"name": "bib",       "textalign": "center", "bg": BIB_COLOR},
+    {"name": "blog",      "textalign": "center", "bg": BIB_COLOR},
+    {"name": "book",      "textalign": "center", "bg": BIB_COLOR},
+    {"name": "lit",       "bg": (150, 250, 150)},
+    {"name": "quote",     "bg": (150, 250, 150), "italic": True},
+    {"name": "toc",       "bg": (199, 134, 214)},
+    {"name": "structure", "bg": (134, 189, 214)},
+    {"name": "main",      "bg": (238, 238, 205)},
+    {"name": "link",      "bg": (134, 209, 214), "italic": True, "textalign": "center"},
 ]
 
 class Widget(object):
