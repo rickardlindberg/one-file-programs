@@ -313,11 +313,15 @@ KEY_DELETE_NOTE          = "d"
 KEY_UNLINK_NOTE          = "u"
 KEY_OPEN_LINKS           = "g"
 KEY_TOGGLE_TABLE_NETWORK = "t"
+BIB_COLOR                = (250, 150, 150)
 TAG_ATTRIBUTES           = [
     {"name": "title", "textalign": "center"},
-    {"name": "bib",   "textalign": "center", "bg": (250, 150, 150)},
+    {"name": "bib",   "textalign": "center", "bg": BIB_COLOR},
+    {"name": "blog",  "textalign": "center", "bg": BIB_COLOR},
     {"name": "lit",   "bg": (150, 250, 150)},
     {"name": "toc",   "bg": (199, 134, 214)},
+    {"name": "main",  "bg": (238, 238, 205)},
+    {"name": "link",  "bg": (134, 209, 214)},
 ]
 
 class Widget(object):
