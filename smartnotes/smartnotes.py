@@ -319,6 +319,8 @@ KEY_DELETE_NOTE          = "d"
 KEY_UNLINK_NOTE          = "u"
 KEY_OPEN_LINKS           = "g"
 KEY_TOGGLE_TABLE_NETWORK = "t"
+KEY_MOVE_UP              = "1"
+KEY_MOVE_DOWN            = "2"
 BIB_COLOR                = (250, 150, 150)
 TAG_ATTRIBUTES           = [
     {"name": "title", "textalign": "center"},
@@ -1460,6 +1462,18 @@ class NetworkNote(NoteBaseWidget):
             if link_id:
                 self.db.delete_link(link_id)
                 self.clear_quick_focus()
+        elif self.has_focus() and (event.key_down(KEY_MOVE_UP) or
+                                   event.key_down(KEY_MOVE_DOWN)):
+            link_id = self.get_link_id()
+            if link_id:
+                if self.side == "left":
+                    end = "to"
+                else:
+                    end = "from"
+                if event.key_down(KEY_MOVE_UP):
+                    self.db.move_link_up(link_id, end=end)
+                else:
+                    self.db.move_link_down(link_id, end=end)
         else:
             NoteBaseWidget.process_event(self, event)
 
@@ -2115,24 +2129,37 @@ class NoteDb(Immutable):
             (link_id, link)
             for link_id, link in self._links()
             if link["from"] == note_id
-        ])
+        ], sort_keys=["sort_index_in_from", "timestamp_created"])
 
     def get_incoming_links(self, note_id):
         return self._sort_links([
             (link_id, link)
             for link_id, link in self._links()
             if link["to"] == note_id
-        ])
+        ], sort_keys=["sort_index_in_to", "timestamp_created"])
 
     def _links(self):
         yield from self._get("links").items()
         yield from self.virtual_links.items()
 
-    def _sort_links(self, links):
-        return sorted(
-            links,
-            key=lambda item: item[1]["timestamp_created"]
-        )
+    def _sort_links(self, links, sort_keys):
+        links_by_sort_key = {}
+        for link_id, link in links:
+            for sort_key in sort_keys:
+                if sort_key in link:
+                    if sort_key not in links_by_sort_key:
+                        links_by_sort_key[sort_key] = []
+                    links_by_sort_key[sort_key].append((link_id, link))
+                    break
+            else:
+                raise ValueError(f"None of the sort keys {sort_keys!r} found in link {link_id}: {link!r}.")
+        sorted_combined = []
+        for sort_key in sort_keys:
+            sorted_combined.extend(sorted(
+                links_by_sort_key.get(sort_key, []),
+                key=lambda item: item[1][sort_key]
+            ))
+        return sorted_combined
 
     def create_note(self, **params):
         note_id = genid()
@@ -2179,6 +2206,41 @@ class NoteDb(Immutable):
         new_links = dict(self._get("links"))
         new_links.pop(link_id)
         self._replace(links=new_links)
+
+    def move_link_up(self, link_id, end):
+        self._ensure_link_id(link_id)
+        self._move_link(link_id, self._end_to_keys(end), -1)
+
+    def move_link_down(self, link_id, end):
+        self._ensure_link_id(link_id)
+        self._move_link(link_id, self._end_to_keys(end), 1)
+
+    def _end_to_keys(self, end):
+        if end == "from":
+            return {"sort_index_key": "sort_index_in_from", "end_key": "from"}
+        elif end == "to":
+            return {"sort_index_key": "sort_index_in_to", "end_key": "to"}
+        else:
+            raise ValueError(f"Invalid sort index end={end}.")
+
+    def _move_link(self, link_id_to_move, end_keys, delta):
+        note_id = self._get("links", link_id_to_move)[end_keys["end_key"]]
+        links_to_sort = self._sort_links([
+            (link_id, link)
+            for link_id, link in self._get("links").items()
+            if link[end_keys["end_key"]] == note_id
+        ], [end_keys["sort_index_key"], "timestamp_created"])
+        link_index = None
+        for index, (link_id, link) in enumerate(links_to_sort):
+            if link_id == link_id_to_move:
+                link_index = index
+        link = links_to_sort.pop(link_index)
+        links_to_sort.insert(max(0, index+delta), link)
+        new_links = dict(self._get("links"))
+        for index, (link_id, link) in enumerate(links_to_sort):
+            new_links[link_id] = dict(link, **{end_keys["sort_index_key"]: index})
+        if new_links != self._get("links"):
+            self._replace(links=new_links)
 
     def _ensure_note_id(self, note_id):
         if note_id not in self._get("notes"):
