@@ -326,6 +326,7 @@ TAG_ATTRIBUTES           = [
     {"name": "title", "textalign": "center"},
     {"name": "bib",   "textalign": "center", "bg": BIB_COLOR},
     {"name": "blog",  "textalign": "center", "bg": BIB_COLOR},
+    {"name": "book",  "textalign": "center", "bg": BIB_COLOR},
     {"name": "lit",   "bg": (150, 250, 150)},
     {"name": "quote", "bg": (150, 250, 150), "italic": True},
     {"name": "toc",   "bg": (199, 134, 214)},
