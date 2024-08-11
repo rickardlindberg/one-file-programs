@@ -1623,6 +1623,7 @@ class LinkWidget(Widget):
 
     def update(self, rect, elapsed_ms):
         Widget.update(self, rect, elapsed_ms)
+        self.link_data = self.db.get_link_data(self.link_id)
         start = pygame.math.Vector2(self.start.get_link_out_point())
         end = pygame.math.Vector2(self.end.get_link_in_point())
         if start != self.start_pos or end != self.end_pos:
@@ -2177,6 +2178,7 @@ class NoteDb(Immutable):
             self._get("links"),
             **{link_id: dict(self._get("links", link_id), **params)}
         ))
+
     def get_children(self, note_id):
         for link_id, link in self.get_outgoing_links(note_id):
             yield link["to"]
