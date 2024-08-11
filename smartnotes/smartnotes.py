@@ -1491,7 +1491,7 @@ class NetworkNote(NoteBaseWidget):
         self.incoming = []
         for link_id, link_data in self.db.get_incoming_links(self.note_id):
             if link_id in by_id:
-                self.incoming.append(by_id.pop(link_id))
+                self.incoming.append(by_id.pop(link_id).with_side("left"))
             else:
                 self.instantiate(LinkWidget,
                     link_id,
@@ -1504,7 +1504,8 @@ class NetworkNote(NoteBaseWidget):
                         link_data["from"],
                         self.settings
                     ),
-                    self
+                    self,
+                    side="left"
                 )
         return self.incoming
 
@@ -1516,7 +1517,7 @@ class NetworkNote(NoteBaseWidget):
         self.outgoing = []
         for link_id, link_data in self.db.get_outgoing_links(self.note_id):
             if link_id in by_id:
-                self.outgoing.append(by_id.pop(link_id))
+                self.outgoing.append(by_id.pop(link_id).with_side("right"))
             else:
                 self.instantiate(LinkWidget,
                     link_id,
@@ -1529,7 +1530,8 @@ class NetworkNote(NoteBaseWidget):
                         self.overlay,
                         link_data["to"],
                         self.settings
-                    )
+                    ),
+                    side="right"
                 )
         return self.outgoing
 
@@ -1583,7 +1585,7 @@ class NetworkNote(NoteBaseWidget):
 
 class LinkWidget(Widget):
 
-    def __init__(self, window, parent, link_id, link_data, start, end):
+    def __init__(self, window, parent, link_id, link_data, start, end, side):
         Widget.__init__(self, window, parent)
         self.link_id = link_id
         self.link_data = link_data
@@ -1593,6 +1595,11 @@ class LinkWidget(Widget):
         self.end.incoming.append(self)
         self.start_pos = None
         self.end_pos = None
+        self.with_side(side)
+
+    def with_side(self, side):
+        self.side = side
+        return self
 
     def is_virtual(self):
         return self.link_data.get("virtual", False)
@@ -1610,6 +1617,8 @@ class LinkWidget(Widget):
             self.need_redraw = False
 
     def draw(self, canvas):
+        if self.start_pos.x > self.end_pos.x:
+            return
         if self.need_redraw:
             self.width = max(1, int(abs(self.start_pos.x-self.end_pos.x)))
             self.height = max(1, int(abs(self.start_pos.y-self.end_pos.y)))+2*self.padding
@@ -1622,7 +1631,41 @@ class LinkWidget(Widget):
                 min(self.start_pos.y, self.end_pos.y)-self.padding,
             )
         canvas.blit(self.image, self.pos)
-        Widget.draw(self, canvas)
+        link_text = self.link_data.get("text", "")
+        if link_text:
+            draw_label = False
+            y_offset = 0
+            if self.side == "left":
+                height = self.start.rect.height / 2
+                if self.start_pos.y < self.end_pos.y:
+                    y_offset = -height
+                    boxalign = "bottomleft"
+                else:
+                    y_offset = 0
+                    boxalign = "topleft"
+                x, y = self.start_pos
+                text_rect = pygame.Rect(x, y+y_offset, self.end_pos.x-x, height)
+            else:
+                height = self.end.rect.height / 2
+                if self.end_pos.y < self.start_pos.y:
+                    y_offset = -height
+                    boxalign = "bottomright"
+                else:
+                    y_offset = 0
+                    boxalign = "topright"
+                x, y = self.end_pos
+                text_rect = pygame.Rect(self.start_pos.x, y+y_offset, x-self.start_pos.x, height)
+            text_rect = text_rect.inflate(-5, -5)
+            canvas.render_text(
+                link_text,
+                text_rect,
+                boxalign=boxalign,
+                textalign=self.side,
+                face=FONT_MONOSPACE,
+                italic=True,
+                size=20
+            )
+            Widget.draw(self, canvas)
 
     def _draw_line(self, canvas):
         if self.start_pos.x < self.end_pos.x:
