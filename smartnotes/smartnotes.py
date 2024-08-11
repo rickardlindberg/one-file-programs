@@ -1272,6 +1272,7 @@ class NetworkWidget(Widget):
         self.note_settings = note_settings
         self.pos = (-1, -1)
         self.notes = []
+        self.links = []
         self.open_last_note()
 
     def open_last_note(self):
@@ -1296,6 +1297,8 @@ class NetworkWidget(Widget):
             Widget.process_event(self, event)
             for note in self.notes:
                 note.process_event(event)
+            for link in self.links:
+                link.process_event(event)
 
     def open_note(self, note_id):
         if self.root_note is None or self.root_note.note_id != note_id:
@@ -1494,6 +1497,7 @@ class NetworkNote(NoteBaseWidget):
                 self.incoming.append(by_id.pop(link_id).with_side("left"))
             else:
                 self.instantiate(LinkWidget,
+                    self.db,
                     link_id,
                     link_data,
                     self.instantiate(
@@ -1520,6 +1524,7 @@ class NetworkNote(NoteBaseWidget):
                 self.outgoing.append(by_id.pop(link_id).with_side("right"))
             else:
                 self.instantiate(LinkWidget,
+                    self.db,
                     link_id,
                     link_data,
                     self,
@@ -1585,8 +1590,9 @@ class NetworkNote(NoteBaseWidget):
 
 class LinkWidget(Widget):
 
-    def __init__(self, window, parent, link_id, link_data, start, end, side):
+    def __init__(self, window, parent, db, link_id, link_data, start, end, side):
         Widget.__init__(self, window, parent)
+        self.db = db
         self.link_id = link_id
         self.link_data = link_data
         self.start = start
@@ -1603,6 +1609,17 @@ class LinkWidget(Widget):
 
     def is_virtual(self):
         return self.link_data.get("virtual", False)
+
+    def process_event(self, event):
+        if event.mouse_motion(rect=self.allotted_rect):
+            self.quick_focus()
+        if event.key_down(KEY_EDIT_NOTE) and self.has_focus():
+            self.post_event(
+                USER_EVENT_EXTERNAL_TEXT_ENTRY,
+                entry=LinkText(self.db, self.link_id)
+            )
+        else:
+            Widget.process_event(self, event)
 
     def update(self, rect, elapsed_ms):
         Widget.update(self, rect, elapsed_ms)
@@ -1632,30 +1649,34 @@ class LinkWidget(Widget):
             )
         canvas.blit(self.image, self.pos)
         link_text = self.link_data.get("text", "")
-        if link_text:
-            draw_label = False
-            y_offset = 0
-            if self.side == "left":
-                height = self.start.rect.height / 2
-                if self.start_pos.y < self.end_pos.y:
-                    y_offset = -height
-                    boxalign = "bottomleft"
-                else:
-                    y_offset = 0
-                    boxalign = "topleft"
-                x, y = self.start_pos
-                text_rect = pygame.Rect(x, y+y_offset, self.end_pos.x-x, height)
+        draw_label = False
+        if self.side == "left":
+            height = self.start.rect.height / 2
+            if self.start_pos.y < self.end_pos.y:
+                y_offset = -height
+                boxalign = "bottomleft"
             else:
-                height = self.end.rect.height / 2
-                if self.end_pos.y < self.start_pos.y:
-                    y_offset = -height
-                    boxalign = "bottomright"
-                else:
-                    y_offset = 0
-                    boxalign = "topright"
-                x, y = self.end_pos
-                text_rect = pygame.Rect(self.start_pos.x, y+y_offset, x-self.start_pos.x, height)
-            text_rect = text_rect.inflate(-5, -5)
+                y_offset = 0
+                boxalign = "topleft"
+            x, y = self.start_pos
+            text_rect = pygame.Rect(x, y+y_offset, self.end_pos.x-x, height)
+        else:
+            height = self.end.rect.height / 2
+            if self.end_pos.y < self.start_pos.y:
+                y_offset = -height
+                boxalign = "bottomright"
+            else:
+                y_offset = 0
+                boxalign = "topright"
+            x, y = self.end_pos
+            text_rect = pygame.Rect(self.start_pos.x, y+y_offset, x-self.start_pos.x, height)
+        if y_offset != 0:
+            center_offset = height/2
+        else:
+            center_offset = -height/2
+        self.allotted_rect = text_rect.move(0, center_offset)
+        text_rect = text_rect.inflate(-5, -5)
+        if link_text:
             canvas.render_text(
                 link_text,
                 text_rect,
@@ -1665,7 +1686,7 @@ class LinkWidget(Widget):
                 italic=True,
                 size=20
             )
-            Widget.draw(self, canvas)
+        Widget.draw(self, canvas)
 
     def _draw_line(self, canvas):
         if self.start_pos.x < self.end_pos.x:
@@ -2146,6 +2167,16 @@ class NoteDb(Immutable):
         self._ensure_note_id(note_id)
         return self._get("notes", note_id)
 
+    def get_link_data(self, link_id):
+        self._ensure_link_id(link_id)
+        return self._get("links", link_id)
+
+    def update_link(self, link_id, **params):
+        self._ensure_link_id(link_id)
+        self._replace(links=dict(
+            self._get("links"),
+            **{link_id: dict(self._get("links", link_id), **params)}
+        ))
     def get_children(self, note_id):
         for link_id, link in self.get_outgoing_links(note_id):
             yield link["to"]
@@ -2312,6 +2343,21 @@ class NoteNotFound(ValueError):
 
 class LinkNotFound(ValueError):
     pass
+
+class LinkText(ExternalTextEntry):
+
+    def __init__(self, db, link_id):
+        self.db = db
+        self.link_id = link_id
+        ExternalTextEntry.__init__(self, self._link_to_text(), EDITOR_COMMAND)
+
+    def _link_to_text(self):
+        data = self.db.get_link_data(self.link_id)
+        return data.get("text", "")
+
+    def _new_text(self):
+        with self.db.transaction():
+            self.db.update_link(self.link_id, text=self.text.strip())
 
 class NoteText(ExternalTextEntry):
 
