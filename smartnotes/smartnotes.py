@@ -174,7 +174,10 @@ class CairoCanvas(object):
             metrics = self._find_best_split(text, box)
         else:
             metrics = self._get_metrics(text.splitlines())
-        scale_factor = box.width / metrics["width"]
+        if metrics["width"] == 0:
+            scale_factor = 1
+        else:
+            scale_factor = box.width / metrics["width"]
         if metrics["height"] * scale_factor > box.height:
             scale_factor = box.height / metrics["height"]
         scale_factor = min(scale_factor, 1)
